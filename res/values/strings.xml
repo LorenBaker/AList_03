@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AList_03</string>
+    <string name="tvListTitle_Text">List Title</string>
+    <string name="tvListItemName_Text">List Item</string>
+    <string name="tvListItemNote_Text">(List Note)</string>
+    <string name="tvListItemSeparator_Text">Separator</string>
+    <string name="action_removeStruckOffItems">Remove struck off items</string>
+    <string name="action_addItem">Add Item</string>
+    <string name="action_newList">New List</string>
+    <string name="action_clearList">Clear List</string>
+    <string name="action_emailList">Email List</string>
+    <string name="action_editListTitle">Edit List Title</string>
+    <string name="action_deleteList">Delete List</string>
+    <string name="stores">Stores</string>
+    <string name="action_Preferences">Preferences</string>
+    <string name="action_about">About</string>
+    <string name="tvStoreRow_Text">Store Row</string>
+    <string name="txtMasterListItem_Text">Item Name</string>
+    <string name="txtEditItemName_Hint">Item</string>
+    <string name="txtEditItemNote_Hint">Note</string>
+    <string name="txtEditListTitle_Hint">List Title</string>
+    <string name="editItemDialogTitle">Edit Item</string>
+    <string name="editListTitleDialogTitle">Edit Item</string>
+    <string name="createNewListDialogTitle">Create New List</string>
+    <string name="btn_apply_text">Apply</string>
+    <string name="btn_cancel_text">Cancel</string>
+    <string name="btn_yes_text">Yes</string>
+    <string name="btn_no_text">No</string>
+    <string name="txtItemName_Text">Item</string>
+    <string name="txtItemNote_Text">Note</string>
+    <string name="btnAddToMasterList_Text">Add</string>
+    <string name="tvItemGroup_Text">[Item Group]</string>
+    <string name="action_newStore">New Store</string>
+    <string name="action_showStoreLocation">Show store location</string>
+    <string name="action_groups">Groups</string>
+    <string name="action_editStoreName">Edit store name</string>
+
+    <string-array name="dialog_list_sort_order">
+        <item>Alphabetical</item>
+        <item>By Group</item>
+        <item>Manual</item>
+    </string-array>
+    <string-array name="dialog_master_list_sort_order">
+        <item>Alphabetical</item>
+        <item>By Group</item>
+        <item>Selected items at top</item>
+        <item>Selected items at bottom</item>
+        <item>Last used</item>
+    </string-array>
+        <string name="dialog_edit_list_title">Edit List Title</string>
+        <string name="dialog_title_list_sort_order">List Sort Order</string>
+        <string name="dialog_title_master_list_sort_order">Master List Sort Order</string>
+        <string name="sort_option_alphabetical">Alphabetical</string>
+        <string name="sort_option_by_group">By Group</string>
+        <string name="sort_option_selected_items_at_top">Selected Items At Top</string>
+        <string name="sort_option_selected_items_at_bottom">Selected Items At Bottom</string>
+        <string name="sort_option_last_used">Last used</string>
+        <string name="sort_option_manual">Manual</string>
+
+</resources>

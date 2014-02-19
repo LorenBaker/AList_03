@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llFragListPreferences"
+    style="@android:style/TextAppearance.DeviceDefault.Small"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <include layout="@layout/list_title" />
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            style="@android:style/TextAppearance.DeviceDefault.Small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="7dp"
+            android:layout_marginRight="1dp"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/btnEditListTitle"
+                style="@android:style/TextAppearance.DeviceDefault.Small"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="left|center_vertical"
+                android:text="Edit list title" />
+
+            <Switch
+                android:id="@+id/swShowGroupsInListsView"
+                style="@android:style/TextAppearance.DeviceDefault.Small"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:gravity="left|center_vertical"
+                android:text="Show Groups in Lists View" />
+
+            <Switch
+                android:id="@+id/swShowGroupsInMasterListView"
+                style="@android:style/TextAppearance.DeviceDefault.Small"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:gravity="left|center_vertical"
+                android:text="Show Groups in Master List View" />
+
+            <Switch
+                android:id="@+id/swShowStores"
+                style="@android:style/TextAppearance.DeviceDefault.Small"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:gravity="left|center_vertical"
+                android:text="Show Stores" />
+
+            <Switch
+                android:id="@+id/swDeleteNoteUponClearingItem"
+                style="@android:style/TextAppearance.DeviceDefault.Small"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:gravity="left|center_vertical"
+                android:text="Delete Note upon clearing item" />
+
+            <Button
+                android:id="@+id/btnListSortOrder"
+                style="@android:style/TextAppearance.DeviceDefault.Small"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="left|center_vertical"
+                android:text="List Sort Order (current method)" />
+
+            <Button
+                android:id="@+id/btnMasterListSortOrder"
+                style="@android:style/TextAppearance.DeviceDefault.Small"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="left|center_vertical"
+                android:text="Master List Sort Order (current method)" />
+
+            <Button
+                android:id="@+id/btnMakeDefaultPreferences"
+                style="@android:style/TextAppearance.DeviceDefault.Small"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="left|center_vertical"
+                android:text="Make above preferences default for new lists" />
+
+            <Button
+                android:id="@+id/btnColors"
+                style="@android:style/TextAppearance.DeviceDefault.Small"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="left|center_vertical"
+                android:text="Colors" />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

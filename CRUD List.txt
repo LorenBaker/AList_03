@@ -1,0 +1,41 @@
+Items Table
+Read Methods
+1.	Get Item
+2.	Get All Items In List
+3.	Get All Selected Items In List
+4.	Get All Struck Out Items In List
+5.	Get All Items In Group
+6.	Get All Selected Items In Group
+7.	Get All  Struck Out Items In Group
+
+Create Methods
+1.	Create Item
+
+Update Methods
+1.	Update Name
+2.	Update Note
+3.	Change Group
+4.	Set Selected
+5.	Set Struck Out
+6.	Set Manual Sort Order
+7.	Unselect Item
+8.	Delete All Items In List
+9.	Delete All Selected Items in List
+10.	Delete All Struck Out Items in List
+11.	Delete All Items In Group
+12.	Delete All Selected Items in Group
+13.	Delete All Struck Out Items in Group
+14.	
+
+
+Delete Methods
+1.	Delete Item
+2.	Delete All Items In List
+3.	Delete All Selected Items in List
+4.	Delete All Struck Out Items in List
+5.	Delete All Items In Group
+6.	Delete All Selected Items in Group
+7.	Delete All Struck Out Items in Group
+8.	
+
+
