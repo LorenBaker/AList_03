@@ -7,6 +7,7 @@
     android:paddingRight="4dp" >
 
     <RadioGroup
+        android:id="@+id/radioGroup_list_sort_order"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" >
@@ -15,21 +16,18 @@
             android:id="@+id/rbAlphabetical_list"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:onClick="onRadioButtonClicked"
             android:text="@string/sort_option_alphabetical" />
 
         <RadioButton
             android:id="@+id/rbByGroup_list"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:onClick="onRadioButtonClicked"
             android:text="@string/sort_option_by_group" />
 
         <RadioButton
             android:id="@+id/rbManual"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:onClick="onRadioButtonClicked"
             android:text="@string/sort_option_manual" />
     </RadioGroup>
 

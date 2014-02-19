@@ -1,9 +1,16 @@
 package com.lbconsulting.alist_03.fragments;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +25,7 @@ import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.dialogs.EditListTitleDialogFragment.EditListTitleDialogListener;
+import com.lbconsulting.alist_03.dialogs.SortOrderDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -35,6 +43,7 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 
 	private long mActiveListID;
 	private ListSettings listSettings;
+	private BroadcastReceiver mMessageReceiver;
 
 	private LinearLayout llFragListPreferences;
 	private TextView tvListTitle;
@@ -154,11 +163,54 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 
 		getActivity().getActionBar().setTitle("List Preferences");
 
+		// Our handler for received Intents. This will be called whenever an Intent
+		// with an action named "list_preferences_changed" is broadcasted.
+		mMessageReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				long listID = intent.getLongExtra("listID", -1);
+				if (listID == mActiveListID) {
+					// there has been a changed in the ListsTable ... 
+					// so refresh listSettings
+					listSettings.RefreshListSettings();
+
+					// Get extra data included in the Intent
+					if (intent.hasExtra("newListTitle")) {
+						String newListTitle = intent.getStringExtra("newListTitle");
+						setListTitle(newListTitle);
+					}
+					if (intent.hasExtra("newListSortOrder")) {
+						int newListSortOrder = intent.getIntExtra("newListSortOrder", 0);
+						setListSortOrder(newListSortOrder);
+					}
+					if (intent.hasExtra("newMasterListSortOrder")) {
+						int newMasterListSortOrder = intent.getIntExtra("newMasterListSortOrder", 0);
+						setMasterListSortOrder(newMasterListSortOrder);
+					}
+				}
+			}
+		};
+		// Register to receive messages.
+		// We are registering an observer (mMessageReceiver) to receive Intents
+		// with actions named "list_preferences_changed".
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
+				new IntentFilter("list_preferences_changed"));
+
 		super.onActivityCreated(savedInstanceState);
 	}
 
 	View.OnClickListener buttonClick = new View.OnClickListener() {
 		public void onClick(View v) {
+
+			FragmentManager fm = getActivity().getSupportFragmentManager();
+			// Remove any currently showing dialog
+			Fragment prev = fm.findFragmentByTag("dialog_lists_table_update");
+			if (prev != null) {
+				FragmentTransaction ft = fm.beginTransaction();
+				ft.remove(prev);
+				ft.commit();
+			}
 			switch (v.getId()) {
 			case R.id.btnEditListTitle:
 				/*				Toast.makeText(getActivity(), "\"" + "btnEditListTitle" + "\"" + " is under construction.",
@@ -169,13 +221,21 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 				break;
 
 			case R.id.btnListSortOrder:
-				Toast.makeText(getActivity(), "\"" + "btnListSortOrder" + "\"" + " is under construction.",
-						Toast.LENGTH_SHORT).show();
+				SortOrderDialogFragment editListSortOrderDialog = SortOrderDialogFragment
+						.newInstance(mActiveListID, SortOrderDialogFragment.LIST_SORT_ORDER);
+				editListSortOrderDialog.show(fm, "dialog_lists_table_update");
+
+				/*Toast.makeText(getActivity(), "\"" + "btnListSortOrder" + "\"" + " is under construction.",
+						Toast.LENGTH_SHORT).show();*/
 				break;
 
 			case R.id.btnMasterListSortOrder:
-				Toast.makeText(getActivity(), "\"" + "btnMasterListSortOrder" + "\"" + " is under construction.",
-						Toast.LENGTH_SHORT).show();
+				SortOrderDialogFragment editMasterListSortOrderDialog = SortOrderDialogFragment
+						.newInstance(mActiveListID, SortOrderDialogFragment.MASTER_LIST_SORT_ORDER);
+				editMasterListSortOrderDialog.show(fm, "dialog_lists_table_update");
+
+				/*Toast.makeText(getActivity(), "\"" + "btnMasterListSortOrder" + "\"" + " is under construction.",
+						Toast.LENGTH_SHORT).show();*/
 				break;
 
 			case R.id.btnColors:
@@ -234,7 +294,7 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 			}
 
 			if (tvListTitle != null) {
-				tvListTitle.setText(listSettings.getListTitle());
+				setListTitle(listSettings.getListTitle());
 				tvListTitle.setBackgroundColor(listSettings.getTitleBackgroundColor());
 				tvListTitle.setTextColor(listSettings.getTitleTextColor());
 			}
@@ -264,53 +324,12 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 			}
 
 			if (btnListSortOrder != null) {
-				int listSortOrder = listSettings.getListSortOrder();
-				StringBuilder sb = new StringBuilder();
-				sb.append("List Sort Order (");
-				switch (listSortOrder) {
-				case BY_GROUP_LIST_SORT_ORDER:
-					sb.append("By Group)");
-					break;
-
-				case MANUAL_LIST_SORT_ORDER:
-					sb.append("Manual)");
-					break;
-				default:
-					//ALPHABETICAL_LIST_SORT_ORDER
-					sb.append("Alphabetical)");
-					break;
-				}
-				btnListSortOrder.setText(sb.toString());
+				setListSortOrder(listSettings.getListSortOrder());
 				btnListSortOrder.setTextColor(listSettings.getItemNormalTextColor());
 			}
 
 			if (btnMasterListSortOrder != null) {
-				int masterListSortOrder = listSettings.getMasterListSortOrder();
-				StringBuilder sb = new StringBuilder();
-				sb.append("Master List Sort Order (");
-				switch (masterListSortOrder) {
-				case BY_GROUP_MASTER_LIST_SORT_ORDER:
-					sb.append("By Group)");
-					break;
-
-				case SELECTED_AT_TOP_MASTER_LIST_SORT_ORDER:
-					sb.append("Selected at Top)");
-					break;
-
-				case SELECTED_AT_BOTTOM_MASTER_LIST_SORT_ORDER:
-					sb.append("Selected at Bottom)");
-					break;
-
-				case LAST_USED_MASTER_LIST_SORT_ORDER:
-					sb.append("Last Used)");
-					break;
-
-				default:
-					//ALPHABETICAL_LIST_SORT_ORDER
-					sb.append("Alphabetical)");
-					break;
-				}
-				btnMasterListSortOrder.setText(sb.toString());
+				setMasterListSortOrder(listSettings.getMasterListSortOrder());
 				btnMasterListSortOrder.setTextColor(listSettings.getItemNormalTextColor());
 			}
 
@@ -325,7 +344,63 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 			if (btnMakeDefaultPreferences != null) {
 				btnMakeDefaultPreferences.setTextColor(listSettings.getItemNormalTextColor());
 			}
+		}
+	}
 
+	private void setListTitle(String newListTitle) {
+		if (tvListTitle != null) {
+			tvListTitle.setText(newListTitle);
+		}
+	}
+
+	private void setListSortOrder(int newListSortOrder) {
+		if (btnListSortOrder != null) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("List Sort Order (");
+			switch (newListSortOrder) {
+			case BY_GROUP_LIST_SORT_ORDER:
+				sb.append("By Group)");
+				break;
+
+			case MANUAL_LIST_SORT_ORDER:
+				sb.append("Manual)");
+				break;
+			default:
+				//ALPHABETICAL_LIST_SORT_ORDER
+				sb.append("Alphabetical)");
+				break;
+			}
+			btnListSortOrder.setText(sb.toString());
+		}
+	}
+
+	private void setMasterListSortOrder(int newMasterListSortOrder) {
+		if (btnMasterListSortOrder != null) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("Master List Sort Order (");
+			switch (newMasterListSortOrder) {
+			case BY_GROUP_MASTER_LIST_SORT_ORDER:
+				sb.append("By Group)");
+				break;
+
+			case SELECTED_AT_TOP_MASTER_LIST_SORT_ORDER:
+				sb.append("Selected at Top)");
+				break;
+
+			case SELECTED_AT_BOTTOM_MASTER_LIST_SORT_ORDER:
+				sb.append("Selected at Bottom)");
+				break;
+
+			case LAST_USED_MASTER_LIST_SORT_ORDER:
+				sb.append("Last Used)");
+				break;
+
+			default:
+				//ALPHABETICAL_LIST_SORT_ORDER
+				sb.append("Alphabetical)");
+				break;
+			}
+			btnMasterListSortOrder.setText(sb.toString());
 		}
 	}
 
@@ -383,6 +458,8 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 	@Override
 	public void onDestroy() {
 		checkListID("onDestroy");
+		// Unregister since the fragment is about to be closed.
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
 		super.onDestroy();
 	}
 

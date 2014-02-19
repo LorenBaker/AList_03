@@ -67,17 +67,6 @@ public class ListsActivity extends FragmentActivity
 		mTwoFragmentLayout = frag_masterList_placeholder != null
 				&& frag_masterList_placeholder.getVisibility() == View.VISIBLE;
 
-		// If you pass a null value to the constructor, Android calls the onChange() method immediately
-		// – regardless of the current thread used. It’s best to always use a handler when creating the ContentObserver object.
-		/*Handler listTableObserverHandler = new Handler() {
-			@Override
-			public void handleMessage(Message msg) {
-				// TODO code what to do when ListsTable is changed
-
-			}
-		};
-		mListsTableObserver = new ListsTableObserver(listTableObserverHandler);*/
-
 		MyLog.i("Lists_ACTIVITY", "onCreate - ViewPager");
 
 		mAllListsCursor = ListsTable.getAllLists(this);
@@ -264,15 +253,12 @@ public class ListsActivity extends FragmentActivity
 	@Override
 	protected void onResume() {
 		MyLog.i("Lists_ACTIVITY", "onResume");
-
-		//getContentResolver().registerContentObserver(ListsTable.CONTENT_URI, true, mListsTableObserver);
 		super.onResume();
 	}
 
 	@Override
 	protected void onPause() {
 		MyLog.i("Lists_ACTIVITY", "onPause");
-		//getContentResolver().unregisterContentObserver(mListsTableObserver);
 
 		// save activity state
 		SharedPreferences preferences = getSharedPreferences("AList", MODE_PRIVATE);
