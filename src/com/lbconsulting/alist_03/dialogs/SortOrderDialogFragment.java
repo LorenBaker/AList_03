@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ListsTable;
+import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class SortOrderDialogFragment extends DialogFragment {
@@ -135,7 +136,8 @@ public class SortOrderDialogFragment extends DialogFragment {
 			btnApply.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					ContentValues newFieldValues = new ContentValues();
-					Intent intent = new Intent("list_preferences_changed");
+					String key = String.valueOf(mActiveListID) + ListPreferencesFragment.BROADCAST_KEY;
+					Intent intent = new Intent(key);
 					intent.putExtra("listID", mActiveListID);
 					switch (mDialogType) {
 					case LIST_SORT_ORDER:

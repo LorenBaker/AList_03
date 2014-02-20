@@ -43,7 +43,9 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 
 	private long mActiveListID;
 	private ListSettings listSettings;
-	private BroadcastReceiver mMessageReceiver;
+	public static final String BROADCAST_KEY = "list_preferences_changed";
+	private BroadcastReceiver mPreferencesChangedBroadcastReceiver;
+	private String mPreferencesChangedBroadcastKey;
 
 	private LinearLayout llFragListPreferences;
 	private TextView tvListTitle;
@@ -165,7 +167,7 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 
 		// Our handler for received Intents. This will be called whenever an Intent
 		// with an action named "list_preferences_changed" is broadcasted.
-		mMessageReceiver = new BroadcastReceiver() {
+		mPreferencesChangedBroadcastReceiver = new BroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -192,10 +194,11 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 			}
 		};
 		// Register to receive messages.
-		// We are registering an observer (mMessageReceiver) to receive Intents
+		// We are registering an observer (mPreferencesChangedBroadcastReceiver) to receive Intents
 		// with actions named "list_preferences_changed".
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
-				new IntentFilter("list_preferences_changed"));
+		String key = String.valueOf(mActiveListID) + BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mPreferencesChangedBroadcastReceiver,
+				new IntentFilter(key));
 
 		super.onActivityCreated(savedInstanceState);
 	}
@@ -459,7 +462,7 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 	public void onDestroy() {
 		checkListID("onDestroy");
 		// Unregister since the fragment is about to be closed.
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mPreferencesChangedBroadcastReceiver);
 		super.onDestroy();
 	}
 
