@@ -14,6 +14,8 @@ import android.graphics.Color;
 import android.util.Log;
 import android.widget.Spinner;
 
+import com.lbconsulting.alist_03.database.ListsTable;
+
 public class AListUtilities {
 
 	public static final String TAG = "AList";
@@ -165,5 +167,24 @@ public class AListUtilities {
 		String currentDate = formatter.format(timeToFormatInMilliseconds);
 		return currentDate;
 
+	}
+
+	public static int getListsCursorPositon(Cursor listsCursor, long listID) {
+		int listPosition = 0;
+		if (listsCursor != null && listID > 1) {
+			listsCursor.moveToPosition(-1);
+			int position = 0;
+			long id = 0;
+			while (listsCursor.moveToNext()) {
+				id = listsCursor.getLong(listsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
+				if (id == listID) {
+					listPosition = position;
+					break;
+				} else {
+					position++;
+				}
+			}
+		}
+		return listPosition;
 	}
 }

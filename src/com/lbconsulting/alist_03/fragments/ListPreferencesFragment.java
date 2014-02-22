@@ -21,31 +21,27 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.lbconsulting.alist_03.ListPreferencesActivity;
 import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ListsTable;
-import com.lbconsulting.alist_03.dialogs.EditListTitleDialogFragment.EditListTitleDialogListener;
 import com.lbconsulting.alist_03.dialogs.SortOrderDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
-public class ListPreferencesFragment extends Fragment implements EditListTitleDialogListener {
+public class ListPreferencesFragment extends Fragment {
 
-	public static final int ALPHABETICAL_LIST_SORT_ORDER = 0;
-	public static final int BY_GROUP_LIST_SORT_ORDER = 1;
-	public static final int MANUAL_LIST_SORT_ORDER = 2;
-
-	public static final int ALPHABETICAL_MASTER_LIST_SORT_ORDER = 0;
-	public static final int BY_GROUP_MASTER_LIST_SORT_ORDER = 1;
-	public static final int SELECTED_AT_TOP_MASTER_LIST_SORT_ORDER = 2;
-	public static final int SELECTED_AT_BOTTOM_MASTER_LIST_SORT_ORDER = 3;
-	public static final int LAST_USED_MASTER_LIST_SORT_ORDER = 4;
+	public static final int ALPHABETICAL = 0;
+	public static final int BY_GROUP = 1;
+	public static final int MANUAL = 2;
+	public static final int SELECTED_AT_TOP = 3;
+	public static final int SELECTED_AT_BOTTOM = 4;
+	public static final int LAST_USED = 5;
 
 	private long mActiveListID;
 	private ListSettings listSettings;
 	public static final String BROADCAST_KEY = "list_preferences_changed";
 	private BroadcastReceiver mPreferencesChangedBroadcastReceiver;
-	private String mPreferencesChangedBroadcastKey;
 
 	private LinearLayout llFragListPreferences;
 	private TextView tvListTitle;
@@ -171,27 +167,31 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				long listID = intent.getLongExtra("listID", -1);
-				if (listID == mActiveListID) {
-					// there has been a changed in the ListsTable ... 
-					// so refresh listSettings
-					listSettings.RefreshListSettings();
+				//long listID = intent.getLongExtra("listID", -1);
+				//				if (listID == mActiveListID) {
+				// there has been a changed in the ListsTable ... 
+				// so refresh listSettings
+				listSettings.RefreshListSettings();
 
-					// Get extra data included in the Intent
-					if (intent.hasExtra("newListTitle")) {
-						String newListTitle = intent.getStringExtra("newListTitle");
-						setListTitle(newListTitle);
-					}
-					if (intent.hasExtra("newListSortOrder")) {
-						int newListSortOrder = intent.getIntExtra("newListSortOrder", 0);
-						setListSortOrder(newListSortOrder);
-					}
-					if (intent.hasExtra("newMasterListSortOrder")) {
-						int newMasterListSortOrder = intent.getIntExtra("newMasterListSortOrder", 0);
-						setMasterListSortOrder(newMasterListSortOrder);
-					}
+				// Get extra data included in the Intent
+				if (intent.hasExtra("newListTitle")) {
+					String newListTitle = intent.getStringExtra("newListTitle");
+					setListTitle(newListTitle);
+					String key = String.valueOf(mActiveListID)
+							+ ListPreferencesActivity.LIST_TITLE_CHANGE_BROADCAST_KEY;
+					Intent intentForListPreferencesActivity = new Intent(key);
+					LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intentForListPreferencesActivity);
+				}
+				if (intent.hasExtra("newListSortOrder")) {
+					int newListSortOrder = intent.getIntExtra("newListSortOrder", 0);
+					setListSortOrder(newListSortOrder);
+				}
+				if (intent.hasExtra("newMasterListSortOrder")) {
+					int newMasterListSortOrder = intent.getIntExtra("newMasterListSortOrder", 0);
+					setMasterListSortOrder(newMasterListSortOrder);
 				}
 			}
+			//			}
 		};
 		// Register to receive messages.
 		// We are registering an observer (mPreferencesChangedBroadcastReceiver) to receive Intents
@@ -216,10 +216,11 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 			}
 			switch (v.getId()) {
 			case R.id.btnEditListTitle:
+				SortOrderDialogFragment editListTitleDialog = SortOrderDialogFragment
+						.newInstance(mActiveListID, SortOrderDialogFragment.EDIT_LIST_TITLE);
+				editListTitleDialog.show(fm, "dialog_lists_table_update");
 				/*				Toast.makeText(getActivity(), "\"" + "btnEditListTitle" + "\"" + " is under construction.",
 										Toast.LENGTH_SHORT).show();*/
-
-				EditListTitle();
 
 				break;
 
@@ -361,11 +362,11 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 			StringBuilder sb = new StringBuilder();
 			sb.append("List Sort Order (");
 			switch (newListSortOrder) {
-			case BY_GROUP_LIST_SORT_ORDER:
+			case BY_GROUP:
 				sb.append("By Group)");
 				break;
 
-			case MANUAL_LIST_SORT_ORDER:
+			case MANUAL:
 				sb.append("Manual)");
 				break;
 			default:
@@ -382,19 +383,19 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 			StringBuilder sb = new StringBuilder();
 			sb.append("Master List Sort Order (");
 			switch (newMasterListSortOrder) {
-			case BY_GROUP_MASTER_LIST_SORT_ORDER:
+			case BY_GROUP:
 				sb.append("By Group)");
 				break;
 
-			case SELECTED_AT_TOP_MASTER_LIST_SORT_ORDER:
+			case SELECTED_AT_TOP:
 				sb.append("Selected at Top)");
 				break;
 
-			case SELECTED_AT_BOTTOM_MASTER_LIST_SORT_ORDER:
+			case SELECTED_AT_BOTTOM:
 				sb.append("Selected at Bottom)");
 				break;
 
-			case LAST_USED_MASTER_LIST_SORT_ORDER:
+			case LAST_USED:
 				sb.append("Last Used)");
 				break;
 
@@ -405,27 +406,6 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 			}
 			btnMasterListSortOrder.setText(sb.toString());
 		}
-	}
-
-	protected void EditListTitle() {
-		/*// Remove any currently showing dialog
-		FragmentManager fm = getActivity().getSupportFragmentManager();
-		Fragment prev = fm.findFragmentByTag("dialog_edit_list_title");
-		if (prev != null) {
-			FragmentTransaction ft = fm.beginTransaction();
-			ft.remove(prev);
-			ft.commit();
-		}
-		EditListTitleDialogFragment editListTitleDialog = EditListTitleDialogFragment
-				.newInstance(mActiveListID);
-		//editListTitleDialog.setTargetFragment(this, 1);
-
-		editListTitleDialog.show(fm, "dialog_edit_list_title");*/
-
-		/*DialogFragment dialogFrag = MyDialogFragment.newInstance(123);
-		dialogFrag.setTargetFragment(this, DIALOG_FRAGMENT);
-		dialogFrag.show(getFragmentManager().beginTransaction(), "dialog");*/
-
 	}
 
 	@Override
@@ -477,18 +457,18 @@ public class ListPreferencesFragment extends Fragment implements EditListTitleDi
 		checkListID("onViewCreated");
 		super.onViewCreated(view, savedInstanceState);
 	}
-
-	@Override
-	public void onApplyEditListTitleDialog(String newListTitle) {
-		listSettings = new ListSettings(getActivity(), mActiveListID);
-		if (tvListTitle != null) {
-			tvListTitle.setText(newListTitle);
+	/*
+		@Override
+		public void onApplyEditListTitleDialog(String newListTitle) {
+			listSettings = new ListSettings(getActivity(), mActiveListID);
+			if (tvListTitle != null) {
+				tvListTitle.setText(newListTitle);
+			}
 		}
-	}
 
-	@Override
-	public void onCancelEditListTitleDialog() {
-		// Do nothing
-	}
+		@Override
+		public void onCancelEditListTitleDialog() {
+			// Do nothing
+		}*/
 
 }

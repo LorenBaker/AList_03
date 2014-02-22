@@ -1,9 +1,14 @@
 package com.lbconsulting.alist_03;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
@@ -12,15 +17,19 @@ import android.view.View;
 
 import com.lbconsulting.alist_03.adapters.ListPreferencesPagerAdaptor;
 import com.lbconsulting.alist_03.database.ListsTable;
+import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ListPreferencesActivity extends FragmentActivity {
 
 	private long mActiveListID = -1;
+	private int mActiveListPosition = 0;
 	private boolean mTwoFragmentLayout;
 	private ListPreferencesPagerAdaptor mListPreferencesPagerAdapter;
 	private ViewPager mPager;
 	private Cursor mAllListsCursor;
+	private BroadcastReceiver mListTitleChanged;
+	public static final String LIST_TITLE_CHANGE_BROADCAST_KEY = "listTitleChanged";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,13 +44,11 @@ public class ListPreferencesActivity extends FragmentActivity {
 
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
-
-		mAllListsCursor = ListsTable.getAllLists(this);
-
-		mListPreferencesPagerAdapter = new ListPreferencesPagerAdaptor(getSupportFragmentManager(), this);
+		mActiveListPosition = storedStates.getInt("ActiveListPosition", 0);
 
 		mPager = (ViewPager) findViewById(R.id.listPreferencesPager);
-		mPager.setAdapter(mListPreferencesPagerAdapter);
+		SetListPreferencesPagerAdaptor();
+
 		mPager.setOnPageChangeListener(new OnPageChangeListener() {
 
 			@Override
@@ -64,6 +71,21 @@ public class ListPreferencesActivity extends FragmentActivity {
 			}
 		});
 
+		mListTitleChanged = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				SetListPreferencesPagerAdaptor();
+				mActiveListPosition = AListUtilities.getListsCursorPositon(mAllListsCursor, mActiveListID);
+				mPager.setCurrentItem(mActiveListPosition);
+			}
+		};
+		// Register to receive messages.
+		// We are registering an observer (mPreferencesChangedBroadcastReceiver) to receive Intents
+		// with actions named "list_preferences_changed".
+		String key = String.valueOf(mActiveListID) + LIST_TITLE_CHANGE_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mListTitleChanged, new IntentFilter(key));
+
 		if (mTwoFragmentLayout) {
 			LoadColorsFragment();
 		}
@@ -73,6 +95,12 @@ public class ListPreferencesActivity extends FragmentActivity {
 		} else {
 
 		}
+	}
+
+	private void SetListPreferencesPagerAdaptor() {
+		mAllListsCursor = ListsTable.getAllLists(this);
+		mListPreferencesPagerAdapter = new ListPreferencesPagerAdaptor(getSupportFragmentManager(), this);
+		mPager.setAdapter(mListPreferencesPagerAdapter);
 	}
 
 	private void LoadColorsFragment() {
@@ -90,6 +118,7 @@ public class ListPreferencesActivity extends FragmentActivity {
 				MyLog.d("ListPreferences_ACTIVITY", "Exception in getlistID: " + e);
 			}
 			mActiveListID = listID;
+			mActiveListPosition = position;
 		}
 	}
 
@@ -110,6 +139,8 @@ public class ListPreferencesActivity extends FragmentActivity {
 		MyLog.i("ListPreferences_ACTIVITY", "onResume");
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
+		mActiveListPosition = storedStates.getInt("ActiveListPosition", 0);
+		mPager.setCurrentItem(mActiveListPosition);
 		super.onResume();
 	}
 
@@ -119,6 +150,7 @@ public class ListPreferencesActivity extends FragmentActivity {
 		SharedPreferences preferences = getSharedPreferences("AList", MODE_PRIVATE);
 		SharedPreferences.Editor applicationStates = preferences.edit();
 		applicationStates.putLong("ActiveListID", mActiveListID);
+		applicationStates.putInt("ActiveListPosition", mActiveListPosition);
 		applicationStates.commit();
 		super.onPause();
 	}
@@ -144,6 +176,8 @@ public class ListPreferencesActivity extends FragmentActivity {
 	@Override
 	protected void onDestroy() {
 		MyLog.i("ListPreferences_ACTIVITY", "onDestroy");
+		// Unregister since the activity is about to be closed.
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mListTitleChanged);
 		super.onDestroy();
 	}
 

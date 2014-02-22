@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.Toast;
@@ -27,11 +29,13 @@ public class SortOrderDialogFragment extends DialogFragment {
 
 	public static final int LIST_SORT_ORDER = 10;
 	public static final int MASTER_LIST_SORT_ORDER = 20;
+	public static final int EDIT_LIST_TITLE = 30;
 
 	//private SortOrderDialogListener mFinishSortOrderDialogCallback;
 
 	private Button btnApply;
 	private Button btnCancel;
+	private EditText txtEditListTitle;
 
 	private RadioGroup radioGroup_list_sort_order;
 	private RadioGroup radioGroup_master_list_sort_order;
@@ -50,6 +54,7 @@ public class SortOrderDialogFragment extends DialogFragment {
 	private ListSettings listSettings;
 	private int mDialogType;
 	private int mSortOrderResult;
+	private String mListTitle;
 
 	public interface SortOrderDialogListener {
 		void onApplySortOrderDialog(int sortOrderResult);
@@ -79,16 +84,6 @@ public class SortOrderDialogFragment extends DialogFragment {
 	public void onAttach(Activity activity) {
 		MyLog.i("SortOrderDialogFragment", "onAttach");
 		super.onAttach(activity);
-
-		// This makes sure that the container activity has implemented
-		// the callback interface. If not, it throws an exception
-
-		/*		try {
-					mFinishSortOrderDialogCallback = (SortOrderDialogListener) activity;
-				} catch (ClassCastException e) {
-					throw new ClassCastException(activity.toString()
-							+ " must implement SortOrderDialogListener");
-				}*/
 	}
 
 	@Override
@@ -107,9 +102,14 @@ public class SortOrderDialogFragment extends DialogFragment {
 			mDialogType = savedInstanceState.getInt("dialogType", 0);
 		} else {
 			Bundle bundle = getArguments();
-			if (bundle != null)
+			if (bundle != null) {
 				mActiveListID = bundle.getLong("listID", 0);
-			mDialogType = bundle.getInt("dialogType", 0);
+				mDialogType = bundle.getInt("dialogType", 0);
+			}
+		}
+
+		if (mActiveListID > 0) {
+			listSettings = new ListSettings(getActivity(), mActiveListID);
 		}
 
 		// inflate view
@@ -125,6 +125,12 @@ public class SortOrderDialogFragment extends DialogFragment {
 			MyLog.i("SortOrderDialogFragment", "onCreateView: Master List Sort Order");
 			view = inflater.inflate(R.layout.dialog_master_list_sort_order, container);
 			getDialog().setTitle(R.string.dialog_title_master_list_sort_order);
+			break;
+
+		case EDIT_LIST_TITLE:
+			MyLog.i("SortOrderDialogFragment", "onCreateView: Edit List Title");
+			view = inflater.inflate(R.layout.dialog_edit_list_title, container);
+			getDialog().setTitle(R.string.dialog_edit_list_title);
 			break;
 
 		default:
@@ -154,6 +160,15 @@ public class SortOrderDialogFragment extends DialogFragment {
 						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
 						break;
 
+					case EDIT_LIST_TITLE:
+						String newListTitle = txtEditListTitle.getText().toString();
+						newListTitle = newListTitle.trim();
+						newFieldValues.put(ListsTable.COL_LIST_TITLE, newListTitle);
+						listSettings.updateListsTableFieldValues(newFieldValues);
+						intent.putExtra("newListTitle", newListTitle);
+						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+						break;
+
 					default:
 						break;
 					}
@@ -171,54 +186,126 @@ public class SortOrderDialogFragment extends DialogFragment {
 
 			radioGroup_list_sort_order = (RadioGroup) view.findViewById(R.id.radioGroup_list_sort_order);
 			if (radioGroup_list_sort_order != null) {
+				// We're Displaying the List Sort Order dialog
+				mSortOrderResult = listSettings.getListSortOrder();
+				RadioButton rb;
+				switch (mSortOrderResult) {
+				case ListPreferencesFragment.ALPHABETICAL:
+					rb = (RadioButton) view.findViewById(R.id.rbAlphabetical_list);
+					if (rb != null) {
+						rb.setChecked(true);
+					}
+					break;
+				case ListPreferencesFragment.BY_GROUP:
+					rb = (RadioButton) view.findViewById(R.id.rbByGroup_list);
+					if (rb != null) {
+						rb.setChecked(true);
+					}
+					break;
+				case ListPreferencesFragment.MANUAL:
+					rb = (RadioButton) view.findViewById(R.id.rbManual);
+					if (rb != null) {
+						rb.setChecked(true);
+					}
+					break;
+				default:
+					break;
+				}
+
 				radioGroup_list_sort_order.setOnCheckedChangeListener(new OnCheckedChangeListener()
 				{
 					public void onCheckedChanged(RadioGroup group, int checkedId) {
 						switch (checkedId) {
 						case R.id.rbAlphabetical_list:
-							mSortOrderResult = 0;
+							mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 							break;
 						case R.id.rbByGroup_list:
-							mSortOrderResult = 1;
+							mSortOrderResult = ListPreferencesFragment.BY_GROUP;
 							break;
 						case R.id.rbManual:
-							mSortOrderResult = 2;
+							mSortOrderResult = ListPreferencesFragment.MANUAL;
 							break;
 						default:
-							mSortOrderResult = 0;
+							mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 							break;
 						}
 					}
 				});
 			}
+
 			radioGroup_master_list_sort_order = (RadioGroup) view
 					.findViewById(R.id.radioGroup_master_list_sort_order);
 			if (radioGroup_master_list_sort_order != null) {
+				// We're Displaying the Master List Sort Order dialog
+				mSortOrderResult = listSettings.getMasterListSortOrder();
+				RadioButton rb;
+				switch (mSortOrderResult) {
+				case ListPreferencesFragment.ALPHABETICAL:
+					rb = (RadioButton) view.findViewById(R.id.rbAlphabetical_master_list);
+					if (rb != null) {
+						rb.setChecked(true);
+					}
+					break;
+				case ListPreferencesFragment.BY_GROUP:
+					rb = (RadioButton) view.findViewById(R.id.rbByGroup_master_list);
+					if (rb != null) {
+						rb.setChecked(true);
+					}
+					break;
+				case ListPreferencesFragment.SELECTED_AT_TOP:
+					rb = (RadioButton) view.findViewById(R.id.rbSelectedItemsAtTop);
+					if (rb != null) {
+						rb.setChecked(true);
+					}
+					break;
+				case ListPreferencesFragment.SELECTED_AT_BOTTOM:
+					rb = (RadioButton) view.findViewById(R.id.rbSelectedItemsAtBottom);
+					if (rb != null) {
+						rb.setChecked(true);
+					}
+					break;
+				case ListPreferencesFragment.LAST_USED:
+					rb = (RadioButton) view.findViewById(R.id.rbLastUsed);
+					if (rb != null) {
+						rb.setChecked(true);
+					}
+					break;
+				default:
+					break;
+				}
+
 				radioGroup_master_list_sort_order.setOnCheckedChangeListener(new OnCheckedChangeListener()
 				{
 					public void onCheckedChanged(RadioGroup group, int checkedId) {
 						switch (checkedId) {
 						case R.id.rbAlphabetical_master_list:
-							mSortOrderResult = 0;
+							mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 							break;
 						case R.id.rbByGroup_master_list:
-							mSortOrderResult = 1;
+							mSortOrderResult = ListPreferencesFragment.BY_GROUP;
 							break;
 						case R.id.rbSelectedItemsAtTop:
-							mSortOrderResult = 2;
+							mSortOrderResult = ListPreferencesFragment.SELECTED_AT_TOP;
 							break;
 						case R.id.rbSelectedItemsAtBottom:
-							mSortOrderResult = 3;
+							mSortOrderResult = ListPreferencesFragment.SELECTED_AT_BOTTOM;
 							break;
 						case R.id.rbLastUsed:
-							mSortOrderResult = 4;
+							mSortOrderResult = ListPreferencesFragment.LAST_USED;
 							break;
 						default:
-							mSortOrderResult = 0;
+							mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 							break;
 						}
 					}
 				});
+			}
+
+			txtEditListTitle = (EditText) view.findViewById(R.id.txtEditListTitle);
+			if (txtEditListTitle != null) {
+				// We're displaying the Edit List Title dialog
+				mListTitle = listSettings.getListTitle();
+				txtEditListTitle.setText(mListTitle);
 			}
 		}
 
@@ -234,10 +321,37 @@ public class SortOrderDialogFragment extends DialogFragment {
 		if (bundle != null) {
 			mActiveListID = bundle.getLong("listID", 0);
 		}
-		if (mActiveListID > 0) {
-			listSettings = new ListSettings(getActivity(), mActiveListID);
-		}
+		/*		if (mActiveListID > 0) {
+					listSettings = new ListSettings(getActivity(), mActiveListID);
+				}*/
 
+		/*		radioGroup_list_sort_order = (RadioGroup) getActivity().findViewById(R.id.radioGroup_list_sort_order);
+				if (radioGroup_list_sort_order != null) {
+					int currentValue = listSettings.getListSortOrder();
+					RadioButton rb;
+					switch (currentValue) {
+					case ListPreferencesFragment.ALPHABETICAL_LIST_SORT_ORDER:
+						rb = (RadioButton) getActivity().findViewById(R.id.rbAlphabetical_list);
+						if (rb != null) {
+							rb.setChecked(true);
+						}
+						break;
+					case ListPreferencesFragment.BY_GROUP_LIST_SORT_ORDER:
+						rb = (RadioButton) getActivity().findViewById(R.id.rbByGroup_list);
+						if (rb != null) {
+							rb.setChecked(true);
+						}
+						break;
+					case ListPreferencesFragment.MANUAL_LIST_SORT_ORDER:
+						rb = (RadioButton) getActivity().findViewById(R.id.rbManual);
+						if (rb != null) {
+							rb.setChecked(true);
+						}
+						break;
+					default:
+						break;
+					}
+				}*/
 	}
 
 	public void onRadioButtonClicked(View view) {

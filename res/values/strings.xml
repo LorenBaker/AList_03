@@ -36,27 +36,14 @@
     <string name="action_showStoreLocation">Show store location</string>
     <string name="action_groups">Groups</string>
     <string name="action_editStoreName">Edit store name</string>
-
-    <string-array name="dialog_list_sort_order">
-        <item>Alphabetical</item>
-        <item>By Group</item>
-        <item>Manual</item>
-    </string-array>
-    <string-array name="dialog_master_list_sort_order">
-        <item>Alphabetical</item>
-        <item>By Group</item>
-        <item>Selected items at top</item>
-        <item>Selected items at bottom</item>
-        <item>Last used</item>
-    </string-array>
-        <string name="dialog_edit_list_title">Edit List Title</string>
-        <string name="dialog_title_list_sort_order">List Sort Order</string>
-        <string name="dialog_title_master_list_sort_order">Master List Sort Order</string>
-        <string name="sort_option_alphabetical">Alphabetical</string>
-        <string name="sort_option_by_group">By Group</string>
-        <string name="sort_option_selected_items_at_top">Selected Items At Top</string>
-        <string name="sort_option_selected_items_at_bottom">Selected Items At Bottom</string>
-        <string name="sort_option_last_used">Last used</string>
-        <string name="sort_option_manual">Manual</string>
+    <string name="dialog_edit_list_title">Edit List Title</string>
+    <string name="dialog_title_list_sort_order">List Sort Order</string>
+    <string name="dialog_title_master_list_sort_order">Master List Sort Order</string>
+    <string name="sort_option_alphabetical">Alphabetical</string>
+    <string name="sort_option_by_group">By Group</string>
+    <string name="sort_option_selected_items_at_top">Selected Items At Top</string>
+    <string name="sort_option_selected_items_at_bottom">Selected Items At Bottom</string>
+    <string name="sort_option_last_used">Last used</string>
+    <string name="sort_option_manual">Manual</string>
 
 </resources>

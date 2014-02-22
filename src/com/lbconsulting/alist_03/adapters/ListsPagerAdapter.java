@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.fragments.ListsFragment;
@@ -12,7 +12,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 
 //FragmentStatePagerAdapter
 //FragmentPagerAdapter
-public class ListsPagerAdapter extends FragmentPagerAdapter {
+public class ListsPagerAdapter extends FragmentStatePagerAdapter {
 
 	private Cursor mAllListsCursor;
 	private Context mContext;

@@ -45,7 +45,8 @@ public class ListsActivity extends FragmentActivity
 	//private long mActiveListID = NO_ACTIVE_LIST_ID;
 	private long mActiveListID = 2;
 	private long mActiveItemID;
-	private int mLastViewedActivity = -1;
+	private int mActiveListPosition = 0;
+	//private int mLastViewedActivity = -1;
 	private Cursor mAllListsCursor;
 
 	//private ListsTableObserver mListsTableObserver;
@@ -58,6 +59,7 @@ public class ListsActivity extends FragmentActivity
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
 		mActiveItemID = storedStates.getLong("ActiveItemID", -1);
+		mActiveListPosition = storedStates.getInt("ActiveListPosition", 0);
 
 		if (mActiveListID < 2) {
 			SetToFirstList();
@@ -192,6 +194,7 @@ public class ListsActivity extends FragmentActivity
 				MyLog.d("Lists_ACTIVITY", "Exception in getlistID: " + e);
 			}
 			mActiveListID = listID;
+			mActiveListPosition = position;
 		}
 	}
 
@@ -253,6 +256,7 @@ public class ListsActivity extends FragmentActivity
 	@Override
 	protected void onResume() {
 		MyLog.i("Lists_ACTIVITY", "onResume");
+		mPager.setCurrentItem(mActiveListPosition);
 		super.onResume();
 	}
 
@@ -265,6 +269,7 @@ public class ListsActivity extends FragmentActivity
 		SharedPreferences.Editor applicationStates = preferences.edit();
 		applicationStates.putLong("ActiveListID", mActiveListID);
 		applicationStates.putLong("ActiveItemID", mActiveItemID);
+		applicationStates.putInt("ActiveListPosition", mActiveListPosition);
 		applicationStates.commit();
 		super.onPause();
 	}
