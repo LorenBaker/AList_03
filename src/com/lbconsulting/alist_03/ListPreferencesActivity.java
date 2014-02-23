@@ -72,12 +72,11 @@ public class ListPreferencesActivity extends FragmentActivity {
 		});
 
 		mListTitleChanged = new BroadcastReceiver() {
-
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				SetListPreferencesPagerAdaptor();
-				mActiveListPosition = AListUtilities.getListsCursorPositon(mAllListsCursor, mActiveListID);
-				mPager.setCurrentItem(mActiveListPosition);
+				// the list title has changed ...
+				// restart activity to ensure that all lists are shown in alphabetical order
+				ReStartListPreferencesActivity();
 			}
 		};
 		// Register to receive messages.
@@ -89,12 +88,15 @@ public class ListPreferencesActivity extends FragmentActivity {
 		if (mTwoFragmentLayout) {
 			LoadColorsFragment();
 		}
+	}
 
-		if (mTwoFragmentLayout) {
-
-		} else {
-
-		}
+	private void ReStartListPreferencesActivity() {
+		mAllListsCursor = ListsTable.getAllLists(this);
+		mActiveListPosition = AListUtilities.getListsCursorPositon(mAllListsCursor, mActiveListID);
+		Intent intent = new Intent(this, ListPreferencesActivity.class);
+		// prohibit the back button from displaying previous version of this ListPreferencesActivity
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(intent);
 	}
 
 	private void SetListPreferencesPagerAdaptor() {
@@ -115,7 +117,7 @@ public class ListPreferencesActivity extends FragmentActivity {
 				mAllListsCursor.moveToPosition(position);
 				listID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
 			} catch (Exception e) {
-				MyLog.d("ListPreferences_ACTIVITY", "Exception in getlistID: " + e);
+				MyLog.d("ListPreferences_ACTIVITY", "Exception in SetActiveListID: " + e);
 			}
 			mActiveListID = listID;
 			mActiveListPosition = position;

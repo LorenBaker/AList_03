@@ -25,7 +25,7 @@ import com.lbconsulting.alist_03.ListPreferencesActivity;
 import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ListsTable;
-import com.lbconsulting.alist_03.dialogs.SortOrderDialogFragment;
+import com.lbconsulting.alist_03.dialogs.ListsDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -40,7 +40,7 @@ public class ListPreferencesFragment extends Fragment {
 
 	private long mActiveListID;
 	private ListSettings listSettings;
-	public static final String BROADCAST_KEY = "list_preferences_changed";
+	public static final String LIST_PREFERENCES_CHANGED_BROADCAST_KEY = "list_preferences_changed";
 	private BroadcastReceiver mPreferencesChangedBroadcastReceiver;
 
 	private LinearLayout llFragListPreferences;
@@ -167,20 +167,18 @@ public class ListPreferencesFragment extends Fragment {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				//long listID = intent.getLongExtra("listID", -1);
-				//				if (listID == mActiveListID) {
 				// there has been a changed in the ListsTable ... 
 				// so refresh listSettings
 				listSettings.RefreshListSettings();
 
 				// Get extra data included in the Intent
-				if (intent.hasExtra("newListTitle")) {
-					String newListTitle = intent.getStringExtra("newListTitle");
+				if (intent.hasExtra("editedListTitle")) {
+					String newListTitle = intent.getStringExtra("editedListTitle");
 					setListTitle(newListTitle);
 					String key = String.valueOf(mActiveListID)
 							+ ListPreferencesActivity.LIST_TITLE_CHANGE_BROADCAST_KEY;
-					Intent intentForListPreferencesActivity = new Intent(key);
-					LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intentForListPreferencesActivity);
+					Intent intentForActivity = new Intent(key);
+					LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intentForActivity);
 				}
 				if (intent.hasExtra("newListSortOrder")) {
 					int newListSortOrder = intent.getIntExtra("newListSortOrder", 0);
@@ -191,12 +189,12 @@ public class ListPreferencesFragment extends Fragment {
 					setMasterListSortOrder(newMasterListSortOrder);
 				}
 			}
-			//			}
 		};
+
 		// Register to receive messages.
 		// We are registering an observer (mPreferencesChangedBroadcastReceiver) to receive Intents
 		// with actions named "list_preferences_changed".
-		String key = String.valueOf(mActiveListID) + BROADCAST_KEY;
+		String key = String.valueOf(mActiveListID) + LIST_PREFERENCES_CHANGED_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mPreferencesChangedBroadcastReceiver,
 				new IntentFilter(key));
 
@@ -216,17 +214,14 @@ public class ListPreferencesFragment extends Fragment {
 			}
 			switch (v.getId()) {
 			case R.id.btnEditListTitle:
-				SortOrderDialogFragment editListTitleDialog = SortOrderDialogFragment
-						.newInstance(mActiveListID, SortOrderDialogFragment.EDIT_LIST_TITLE);
+				ListsDialogFragment editListTitleDialog = ListsDialogFragment
+						.newInstance(mActiveListID, ListsDialogFragment.EDIT_LIST_TITLE);
 				editListTitleDialog.show(fm, "dialog_lists_table_update");
-				/*				Toast.makeText(getActivity(), "\"" + "btnEditListTitle" + "\"" + " is under construction.",
-										Toast.LENGTH_SHORT).show();*/
-
 				break;
 
 			case R.id.btnListSortOrder:
-				SortOrderDialogFragment editListSortOrderDialog = SortOrderDialogFragment
-						.newInstance(mActiveListID, SortOrderDialogFragment.LIST_SORT_ORDER);
+				ListsDialogFragment editListSortOrderDialog = ListsDialogFragment
+						.newInstance(mActiveListID, ListsDialogFragment.LIST_SORT_ORDER);
 				editListSortOrderDialog.show(fm, "dialog_lists_table_update");
 
 				/*Toast.makeText(getActivity(), "\"" + "btnListSortOrder" + "\"" + " is under construction.",
@@ -234,8 +229,8 @@ public class ListPreferencesFragment extends Fragment {
 				break;
 
 			case R.id.btnMasterListSortOrder:
-				SortOrderDialogFragment editMasterListSortOrderDialog = SortOrderDialogFragment
-						.newInstance(mActiveListID, SortOrderDialogFragment.MASTER_LIST_SORT_ORDER);
+				ListsDialogFragment editMasterListSortOrderDialog = ListsDialogFragment
+						.newInstance(mActiveListID, ListsDialogFragment.MASTER_LIST_SORT_ORDER);
 				editMasterListSortOrderDialog.show(fm, "dialog_lists_table_update");
 
 				/*Toast.makeText(getActivity(), "\"" + "btnMasterListSortOrder" + "\"" + " is under construction.",

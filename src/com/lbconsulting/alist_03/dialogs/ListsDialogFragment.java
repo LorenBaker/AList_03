@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -25,13 +26,12 @@ import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
-public class SortOrderDialogFragment extends DialogFragment {
+public class ListsDialogFragment extends DialogFragment {
 
 	public static final int LIST_SORT_ORDER = 10;
 	public static final int MASTER_LIST_SORT_ORDER = 20;
 	public static final int EDIT_LIST_TITLE = 30;
-
-	//private SortOrderDialogListener mFinishSortOrderDialogCallback;
+	public static final int NEW_LIST = 40;
 
 	private Button btnApply;
 	private Button btnCancel;
@@ -39,16 +39,6 @@ public class SortOrderDialogFragment extends DialogFragment {
 
 	private RadioGroup radioGroup_list_sort_order;
 	private RadioGroup radioGroup_master_list_sort_order;
-
-	/*private RadioButton rbAlphabetical_list;
-	private RadioButton rbByGroup_list;
-	private RadioButton rbManual;
-	
-	private RadioButton rbAlphabetical_master_list;
-	private RadioButton rbByGroup_master_list;
-	private RadioButton rbSelectedItemsAtTop;
-	private RadioButton rbSelectedItemsAtBottom;
-	private RadioButton rbLastUsed;*/
 
 	private long mActiveListID;
 	private ListSettings listSettings;
@@ -60,7 +50,7 @@ public class SortOrderDialogFragment extends DialogFragment {
 		void onApplySortOrderDialog(int sortOrderResult);
 	}
 
-	public SortOrderDialogFragment() {
+	public ListsDialogFragment() {
 		// Empty constructor required for DialogFragment
 	}
 
@@ -70,8 +60,8 @@ public class SortOrderDialogFragment extends DialogFragment {
 	 * @param itemID
 	 * @return SortOrderDialogFragment
 	 */
-	public static SortOrderDialogFragment newInstance(long listID, int dialogType) {
-		SortOrderDialogFragment f = new SortOrderDialogFragment();
+	public static ListsDialogFragment newInstance(long listID, int dialogType) {
+		ListsDialogFragment f = new ListsDialogFragment();
 		// Supply itemID input as an argument.
 		Bundle args = new Bundle();
 		args.putLong("listID", listID);
@@ -133,6 +123,12 @@ public class SortOrderDialogFragment extends DialogFragment {
 			getDialog().setTitle(R.string.dialog_edit_list_title);
 			break;
 
+		case NEW_LIST:
+			MyLog.i("SortOrderDialogFragment", "onCreateView: New List");
+			view = inflater.inflate(R.layout.dialog_edit_list_title, container);
+			getDialog().setTitle(R.string.dialog_new_list_title);
+			break;
+
 		default:
 			break;
 		}
@@ -142,7 +138,8 @@ public class SortOrderDialogFragment extends DialogFragment {
 			btnApply.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					ContentValues newFieldValues = new ContentValues();
-					String key = String.valueOf(mActiveListID) + ListPreferencesFragment.BROADCAST_KEY;
+					String key = String.valueOf(mActiveListID)
+							+ ListPreferencesFragment.LIST_PREFERENCES_CHANGED_BROADCAST_KEY;
 					Intent intent = new Intent(key);
 					intent.putExtra("listID", mActiveListID);
 					switch (mDialogType) {
@@ -165,7 +162,15 @@ public class SortOrderDialogFragment extends DialogFragment {
 						newListTitle = newListTitle.trim();
 						newFieldValues.put(ListsTable.COL_LIST_TITLE, newListTitle);
 						listSettings.updateListsTableFieldValues(newFieldValues);
-						intent.putExtra("newListTitle", newListTitle);
+						intent.putExtra("editedListTitle", newListTitle);
+						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+						break;
+
+					case NEW_LIST:
+						newListTitle = txtEditListTitle.getText().toString();
+						newListTitle = newListTitle.trim();
+						long newListID = ListsTable.CreateNewList(getActivity(), newListTitle);
+						intent.putExtra("newListID", newListID);
 						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
 						break;
 
@@ -303,9 +308,25 @@ public class SortOrderDialogFragment extends DialogFragment {
 
 			txtEditListTitle = (EditText) view.findViewById(R.id.txtEditListTitle);
 			if (txtEditListTitle != null) {
-				// We're displaying the Edit List Title dialog
-				mListTitle = listSettings.getListTitle();
-				txtEditListTitle.setText(mListTitle);
+				switch (mDialogType) {
+				case EDIT_LIST_TITLE:
+					// We're displaying the Edit List Title dialog
+					mListTitle = listSettings.getListTitle();
+					txtEditListTitle.setText(mListTitle);
+					break;
+
+				case NEW_LIST:
+					// We're creating a new List
+					break;
+
+				default:
+					break;
+
+				}
+
+				if (txtEditListTitle.requestFocus()) {
+					getDialog().getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+				}
 			}
 		}
 
@@ -321,65 +342,34 @@ public class SortOrderDialogFragment extends DialogFragment {
 		if (bundle != null) {
 			mActiveListID = bundle.getLong("listID", 0);
 		}
-		/*		if (mActiveListID > 0) {
-					listSettings = new ListSettings(getActivity(), mActiveListID);
-				}*/
-
-		/*		radioGroup_list_sort_order = (RadioGroup) getActivity().findViewById(R.id.radioGroup_list_sort_order);
-				if (radioGroup_list_sort_order != null) {
-					int currentValue = listSettings.getListSortOrder();
-					RadioButton rb;
-					switch (currentValue) {
-					case ListPreferencesFragment.ALPHABETICAL_LIST_SORT_ORDER:
-						rb = (RadioButton) getActivity().findViewById(R.id.rbAlphabetical_list);
-						if (rb != null) {
-							rb.setChecked(true);
-						}
-						break;
-					case ListPreferencesFragment.BY_GROUP_LIST_SORT_ORDER:
-						rb = (RadioButton) getActivity().findViewById(R.id.rbByGroup_list);
-						if (rb != null) {
-							rb.setChecked(true);
-						}
-						break;
-					case ListPreferencesFragment.MANUAL_LIST_SORT_ORDER:
-						rb = (RadioButton) getActivity().findViewById(R.id.rbManual);
-						if (rb != null) {
-							rb.setChecked(true);
-						}
-						break;
-					default:
-						break;
-					}
-				}*/
 	}
 
 	public void onRadioButtonClicked(View view) {
 		MyLog.i("SortOrderDialogFragment", "onRadioButtonClicked; view id = " + view.getId());
 		switch (view.getId()) {
 		case R.id.rbAlphabetical_list:
-			mSortOrderResult = 0;
+			mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 			break;
 		case R.id.rbByGroup_list:
-			mSortOrderResult = 1;
+			mSortOrderResult = ListPreferencesFragment.BY_GROUP;
 			break;
 		case R.id.rbManual:
-			mSortOrderResult = 2;
+			mSortOrderResult = ListPreferencesFragment.MANUAL;
 			break;
 		case R.id.rbAlphabetical_master_list:
-			mSortOrderResult = 0;
+			mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 			break;
 		case R.id.rbByGroup_master_list:
-			mSortOrderResult = 1;
+			mSortOrderResult = ListPreferencesFragment.BY_GROUP;
 			break;
 		case R.id.rbSelectedItemsAtTop:
-			mSortOrderResult = 2;
+			mSortOrderResult = ListPreferencesFragment.SELECTED_AT_TOP;
 			break;
 		case R.id.rbSelectedItemsAtBottom:
-			mSortOrderResult = 3;
+			mSortOrderResult = ListPreferencesFragment.SELECTED_AT_BOTTOM;
 			break;
 		case R.id.rbLastUsed:
-			mSortOrderResult = 4;
+			mSortOrderResult = ListPreferencesFragment.LAST_USED;
 			break;
 		default:
 			break;

@@ -47,6 +47,9 @@ public class ListsTable {
 	public static final String COL_LISTVIEW_FIRST_VISIBLE_POSITION = "listViewFirstVisiblePosition";//19
 	public static final String COL_LISTVIEW_TOP = "listViewTop";//20
 
+	public static final String COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION = "masterListViewFirstVisiblePosition";//21
+	public static final String COL_MASTER_LISTVIEW_TOP = "masterListViewTop";//22
+
 	public static final String[] PROJECTION_ALL = { COL_LIST_ID, COL_LIST_TITLE, COL_STORE_ID,
 			COL_SHOW_GROUPS_IN_LISTS_FRAGMENT, COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT, COL_SHOW_STORES,
 			COL_DELETE_NOTE_UPON_DESELECTING_ITEM,
@@ -56,7 +59,8 @@ public class ListsTable {
 			COL_LIST_BACKGROUND_COLOR, COL_ITEM_NORMAL_TEXT_COLOR, COL_ITEM_STRIKEOUT_TEXT_COLOR,
 			COL_MASTER_LIST_BACKGROUND_COLOR, COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
 			COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
-			COL_LISTVIEW_FIRST_VISIBLE_POSITION, COL_LISTVIEW_TOP
+			COL_LISTVIEW_FIRST_VISIBLE_POSITION, COL_LISTVIEW_TOP,
+			COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION, COL_MASTER_LISTVIEW_TOP
 	};
 
 	public static final String CONTENT_PATH = TABLE_LISTS;
@@ -89,7 +93,6 @@ public class ListsTable {
 			+ COL_LIST_SORT_ORDER + " integer default 0, " // default Alphabetically=0
 			+ COL_MASTER_LIST_SORT_ORDER + " integer default 0, " // default Alphabetically=0
 
-			// TODO: set default colors
 			+ COL_TITLE_BACKGROUND_COLOR + " integer default -1, "
 			+ COL_TITLE_TEXT_COLOR + " integer default -1, "
 
@@ -105,7 +108,10 @@ public class ListsTable {
 			+ COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR + " integer default -1, "
 
 			+ COL_LISTVIEW_FIRST_VISIBLE_POSITION + " integer default 0, "
-			+ COL_LISTVIEW_TOP + " integer default 0"
+			+ COL_LISTVIEW_TOP + " integer default 0,"
+
+			+ COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION + " integer default 0, "
+			+ COL_MASTER_LISTVIEW_TOP + " integer default 0"
 			+ ");";
 
 	public static void onCreate(SQLiteDatabase database) {

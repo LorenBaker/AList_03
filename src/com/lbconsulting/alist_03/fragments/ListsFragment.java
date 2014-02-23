@@ -21,7 +21,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.lbconsulting.alist_03.R;
-import com.lbconsulting.alist_03.adapters.GroupsSpinnerCursorAdapter;
 import com.lbconsulting.alist_03.adapters.ItemsCursorAdaptor;
 import com.lbconsulting.alist_03.adapters.StoresSpinnerCursorAdapter;
 import com.lbconsulting.alist_03.classes.ListSettings;
@@ -52,8 +51,6 @@ public class ListsFragment extends Fragment
 	private String[] loaderNames = { "Lists_Loader", "Items_Loader", "Stores_Loader", "Groups_Loader" };
 
 	private long mActiveListID = -9999;
-	/*	private int mListViewFirstVisiblePosition;
-		private int mListViewTop;*/
 
 	private ListSettings listSettings;
 
@@ -61,14 +58,13 @@ public class ListsFragment extends Fragment
 	private TextView mListTitle;
 	private ListView mItemsListView;
 	private Spinner mStoreSpinner;
-	private Spinner mGroupsSpinner;
 
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
 	private LoaderManager.LoaderCallbacks<Cursor> mListsFragmentCallbacks;
 	private ItemsCursorAdaptor mItemsCursorAdaptor;
 	private StoresSpinnerCursorAdapter mStoresSpinnerCursorAdapter;
-	private GroupsSpinnerCursorAdapter mGroupsSpinnerCursorAdapter;
+	//private GroupsSpinnerCursorAdapter mGroupsSpinnerCursorAdapter;
 
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
 
@@ -221,6 +217,7 @@ public class ListsFragment extends Fragment
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
+		checkListID("onActivityCreated");
 		mLoaderManager = getLoaderManager();
 		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 		mLoaderManager.initLoader(STORES_LOADER_ID, null, mListsFragmentCallbacks);
@@ -267,7 +264,6 @@ public class ListsFragment extends Fragment
 		// save ItemsListView position
 		View v = mItemsListView.getChildAt(0);
 		int ListViewTop = (v == null) ? 0 : v.getTop();
-
 		ContentValues newFieldValues = new ContentValues();
 		newFieldValues.put(ListsTable.COL_LISTVIEW_FIRST_VISIBLE_POSITION, mItemsListView.getFirstVisiblePosition());
 		newFieldValues.put(ListsTable.COL_LISTVIEW_TOP, ListViewTop);

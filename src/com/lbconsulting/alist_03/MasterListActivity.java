@@ -1,13 +1,14 @@
 package com.lbconsulting.alist_03;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.fragments.MasterListFragment;
 import com.lbconsulting.alist_03.fragments.MasterListFragment.OnMasterListItemLongClickListener;
 import com.lbconsulting.alist_03.utilities.MyLog;
@@ -21,31 +22,25 @@ public class MasterListActivity extends FragmentActivity implements OnMasterList
 	private long NO_ACTIVE_LIST_ID = 0;
 	private long mActiveListID = NO_ACTIVE_LIST_ID;
 	private long mActiveItemID;
+	private int mActiveListPosition = 0;
+
+	private Cursor mAllListsCursor;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		// This activity only shown in portrait orientation
-		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-			finish();
-			return;
-		}
-
 		MyLog.i("MasterList_ACTIVITY", "onCreate");
-
-		// MTM You really shouldn't do this... it is better to support it with portrait in landscape
-		// - then do nothing at all.  It really breaks convention.
-		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-			finish();
-			return;
-		}
 		setContentView(R.layout.activity_master_list);
-		// get the selected task id
-		Intent intent = getIntent();
-		mActiveListID = intent.getLongExtra("ActiveListID", 0);
 
-		// create the task details fragment
+		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
+		mActiveListID = storedStates.getLong("ActiveListID", -1);
+		mActiveItemID = storedStates.getLong("ActiveItemID", -1);
+		mActiveListPosition = storedStates.getInt("ActiveListPosition", 0);
+
+		mAllListsCursor = ListsTable.getAllLists(this);
+
+		// create the master list fragment
 		mMasterListFragment = MasterListFragment.newInstance(mActiveListID);
 		// add the fragment
 		this.getSupportFragmentManager().beginTransaction()
@@ -114,6 +109,7 @@ public class MasterListActivity extends FragmentActivity implements OnMasterList
 	@Override
 	public void onMasterListItemLongClick(int position, long itemID) {
 		// TODO Edit Item ... Edit Item Dialog
+		Toast.makeText(this, " Master List: Edit Item is under construction.", Toast.LENGTH_SHORT).show();
 		mActiveListID = itemID;
 
 	}

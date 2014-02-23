@@ -1,6 +1,7 @@
 package com.lbconsulting.alist_03.fragments;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
@@ -8,9 +9,14 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
+import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -19,11 +25,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.lbconsulting.alist_03.R;
-import com.lbconsulting.alist_03.adapters.GroupsSpinnerCursorAdapter;
 import com.lbconsulting.alist_03.adapters.MasterListCursorAdaptor;
 import com.lbconsulting.alist_03.classes.ListSettings;
-import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.ItemsTable;
+import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class MasterListFragment extends Fragment
@@ -40,29 +45,26 @@ public class MasterListFragment extends Fragment
 	//private static final int LISTS_LOADER_ID = 1;
 	private static final int ITEMS_LOADER_ID = 2;
 	//private static final int STORES_LOADER_ID = 3;
-	private static final int GROUPS_LOADER_ID = 4;
+	//private static final int GROUPS_LOADER_ID = 4;
 	private String[] loaderNames = { "Lists_Loader", "Items_Loader", "Stores_Loader", "Groups_Loader" };
 
 	private long mActiveListID;
 	private long mActiveItemID;
-	private int mMasterListViewFirstVisiblePosition;
-	private int mMasterListViewTop;
+	///private int mMasterListViewFirstVisiblePosition;
+	//private int mMasterListViewTop;
 
 	private ListSettings listSettings;
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
 
-	//private Cursor mList;
 	private EditText txtItemName;
 	private Button btnAddToMasterList;
 	private EditText txtItemNote;
-	//private Spinner spnGroupSpinner;
 	private ListView lvItemsListView;
 
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
 	private LoaderManager.LoaderCallbacks<Cursor> mMasterListFragmentCallbacks;
 	private MasterListCursorAdaptor mMasterListCursorAdaptor;
-	private GroupsSpinnerCursorAdapter mGroupsSpinnerCursorAdapter;
 
 	public MasterListFragment() {
 		// Empty constructor
@@ -104,61 +106,166 @@ public class MasterListFragment extends Fragment
 	}
 
 	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		MyLog.i("MasterListFragment", "onSaveInstanceState");
+		// Store our listID
+		outState.putLong("listID", this.mActiveListID);
+		super.onSaveInstanceState(outState);
+	}
+
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		MyLog.i("MasterListFragment", "onCreateView");
+
+		if (savedInstanceState != null && savedInstanceState.containsKey("listID")) {
+			mActiveListID = savedInstanceState.getLong("listID", 0);
+		} else {
+			Bundle bundle = getArguments();
+			if (bundle != null)
+				mActiveListID = bundle.getLong("listID", 0);
+		}
+
 		View view = inflater.inflate(R.layout.frag_master_list, container, false);
+
+		listSettings = new ListSettings(getActivity(), mActiveListID);
+
+		txtItemName = (EditText) view.findViewById(R.id.txtItemName);
+		btnAddToMasterList = (Button) view.findViewById(R.id.btnAddToMasterList);
+		txtItemNote = (EditText) view.findViewById(R.id.txtItemNote);
+
+		lvItemsListView = (ListView) view.findViewById(R.id.lvItemsListView);
+		mMasterListCursorAdaptor = new MasterListCursorAdaptor(getActivity(), null, 0, listSettings);
+		lvItemsListView.setAdapter(mMasterListCursorAdaptor);
+		lvItemsListView.setBackgroundColor(this.listSettings.getMasterListBackgroundColor());
+
+		mMasterListFragmentCallbacks = this;
+
+		lvItemsListView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				mActiveItemID = id;
+				ItemsTable.ToggleSelection(getActivity(), id);
+				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
+			}
+		});
+
+		lvItemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+				mActiveItemID = id;
+				mMasterListItemLongClickCallback.onMasterListItemLongClick(position, id);
+				return true;
+			}
+		});
+
 		return view;
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		MyLog.i("MasterListFragment", "onActivityCreated");
-		super.onActivityCreated(savedInstanceState);
 
-		View frag_masterList_placeholder = getActivity().findViewById(R.id.frag_masterList_placeholder);
-		if (frag_masterList_placeholder != null) {
-			// there is a place for the masterListFragment
-			Bundle bundle = this.getArguments();
-			if (bundle != null) {
-				mActiveListID = bundle.getLong("listID", 0);
+		// setup txtListItem Listeners
+		txtItemName.setOnKeyListener(new OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				boolean result = false;
+				if ((event.getAction() == KeyEvent.ACTION_DOWN)
+						&& (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.FLAG_EDITOR_ACTION || keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
+
+					String newItemName = txtItemName.getText().toString().trim();
+					if (!newItemName.isEmpty()) {
+						long newItemNameID = ItemsTable.CreateNewItem(getActivity(), mActiveListID, newItemName);
+						ItemsTable.SelectItem(getActivity(), newItemNameID, true);
+
+						String newItemNote = txtItemNote.getText().toString().trim();
+						if (!newItemNote.isEmpty()) {
+							ContentValues newFieldValues = new ContentValues();
+							newFieldValues.put(ItemsTable.COL_ITEM_NOTE, newItemNote);
+							ItemsTable.UpdateItemFieldValues(getActivity(), newItemNameID, newFieldValues);
+						}
+					}
+					txtItemNote.setText("");
+					txtItemName.setText("");
+
+					txtItemName.post(new Runnable()
+					{
+						public void run()
+						{
+							txtItemName.requestFocus();
+						}
+					});
+
+					getActivity().getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+					result = true;
+				}
+				return result;
+			}
+		});
+
+		txtItemName.addTextChangedListener(new TextWatcher() {
+			// filter master list as the user inputs text
+			@Override
+			public void afterTextChanged(Editable s) {
+				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
 			}
 
-			listSettings = new ListSettings(getActivity(), mActiveListID);
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+				// Do nothing
 
-			txtItemName = (EditText) getActivity().findViewById(R.id.txtItemName);
-			btnAddToMasterList = (Button) getActivity().findViewById(R.id.btnAddToMasterList);
-			txtItemNote = (EditText) getActivity().findViewById(R.id.txtItemNote);
+			}
 
-			lvItemsListView = (ListView) getActivity().findViewById(R.id.lvItemsListView);
-			mMasterListCursorAdaptor = new MasterListCursorAdaptor(getActivity(), null, 0, listSettings);
-			lvItemsListView.setAdapter(mMasterListCursorAdaptor);
-			lvItemsListView.setBackgroundColor(this.listSettings.getMasterListBackgroundColor());
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				// Do nothing
 
-			mMasterListFragmentCallbacks = this;
+			}
 
-			mLoaderManager = getLoaderManager();
-			mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
-			//mLoaderManager.initLoader(GROUPS_LOADER_ID, null, mMasterListFragmentCallbacks);
+		});
 
-			lvItemsListView.setOnItemClickListener(new OnItemClickListener() {
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					mActiveItemID = id;
-					ItemsTable.ToggleSelection(getActivity(), id);
-					mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
-				}
-			});
+		/*		txtItemNote.setOnKeyListener(new OnKeyListener() {
+					@Override
+					public boolean onKey(View v, int keyCode, KeyEvent event) {
+						boolean result = false;
+						if ((event.getAction() == KeyEvent.ACTION_DOWN)
+								&& (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.FLAG_EDITOR_ACTION || keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
 
-			lvItemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+							String newItemName = txtItemName.getText().toString().trim();
+							if (!newItemName.isEmpty()) {
+								long newItemNameID = ItemsTable.CreateNewItem(getActivity(), mActiveListID, newItemName);
+								ItemsTable.SelectItem(getActivity(), newItemNameID, true);
 
-				@Override
-				public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-					mActiveItemID = id;
-					mMasterListItemLongClickCallback.onMasterListItemLongClick(position, id);
-					return true;
-				}
-			});
-		}
+								String newItemNote = txtItemNote.getText().toString().trim();
+								if (!newItemNote.isEmpty()) {
+									ContentValues newFieldValues = new ContentValues();
+									newFieldValues.put(ItemsTable.COL_ITEM_NOTE, newItemNote);
+									ItemsTable.UpdateItemFieldValues(getActivity(), newItemNameID, newFieldValues);
+								}
+							}
+							txtItemNote.setText("");
+							txtItemName.setText("");
+
+							txtItemName.post(new Runnable()
+							{
+								public void run()
+								{
+									txtItemName.requestFocus();
+								}
+							});
+
+							getActivity().getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+							result = true;
+						}
+						return result;
+					}
+				});*/
+
+		MyLog.i("MasterListFragment", "onActivityCreated");
+		mLoaderManager = getLoaderManager();
+		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
+		super.onActivityCreated(savedInstanceState);
+
 	}
 
 	@Override
@@ -177,6 +284,15 @@ public class MasterListFragment extends Fragment
 	@Override
 	public void onPause() {
 		MyLog.i("MasterListFragment", "onPause");
+
+		// save ItemsListView position
+		View v = lvItemsListView.getChildAt(0);
+		int ListViewTop = (v == null) ? 0 : v.getTop();
+		ContentValues newFieldValues = new ContentValues();
+		newFieldValues.put(ListsTable.COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION,
+				lvItemsListView.getFirstVisiblePosition());
+		newFieldValues.put(ListsTable.COL_MASTER_LISTVIEW_TOP, ListViewTop);
+		ListsTable.UpdateListsTableFieldValues(getActivity(), mActiveListID, newFieldValues);
 		super.onPause();
 	}
 
@@ -225,9 +341,44 @@ public class MasterListFragment extends Fragment
 		switch (id) {
 
 		case ITEMS_LOADER_ID:
+
+			int masterListSortOrder = listSettings.getMasterListSortOrder();
+			String sortOrder = "";
+			switch (masterListSortOrder) {
+			case ListPreferencesFragment.ALPHABETICAL:
+				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+				break;
+
+			case ListPreferencesFragment.BY_GROUP:
+				sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
+				break;
+
+			case ListPreferencesFragment.SELECTED_AT_TOP:
+				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
+				break;
+
+			case ListPreferencesFragment.SELECTED_AT_BOTTOM:
+				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
+				break;
+
+			case ListPreferencesFragment.LAST_USED:
+				sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
+				break;
+
+			default:
+				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+				break;
+			}
+
+			// filter the cursor based on user typed text in txtListItem and the activeListTypeID
+			String itemNameText = txtItemName.getText().toString().trim();
+			String selection = null;
+			if (!itemNameText.isEmpty()) {
+				selection = ItemsTable.COL_ITEM_NAME + " Like '%" + itemNameText + "%'";
+			}
+
 			try {
-				cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID,
-						ItemsTable.SORT_ORDER_ITEM_NAME);
+				cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
 
 			} catch (SQLiteException e) {
 				MyLog.e("MasterListFragment: onCreateLoader SQLiteException: ", e.toString());
@@ -239,69 +390,26 @@ public class MasterListFragment extends Fragment
 			}
 			break;
 
-		case GROUPS_LOADER_ID:
-			try {
-				cursorLoader = GroupsTable.getAllGroupsInList(getActivity(), mActiveListID,
-						GroupsTable.SORT_ORDER_GROUP);
+		/*		case GROUPS_LOADER_ID:
+					try {
+						cursorLoader = GroupsTable.getAllGroupsInList(getActivity(), mActiveListID,
+								GroupsTable.SORT_ORDER_GROUP);
 
-			} catch (SQLiteException e) {
-				MyLog.e("MasterListFragment: onCreateLoader SQLiteException: ", e.toString());
-				return null;
+					} catch (SQLiteException e) {
+						MyLog.e("MasterListFragment: onCreateLoader SQLiteException: ", e.toString());
+						return null;
 
-			} catch (IllegalArgumentException e) {
-				MyLog.e("MasterListFragment: onCreateLoader IllegalArgumentException: ", e.toString());
-				return null;
-			}
-			break;
+					} catch (IllegalArgumentException e) {
+						MyLog.e("MasterListFragment: onCreateLoader IllegalArgumentException: ", e.toString());
+						return null;
+					}
+					break;*/
 
 		default:
 			return null;
 		}
 		return cursorLoader;
 	}
-
-	/*	@Override
-		public void onLoadFinished(Loader<Cursor> loader, Cursor newCursor) {
-			MyLog.i("MasterListFragment", "onLoadFinished; loader id = " + loader.getId());
-			// The asynchronous load is complete and the newCursor is now available for use. 
-			// Update the masterListAdapter to show the changed data.
-			switch (loader.getId()) {
-			case ITEMS_LOADER_ID:
-				mMasterListCursorAdaptor.swapCursor(newCursor);
-
-				// TODO add two new fields in ListsTable for Master List View position
-				if (flag_FirstTimeLoadingItemDataSinceOnResume) {
-					lvItemsListView.setSelectionFromTop(
-							listSettings.getListViewFirstVisiblePosition(), listSettings.getListViewTop());
-					flag_FirstTimeLoadingItemDataSinceOnResume=false;
-				}
-				break;
-
-			case GROUPS_LOADER_ID:
-				mGroupsSpinnerCursorAdapter.swapCursor(newCursor);
-				break;
-			default:
-				break;
-			}
-		}*/
-
-	/*	@Override
-		public void onLoaderReset(Loader<Cursor> loader) {
-			MyLog.i("ListsFragment", "onLoaderReset; loader id = " + loader.getId());
-			switch (loader.getId()) {
-			case ITEMS_LOADER_ID:
-				mMasterListCursorAdaptor.swapCursor(null);
-				break;
-
-			case GROUPS_LOADER_ID:
-				mGroupsSpinnerCursorAdapter.swapCursor(null);
-				break;
-
-			default:
-				break;
-			}
-
-		}*/
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor newCursor) {
@@ -313,18 +421,13 @@ public class MasterListFragment extends Fragment
 		switch (loader.getId()) {
 		case ITEMS_LOADER_ID:
 			mMasterListCursorAdaptor.swapCursor(newCursor);
-
-			// TODO add two new fields in ListsTable for Master List View position
-			/*if (flag_FirstTimeLoadingItemDataSinceOnResume) {
+			if (flag_FirstTimeLoadingItemDataSinceOnResume) {
 				lvItemsListView.setSelectionFromTop(
-						listSettings.getListViewFirstVisiblePosition(), listSettings.getListViewTop());
-				flag_FirstTimeLoadingItemDataSinceOnResume=false;
-			}*/
+						listSettings.getMasterListViewFirstVisiblePosition(), listSettings.getMasterListViewTop());
+				flag_FirstTimeLoadingItemDataSinceOnResume = false;
+			}
 			break;
 
-		case GROUPS_LOADER_ID:
-			mGroupsSpinnerCursorAdapter.swapCursor(newCursor);
-			break;
 		default:
 			break;
 		}
@@ -338,10 +441,6 @@ public class MasterListFragment extends Fragment
 		switch (loader.getId()) {
 		case ITEMS_LOADER_ID:
 			mMasterListCursorAdaptor.swapCursor(null);
-			break;
-
-		case GROUPS_LOADER_ID:
-			mGroupsSpinnerCursorAdapter.swapCursor(null);
 			break;
 
 		default:

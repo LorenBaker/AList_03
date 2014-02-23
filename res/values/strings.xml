@@ -37,6 +37,7 @@
     <string name="action_groups">Groups</string>
     <string name="action_editStoreName">Edit store name</string>
     <string name="dialog_edit_list_title">Edit List Title</string>
+    <string name="dialog_new_list_title">New List Title</string>
     <string name="dialog_title_list_sort_order">List Sort Order</string>
     <string name="dialog_title_master_list_sort_order">Master List Sort Order</string>
     <string name="sort_option_alphabetical">Alphabetical</string>

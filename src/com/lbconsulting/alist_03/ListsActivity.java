@@ -1,6 +1,9 @@
 package com.lbconsulting.alist_03;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -8,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
@@ -20,36 +24,30 @@ import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
 import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment.EditItemDialogListener;
-import com.lbconsulting.alist_03.dialogs.EditListTitleDialogFragment;
-import com.lbconsulting.alist_03.dialogs.EditListTitleDialogFragment.EditListTitleDialogListener;
-import com.lbconsulting.alist_03.fragments.ListsFragment;
+import com.lbconsulting.alist_03.dialogs.ListsDialogFragment;
+import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
 import com.lbconsulting.alist_03.fragments.ListsFragment.OnListItemLongClickListener;
 import com.lbconsulting.alist_03.fragments.MasterListFragment;
 import com.lbconsulting.alist_03.fragments.MasterListFragment.OnMasterListItemLongClickListener;
+import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ListsActivity extends FragmentActivity
-		implements OnListItemLongClickListener, EditItemDialogListener, EditListTitleDialogListener,
-		OnMasterListItemLongClickListener {
+		implements OnListItemLongClickListener, EditItemDialogListener, OnMasterListItemLongClickListener {
 
-	//private PagerAdapter mFragmentPager;
 	private ListsPagerAdapter mListsPagerAdapter;
 	private ViewPager mPager;
 
-	private ListsFragment mListsFragment;
 	private MasterListFragment mMasterListFragment;
 	private Boolean mTwoFragmentLayout = false;
-	//private Bundle mActiveListID_Bundle;
 
 	private long NO_ACTIVE_LIST_ID = 0;
-	//private long mActiveListID = NO_ACTIVE_LIST_ID;
-	private long mActiveListID = 2;
+	private long mActiveListID = NO_ACTIVE_LIST_ID;
 	private long mActiveItemID;
 	private int mActiveListPosition = 0;
-	//private int mLastViewedActivity = -1;
-	private Cursor mAllListsCursor;
 
-	//private ListsTableObserver mListsTableObserver;
+	private Cursor mAllListsCursor;
+	private BroadcastReceiver mListTitleChanged;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +86,9 @@ public class ListsActivity extends FragmentActivity
 
 			@Override
 			public void onPageSelected(int position) {
+				// A list page has been selected
 				SetActiveListID(position);
+				SetActiveListBroadcastReceivers();
 				MyLog.d("Lists_ACTIVITY", "onPageSelected() - position = " + position + " ; listID = " + mActiveListID);
 
 				if (mTwoFragmentLayout) {
@@ -97,58 +97,62 @@ public class ListsActivity extends FragmentActivity
 			}
 		});
 
+		mListTitleChanged = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				if (intent.hasExtra("editedListTitle")) {
+					// the list title has changed ...
+				}
+
+				if (intent.hasExtra("newListID")) {
+					// a new list has been created ...
+					mActiveListID = intent.getLongExtra("newListID", 0);
+				}
+
+				// restart activity to ensure that all lists are shown in alphabetical order
+				ReStartListsActivity();
+			}
+		};
+		// Register to receive messages.
+		String key = String.valueOf(mActiveListID) + ListPreferencesFragment.LIST_PREFERENCES_CHANGED_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mListTitleChanged, new IntentFilter(key));
+
 		if (mTwoFragmentLayout) {
 			LoadMasterListFragment();
 		}
+	}
 
-		/*		MyLog.i("Lists_ACTIVITY", "onCreate");
-				setContentView(R.layout.activity_lists);
+	private void SetActiveListID(int position) {
+		if (mAllListsCursor != null) {
+			long listID = -1;
+			try {
+				mAllListsCursor.moveToPosition(position);
+				listID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
+			} catch (Exception e) {
+				MyLog.d("Lists_ACTIVITY", "Exception in getlistID: " + e);
+			}
+			mActiveListID = listID;
+			mActiveListPosition = position;
+		}
+	}
 
-				// Add ListsFragment
-				mListsFragment = (ListsFragment) this.getSupportFragmentManager().findFragmentByTag("ListsFragment");
-				if (mListsFragment == null) {
-					// create the fragment
-					mListsFragment = ListsFragment.newInstance(mActiveListID);
+	private void SetActiveListBroadcastReceivers() {
+		// Unregister old receiver
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mListTitleChanged);
 
-					MyLog.i("Lists_ACTIVITY", "onCreate. New ListsFragment created.");
-					// add the fragment to the Activity
-					this.getSupportFragmentManager().beginTransaction()
-							.add(R.id.frag_lists_placeholder, mListsFragment, "ListsFragment")
-							.commit();
-					MyLog.i("Lists_ACTIVITY", "onCreate. ListsFragment add.");
-				}
+		// Register new receiver
+		String key = String.valueOf(mActiveListID) + ListPreferencesFragment.LIST_PREFERENCES_CHANGED_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mListTitleChanged, new IntentFilter(key));
 
-				View fragmentMasterListPlaceholder = this.findViewById(R.id.frag_masterList_placeholder);
-				mTwoFragmentLayout = fragmentMasterListPlaceholder != null
-						&& fragmentMasterListPlaceholder.getVisibility() == View.VISIBLE;
+	}
 
-				if (mTwoFragmentLayout) {
-
-					mMasterListFragment = (MasterListFragment) this.getSupportFragmentManager()
-							.findFragmentByTag("MasterListFragment");
-					if (mMasterListFragment == null) {
-						// create MasterListFragment
-						mMasterListFragment = MasterListFragment.newInstance(mActiveListID);
-
-						MyLog.i("Lists_ACTIVITY", "onCreate. New MasterListFragment created.");
-						// add the fragment to the Activity
-						this.getSupportFragmentManager().beginTransaction()
-								.add(R.id.frag_masterList_placeholder, mMasterListFragment, "MasterListFragment")
-								.commit();
-						MyLog.i("Lists_ACTIVITY", "onCreate. MasterListFragment add.");
-					}
-				} else {
-					// one fragment layout
-					mMasterListFragment = (MasterListFragment) this.getSupportFragmentManager()
-							.findFragmentByTag("MasterListFragment");
-					if (mMasterListFragment != null) {
-						// remove the fragment from the Activity
-						this.getSupportFragmentManager().beginTransaction()
-								.remove(mMasterListFragment)
-								.commit();
-						MyLog.i("Lists_ACTIVITY", "onCreate. MasterListFragment removed.");
-					}
-				}*/
+	private void ReStartListsActivity() {
+		mAllListsCursor = ListsTable.getAllLists(this);
+		mActiveListPosition = AListUtilities.getListsCursorPositon(mAllListsCursor, mActiveListID);
+		Intent intent = new Intent(this, ListsActivity.class);
+		// prohibit the back button from displaying previous version of this ListPreferencesActivity
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(intent);
 	}
 
 	private void SetToFirstList() {
@@ -160,12 +164,11 @@ public class ListsActivity extends FragmentActivity
 			// so as that one be created.
 			//TODO create new list
 		}
-
 	}
 
 	private void StartMasterListActivity() {
 		Intent masterListActivityIntent = new Intent(this, MasterListActivity.class);
-		masterListActivityIntent.putExtra("ActiveListID", mActiveListID);
+		//masterListActivityIntent.putExtra("ActiveListID", mActiveListID);
 		startActivity(masterListActivityIntent);
 	}
 
@@ -182,20 +185,6 @@ public class ListsActivity extends FragmentActivity
 	private void StartAboutActivity() {
 		Intent intent = new Intent(this, AboutActivity.class);
 		startActivity(intent);
-	}
-
-	protected void SetActiveListID(int position) {
-		if (mAllListsCursor != null) {
-			long listID = -1;
-			try {
-				mAllListsCursor.moveToPosition(position);
-				listID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
-			} catch (Exception e) {
-				MyLog.d("Lists_ACTIVITY", "Exception in getlistID: " + e);
-			}
-			mActiveListID = listID;
-			mActiveListPosition = position;
-		}
 	}
 
 	protected void LoadMasterListFragment() {
@@ -284,6 +273,8 @@ public class ListsActivity extends FragmentActivity
 	protected void onDestroy() {
 		MyLog.i("Lists_ACTIVITY", "onDestroy");
 		mAllListsCursor.close();
+		// Unregister since the activity is about to be closed.
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mListTitleChanged);
 		super.onDestroy();
 	}
 
@@ -308,8 +299,8 @@ public class ListsActivity extends FragmentActivity
 			return true;
 
 		case R.id.action_newList:
-			/*CreatNewList();*/
-			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			CreatNewList();
+			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
 		case R.id.action_clearList:
@@ -323,37 +314,9 @@ public class ListsActivity extends FragmentActivity
 
 		case R.id.action_editListTitle:
 			EditListTitle();
-			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
 		case R.id.action_deleteList:
-			/*			Cursor listsCursor = ListsTable.getAllLists(this);
-						int position = AListUtilities.getPositionById(listsCursor, mActiveListID);
-						position++;
-						if (listsCursor.moveToPosition(position)) {
-							// get the next list
-							mActiveListID = listsCursor.getLong(listsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
-						} else {
-							// get the previous list
-							position--;
-							position--;
-							if (listsCursor.moveToPosition(position)) {
-								mActiveListID = listsCursor.getLong(listsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
-							} else {
-								// No list to move to!
-								// TODO Figure out what to show when there is not lists.
-							}
-						}
-
-						mListsFragment.DeleteList();
-						mListsFragment = ListsFragment.newInstance(mActiveListID);
-						MyLog.i("Lists_ACTIVITY", "action_deleteList. New ListsFragment created.");
-						// add the fragment to the Activity
-						this.getSupportFragmentManager().beginTransaction()
-								.replace(R.id.frag_lists_placeholder, mListsFragment, "ListsFragment")
-								.commit();
-						MyLog.i("Lists_ACTIVITY", "action_deleteList. ListsFragment replace.");*/
-
 			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
@@ -378,56 +341,37 @@ public class ListsActivity extends FragmentActivity
 
 	}
 
-	/*	private void CreatNewList() {
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle(R.string.newListTitle);
-			builder.setIcon(R.drawable.ic_action_edit).show();
-
-			LayoutInflater li = LayoutInflater.from(this);
-			final View view = li.inflate(R.layout.dialog_edit_list_title, null);
-
-			builder.setView(view);
-
-			builder.setPositiveButton(getString(R.string.btn_apply_text), new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int item) {
-					EditText txtEditListTitle = (EditText) view.findViewById(R.id.txtEditListTitle);
-					String listTitle = txtEditListTitle.getText().toString();
-					mActiveListID = ListsTable.CreateNewList(getApplicationContext(), listTitle);
-					ShowNewList();
-				}
-
-			});
-
-			builder.setNegativeButton(getString(R.string.btn_cancel_text), null);
-
-			builder.show();
-
-		}*/
-
-	private void EditListTitle() {
-		// Remove any currently showing dialog
+	private void CreatNewList() {
 		FragmentManager fm = this.getSupportFragmentManager();
-		Fragment prev = fm.findFragmentByTag("dialog_edit_list_title");
+		// Remove any currently showing dialog
+		Fragment prev = fm.findFragmentByTag("dialog_lists_table_update");
 		if (prev != null) {
 			FragmentTransaction ft = fm.beginTransaction();
 			ft.remove(prev);
 			ft.commit();
 		}
-		EditListTitleDialogFragment editListTitleDialog = EditListTitleDialogFragment.newInstance(mActiveListID);
-		editListTitleDialog.show(fm, "dialog_edit_list_title");
+
+		ListsDialogFragment editListTitleDialog = ListsDialogFragment
+				.newInstance(mActiveListID, ListsDialogFragment.NEW_LIST);
+		editListTitleDialog.show(fm, "dialog_lists_table_update");
+
 	}
 
-	/*	private void ShowNewList() {
-			mListsFragment = ListsFragment.newInstance(mActiveListID);
+	private void EditListTitle() {
 
-			MyLog.i("Lists_ACTIVITY", "ShowNewList. New ListsFragment created.");
-			// add the fragment to the Activity
-			this.getSupportFragmentManager().beginTransaction()
-					.replace(R.id.frag_lists_placeholder, mListsFragment, "ListsFragment")
-					.commit();
-			MyLog.i("Lists_ACTIVITY", "ShowNewList. ListsFragment replace.");
-		}*/
+		FragmentManager fm = this.getSupportFragmentManager();
+		// Remove any currently showing dialog
+		Fragment prev = fm.findFragmentByTag("dialog_lists_table_update");
+		if (prev != null) {
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.remove(prev);
+			ft.commit();
+		}
+
+		ListsDialogFragment editListTitleDialog = ListsDialogFragment
+				.newInstance(mActiveListID, ListsDialogFragment.EDIT_LIST_TITLE);
+		editListTitleDialog.show(fm, "dialog_lists_table_update");
+	}
 
 	@Override
 	public void onListItemLongClick(int position, long itemID) {
@@ -451,21 +395,6 @@ public class ListsActivity extends FragmentActivity
 
 	@Override
 	public void onCancelEditItemDialog() {
-		// Do nothing
-
-	}
-
-	@Override
-	public void onApplyEditListTitleDialog(String newListTitle) {
-		// TODO code to update newListTitle
-		/*ContentValues cv = new ContentValues();
-		cv.put(ListsTable.COL_LIST_TITLE, newListTitle);
-		ListsTable.UpdateListsTableFieldValues(this, mActiveListID, cv);*/
-		//mListsFragment.showListTitle(newListTitle);
-	}
-
-	@Override
-	public void onCancelEditListTitleDialog() {
 		// Do nothing
 
 	}

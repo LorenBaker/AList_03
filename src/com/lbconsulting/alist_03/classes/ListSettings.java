@@ -288,6 +288,15 @@ public class ListSettings {
 		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_LISTVIEW_TOP));
 	}
 
+	public int getMasterListViewFirstVisiblePosition() {
+		return listCursor.getInt(listCursor
+				.getColumnIndexOrThrow(ListsTable.COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION));
+	}
+
+	public int getMasterListViewTop() {
+		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LISTVIEW_TOP));
+	}
+
 	public void updateListsTableFieldValues(ContentValues newFieldValues) {
 		ListsTable.UpdateListsTableFieldValues(context, listID, newFieldValues);
 		this.RefreshListSettings();

@@ -41,9 +41,12 @@ public class ItemsTable {
 	public static final Uri CONTENT_URI = Uri.parse("content://" + AListContentProvider.AUTHORITY + "/" + CONTENT_PATH);
 
 	public static final String SORT_ORDER_ITEM_NAME = COL_ITEM_NAME + " ASC";
-	public static final String SORT_ORDER_SELECTED_ASC = COL_SELECTED + " ASC, " + SORT_ORDER_ITEM_NAME;
-	public static final String SORT_ORDER_SELECTED_DESC = COL_SELECTED + " DESC, " + SORT_ORDER_ITEM_NAME;
+	public static final String SORT_ORDER_SELECTED_AT_TOP = COL_SELECTED + " ASC, " + SORT_ORDER_ITEM_NAME;
+	public static final String SORT_ORDER_SELECTED_AT_BOTTOM = COL_SELECTED + " DESC, " + SORT_ORDER_ITEM_NAME;
 	public static final String SORT_ORDER_LAST_USED = COL_DATE_TIME_LAST_USED + " DESC, " + SORT_ORDER_ITEM_NAME;
+
+	//TODO: SORT by group name not id!
+	public static final String SORT_ORDER_BY_GROUP = COL_GROUP_ID + " ASC, " + SORT_ORDER_ITEM_NAME;
 
 	public static final int SELECTED_TRUE = 1;
 	public static final int SELECTED_FALSE = 0;
@@ -95,80 +98,80 @@ public class ItemsTable {
 		currentDateTimeInMillis = ((currentDateTimeInMillis + 500) / 1000) * 1000;
 
 		// Groceries List (2)
-		sqlStatements.add(insertProjection + "(NULL, 'Apples', 'Note A', 2, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Apples', 'Note A', 2, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'Bacon', '', 2, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Baked Beans', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Balsamic Vinegar', '', 2, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Baked Beans', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Balsamic Vinegar', '', 2, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'Bananas', '', 2, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Beer', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Black Olives', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Blue Cheese', '8oz', 2, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Beer', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Black Olives', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Blue Cheese', '8oz', 2, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'Blueberries', '', 2, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Bread', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Broccoli', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Buns', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Buttermilk', '1 quart', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Carrots', '', 2, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Bread', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Broccoli', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Buns', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Buttermilk', '1 quart', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Carrots', '', 2, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'Cereal', '', 2, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Cheese', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Chicken', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Chicken Broth', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Corn', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Cottage Cheese', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Cream Cheese', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Distilled Water', '', 2, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Cheese', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Chicken', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Chicken Broth', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Corn', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Cottage Cheese', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Cream Cheese', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Distilled Water', '', 2, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'Eggs', '2 dozen', 2, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Garlic', '3 heads', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Ground Beef', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Hummus', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Kleenex', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Lemons', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Limes', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Manicotti Noodles', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Mustard', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Olive Oil', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Parmesan Cheese', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Peanut Butter', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Pickles', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Pineapple', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Potatoes', '', 2, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Garlic', '3 heads', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Ground Beef', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Hummus', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Kleenex', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Lemons', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Limes', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Manicotti Noodles', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Mustard', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Olive Oil', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Parmesan Cheese', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Peanut Butter', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Pickles', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Pineapple', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Potatoes', '', 2, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'Relish', '', 2, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Sour Cream', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'String Cheese', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Toilet Paper', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Tomatoes', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Toothpaste', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Tuna', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Vanilla', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Vinegar', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Wine', 'Cabernet', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Yogurt', '', 2, 1, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'Avocado', '', 2, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Sour Cream', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'String Cheese', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Toilet Paper', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Tomatoes', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Toothpaste', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Tuna', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Vanilla', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Vinegar', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Wine', 'Cabernet', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Yogurt', '', 2, 0, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'Avocado', '', 2, 0, " + currentDateTimeInMillis + ")");
 
 		// TO Do List (3)
-		sqlStatements.add(insertProjection + "(NULL, 'To Do 07', '', 3, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'To Do 07', '', 3, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'To Do 08', '', 3, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'To Do 09', 'Note 09', 3, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'To Do 09', 'Note 09', 3, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'To Do 10', '', 3, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'To Do 11', '', 3, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'To Do 11', '', 3, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'To Do 12', '', 3, 0, " + currentDateTimeInMillis + ")");
 
-		sqlStatements.add(insertProjection + "(NULL, 'To Do 01', '', 3, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'To Do 01', '', 3, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'To Do 02', '', 3, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'To Do 03', '', 3, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'To Do 03', '', 3, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'To Do 04', 'Note 04', 3, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'To Do 05', '', 3, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'To Do 05', '', 3, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'To Do 06', '', 3, 0, " + currentDateTimeInMillis + ")");
 
-		sqlStatements.add(insertProjection + "(NULL, 'To Do 13', '', 3, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'To Do 13', '', 3, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'To Do 14', '', 3, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'To Do 15', '', 3, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'To Do 15', '', 3, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'To Do 16', '', 3, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'To Do 17', 'Note 17', 3, 1, " + currentDateTimeInMillis + ")");
+		sqlStatements.add(insertProjection + "(NULL, 'To Do 17', 'Note 17', 3, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'To Do 18', '', 3, 0, " + currentDateTimeInMillis + ")");
 
 		sqlStatements
-				.add(insertProjection + "(NULL, 'List Id=4 - Item 07', '', 4, 1, " + currentDateTimeInMillis + ")");
+				.add(insertProjection + "(NULL, 'List Id=4 - Item 07', '', 4, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=4 - Item 08', '', 4, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'List Id=4 - Item 09', 'Note 09', 4, 1, "
@@ -177,16 +180,16 @@ public class ItemsTable {
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=4 - Item 10', '', 4, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
-				.add(insertProjection + "(NULL, 'List Id=4 - Item 11', '', 4, 1, " + currentDateTimeInMillis + ")");
+				.add(insertProjection + "(NULL, 'List Id=4 - Item 11', '', 4, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=4 - Item 12', '', 4, 0, " + currentDateTimeInMillis + ")");
 
 		sqlStatements
-				.add(insertProjection + "(NULL, 'List Id=5 - Item 13', '', 5, 1, " + currentDateTimeInMillis + ")");
+				.add(insertProjection + "(NULL, 'List Id=5 - Item 13', '', 5, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=5 - Item 14', '', 5, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
-				.add(insertProjection + "(NULL, 'List Id=5 - Item 15', '', 5, 1, " + currentDateTimeInMillis + ")");
+				.add(insertProjection + "(NULL, 'List Id=5 - Item 15', '', 5, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=5 - Item 16', '', 5, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'List Id=5 - Item 17', 'Note 17', 5, 1, "
@@ -196,30 +199,30 @@ public class ItemsTable {
 				.add(insertProjection + "(NULL, 'List Id=5 - Item 18', '', 5, 0, " + currentDateTimeInMillis + ")");
 
 		sqlStatements
-				.add(insertProjection + "(NULL, 'List Id=6 - Item 01', '', 6, 1, " + currentDateTimeInMillis + ")");
+				.add(insertProjection + "(NULL, 'List Id=6 - Item 01', '', 6, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=6 - Item 02', '', 6, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
-				.add(insertProjection + "(NULL, 'List Id=6 - Item 03', '', 6, 1, " + currentDateTimeInMillis + ")");
+				.add(insertProjection + "(NULL, 'List Id=6 - Item 03', '', 6, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'List Id=6 - Item 04', 'Note 04', 6, 0, "
 				+ currentDateTimeInMillis
 				+ ")");
 		sqlStatements
-				.add(insertProjection + "(NULL, 'List Id=6 - Item 05', '', 6, 1, " + currentDateTimeInMillis + ")");
+				.add(insertProjection + "(NULL, 'List Id=6 - Item 05', '', 6, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=6 - Item 06', '', 6, 0, " + currentDateTimeInMillis + ")");
 
 		sqlStatements
-				.add(insertProjection + "(NULL, 'List Id=7 - Item 01', '', 7, 1, " + currentDateTimeInMillis + ")");
+				.add(insertProjection + "(NULL, 'List Id=7 - Item 01', '', 7, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=7 - Item 02', '', 7, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
-				.add(insertProjection + "(NULL, 'List Id=7 - Item 03', '', 7, 1, " + currentDateTimeInMillis + ")");
+				.add(insertProjection + "(NULL, 'List Id=7 - Item 03', '', 7, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements.add(insertProjection + "(NULL, 'List Id=7 - Item 04', 'Note 04', 7, 0, "
 				+ currentDateTimeInMillis
 				+ ")");
 		sqlStatements
-				.add(insertProjection + "(NULL, 'List Id=7 - Item 05', '', 7, 1, " + currentDateTimeInMillis + ")");
+				.add(insertProjection + "(NULL, 'List Id=7 - Item 05', '', 7, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=7 - Item 06', '', 7, 0, " + currentDateTimeInMillis + ")");
 
@@ -352,6 +355,26 @@ public class ItemsTable {
 			Uri uri = CONTENT_URI;
 			String[] projection = PROJECTION_ALL;
 			String selection = COL_LIST_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID) };
+			try {
+				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllItemsInList. ", e.toString());
+			}
+		}
+		return cursorLoader;
+	}
+
+	public static CursorLoader getAllItemsInList(Context context, long listID, String selection, String sortOrder) {
+		CursorLoader cursorLoader = null;
+		if (listID > 1) {
+			Uri uri = CONTENT_URI;
+			String[] projection = PROJECTION_ALL;
+			if (selection != null) {
+				selection = selection + " AND " + COL_LIST_ID + " = ?";
+			} else {
+				selection = COL_LIST_ID + " = ?";
+			}
 			String selectionArgs[] = new String[] { String.valueOf(listID) };
 			try {
 				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
