@@ -8,6 +8,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.v4.content.CursorLoader;
 
 import com.lbconsulting.alist_03.database.contentprovider.AListContentProvider;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
@@ -130,12 +131,12 @@ public class ListsTable {
 		sqlStatements.add(insertProjection + "(NULL, 'Default List Preferences')");
 
 		//TODO: remove Groceries and ToDO lists
-		sqlStatements.add(insertProjection + "(NULL, 'Groceries')");
+		/*sqlStatements.add(insertProjection + "(NULL, 'Groceries')");
 		sqlStatements.add(insertProjection + "(NULL, 'To Do')");
 		sqlStatements.add(insertProjection + "(NULL, 'List 4')");
 		sqlStatements.add(insertProjection + "(NULL, 'List 5')");
 		sqlStatements.add(insertProjection + "(NULL, 'List 6')");
-		sqlStatements.add(insertProjection + "(NULL, 'List 7')");
+		sqlStatements.add(insertProjection + "(NULL, 'List 7')");*/
 
 		AListUtilities.execMultipleSQL(database, sqlStatements);
 	}
@@ -251,6 +252,21 @@ public class ListsTable {
 		return cursor;
 	}
 
+	public static CursorLoader loadAllLists(Context context) {
+		CursorLoader cursorLoader = null;
+		Uri uri = CONTENT_URI;
+		String[] projection = { COL_LIST_ID, COL_LIST_TITLE };
+		String selection = COL_LIST_ID + "> ?";
+		String[] selectionArgs = { String.valueOf(DEFAULT_LIST_PREFERENCES) }; //DEFAULT_LIST_PREFERENCES=1
+		String sortOrder = SORT_ORDER_LIST_TITLE;
+		try {
+			cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+		} catch (Exception e) {
+			MyLog.e("Exception error  in ItemsTable: loadAllLists. ", e.toString());
+		}
+		return cursorLoader;
+	}
+
 	public static int getNumberOfLists(Context context) {
 		int numberOfLists = -1;
 		Cursor cursor = getAllLists(context);
@@ -293,7 +309,7 @@ public class ListsTable {
 	public static long getFirstListID(Context context) {
 		long firstListID = -1;
 		Cursor allListsCursor = getAllLists(context);
-		if (allListsCursor != null) {
+		if (allListsCursor != null && allListsCursor.getCount() > 0) {
 			allListsCursor.moveToFirst();
 			firstListID = allListsCursor.getLong(allListsCursor.getColumnIndexOrThrow(COL_LIST_ID));
 			allListsCursor.close();

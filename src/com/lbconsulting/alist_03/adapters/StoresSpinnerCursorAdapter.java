@@ -26,15 +26,15 @@ public class StoresSpinnerCursorAdapter extends CursorAdapter {
 	public void bindView(View view, Context context, Cursor cursor) {
 
 		switch (view.getId()) {
-		case R.id.llStoreRow:
-			TextView tvStoreRow = (TextView) view.findViewById(R.id.tvStoreRow);
+		case R.id.rowLinearLayout:
+			TextView tvStoreRow = (TextView) view.findViewById(R.id.rowTextView);
 			if (tvStoreRow != null) {
 				tvStoreRow.setText(getDisplayName(cursor));
 				tvStoreRow.setTextColor(this.mListSettings.getTitleTextColor());
 			}
 			break;
-		case R.id.llStoreRowDropdown:
-			TextView tvStoreRowDropdown = (TextView) view.findViewById(R.id.tvStoreRowDropdown);
+		case R.id.rowLinearLayoutDropdown:
+			TextView tvStoreRowDropdown = (TextView) view.findViewById(R.id.rowTextViewDropdown);
 			if (tvStoreRowDropdown != null) {
 				tvStoreRowDropdown.setText(getDisplayName(cursor));
 				tvStoreRowDropdown.setTextColor(this.mListSettings.getTitleTextColor());
@@ -80,7 +80,7 @@ public class StoresSpinnerCursorAdapter extends CursorAdapter {
 	public View newDropDownView(Context context, Cursor cursor, ViewGroup parent) {
 		View v = null;
 		LayoutInflater inflater = LayoutInflater.from(context);
-		v = inflater.inflate(R.layout.row_stores_spinner_dropdown, parent, false);
+		v = inflater.inflate(R.layout.row_spinner_dropdown, parent, false);
 		v.setBackgroundColor(this.mListSettings.getTitleBackgroundColor());
 		bindView(v, context, cursor);
 		return v;
@@ -90,7 +90,7 @@ public class StoresSpinnerCursorAdapter extends CursorAdapter {
 	public View newView(Context context, Cursor cursor, ViewGroup parent) {
 		View v = null;
 		LayoutInflater inflater = LayoutInflater.from(context);
-		v = inflater.inflate(R.layout.row_stores_spinner, parent, false);
+		v = inflater.inflate(R.layout.row_spinner, parent, false);
 		v.setBackgroundColor(this.mListSettings.getTitleBackgroundColor());
 		bindView(v, context, cursor);
 		return v;

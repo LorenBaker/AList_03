@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    
+
+    <item
+        android:id="@+id/action_clearAllSelectedItems"
+        android:icon="@drawable/ic_action_accept"
+        android:orderInCategory="41"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_clearAllSelectedItems"/>
+    <item
+        android:id="@+id/action_deleteAllItems"
+        android:icon="@drawable/ic_action_remove"
+        android:orderInCategory="41"
+        android:showAsAction="never"
+        android:title="@string/action_deleteAllItems"/>
+    <item
+        android:id="@+id/action_cullItems"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_cullItems"/>
+    <item
+        android:id="@+id/action_about"
+        android:orderInCategory="120"
+        android:showAsAction="never"
+        android:title="@string/action_about"/>
 
 </menu>

@@ -90,7 +90,7 @@ public class StoresTable {
 		sqlStatements.add(insertProjection + "(NULL,1, '" + defalutStoreValue + "', '', '')");
 
 		// Stores for Groceries List (2)
-		sqlStatements.add(insertProjection + "(NULL,2, 'Safeway-Factoria', 'Bellevue', 'WA')");
+		/*sqlStatements.add(insertProjection + "(NULL,2, 'Safeway-Factoria', 'Bellevue', 'WA')");
 		sqlStatements.add(insertProjection + "(NULL,2, 'QFC-Factoria', 'Bellevue', 'WA')");
 		sqlStatements.add(insertProjection + "(NULL,2, 'QFC-Issaquah', 'Bellevue', 'WA')");
 		sqlStatements.add(insertProjection + "(NULL,2, 'Albertson-Eastgate', 'Bellevue', 'WA')");
@@ -100,7 +100,7 @@ public class StoresTable {
 		sqlStatements.add(insertProjection + "(NULL,3, 'ToDo Store 2', 'Anywhere 2', 'WA')");
 		sqlStatements.add(insertProjection + "(NULL,3, 'ToDo Store 3', 'Anywhere 3', 'CA')");
 		sqlStatements.add(insertProjection + "(NULL,3, 'ToDo Store 4', 'Anywhere 4', 'NY')");
-		sqlStatements.add(insertProjection + "(NULL,3, 'ToDo Store 5', 'Anywhere 5', 'UT')");
+		sqlStatements.add(insertProjection + "(NULL,3, 'ToDo Store 5', 'Anywhere 5', 'UT')");*/
 
 		AListUtilities.execMultipleSQL(database, sqlStatements);
 	}

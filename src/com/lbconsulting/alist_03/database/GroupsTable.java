@@ -60,7 +60,7 @@ public class GroupsTable {
 		sqlStatements.add(insertProjection + "(NULL, '" + defalutGroupValue + "', 1)");
 
 		// Groups for Groceries List (2)
-		sqlStatements.add(insertProjection + "(NULL, 'Aisle 1', 2)");
+		/*sqlStatements.add(insertProjection + "(NULL, 'Aisle 1', 2)");
 		sqlStatements.add(insertProjection + "(NULL, 'Aisle 2', 2)");
 		sqlStatements.add(insertProjection + "(NULL, 'Aisle 3', 2)");
 		sqlStatements.add(insertProjection + "(NULL, 'Aisle 4', 2)");
@@ -74,7 +74,7 @@ public class GroupsTable {
 		sqlStatements.add(insertProjection + "(NULL, 'Group 4', 3)");
 		sqlStatements.add(insertProjection + "(NULL, 'Group 3', 3)");
 		sqlStatements.add(insertProjection + "(NULL, 'Group 2', 3)");
-		sqlStatements.add(insertProjection + "(NULL, 'Group 1', 3)");
+		sqlStatements.add(insertProjection + "(NULL, 'Group 1', 3)");*/
 
 		AListUtilities.execMultipleSQL(database, sqlStatements);
 	}

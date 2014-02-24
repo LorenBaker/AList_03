@@ -187,4 +187,14 @@ public class AListUtilities {
 		}
 		return listPosition;
 	}
+
+	public static long getIdByPosition(Cursor cursor, int position) {
+		long id = -1;
+		if (cursor.getCount() >= position + 1) {
+			cursor.moveToPosition(position);
+			id = cursor.getLong(cursor.getColumnIndex("_id"));
+		}
+
+		return id;
+	}
 }

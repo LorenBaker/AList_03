@@ -47,11 +47,23 @@
                 android:paddingTop="6dp" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btnAddToMasterList"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:text="@string/btnAddToMasterList_Text" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/btnAddToMasterList"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="@string/btnAddToMasterList_Text" />
+
+            <Button
+                android:id="@+id/btnClearEditText"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="@string/btnClearEditText_Text" />
+        </LinearLayout>
     </LinearLayout>
 
     <ListView

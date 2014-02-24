@@ -10,12 +10,12 @@ import com.lbconsulting.alist_03.utilities.AListUtilities;
 public class ListSettings {
 
 	private Context context;
-	private long listID;
-	private Cursor listCursor;
+	private long mListID;
+	private Cursor mListCursor;
 
 	public ListSettings(Context context, long listID) {
 		this.context = context;
-		this.listID = listID;
+		this.mListID = listID;
 		this.RefreshListSettings();
 		if (this.getTitleBackgroundColor() == -1) {
 			SetDefaultColors();
@@ -25,18 +25,18 @@ public class ListSettings {
 	}
 
 	public void RefreshListSettings() {
-		this.listCursor = ListsTable.getList(context, listID);
-		if (listCursor != null) {
-			this.listCursor.moveToFirst();
+		this.mListCursor = ListsTable.getList(context, mListID);
+		if (mListCursor != null) {
+			this.mListCursor.moveToFirst();
 		}
 	}
 
 	private void SetDefaultColors() {
 		//Resources res = context.getResources();
-		if (listID > 0) {
+		if (mListID > 0) {
 			// select the new list title's colors
 			ContentValues newDefaultValues = new ContentValues();
-			int selector = (int) listID % 6;
+			int selector = (int) mListID % 6;
 			switch (selector) {
 			case 0:
 				// Sandy Stone
@@ -57,7 +57,7 @@ public class ListSettings {
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#A7A37E"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#E6E2AF"));
 
-				ListsTable.UpdateListsTableFieldValues(context, listID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 
 				break;
 
@@ -80,7 +80,7 @@ public class ListSettings {
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#35478C"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#7FB2F0"));
 
-				ListsTable.UpdateListsTableFieldValues(context, listID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 				break;
 
 			case 2:
@@ -95,14 +95,19 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#168039"));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
+						AListUtilities.GetColorInt("#00261C"));
+				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
+						AListUtilities.GetColorInt("#96ED89"));
+
+				/*newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
 						AListUtilities.GetColorInt("#96ED89"));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
-						AListUtilities.GetColorInt("#00261C"));
+						AListUtilities.GetColorInt("#00261C"));*/
 
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#044D29"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#45BF55"));
 
-				ListsTable.UpdateListsTableFieldValues(context, listID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 				break;
 
 			case 3:
@@ -124,7 +129,7 @@ public class ListSettings {
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#C77966"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#2F343B"));
 
-				ListsTable.UpdateListsTableFieldValues(context, listID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 
 				break;
 
@@ -147,7 +152,7 @@ public class ListSettings {
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#B33600"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#FFC887"));
 
-				ListsTable.UpdateListsTableFieldValues(context, listID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 				break;
 
 			case 5:
@@ -169,7 +174,7 @@ public class ListSettings {
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#BFBD9F"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#778C7A"));
 
-				ListsTable.UpdateListsTableFieldValues(context, listID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 
 				break;
 
@@ -192,119 +197,120 @@ public class ListSettings {
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#A7A37E"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#E6E2AF"));
 
-				ListsTable.UpdateListsTableFieldValues(context, listID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 				break;
 			}
 		}
 	}
 
 	public long getListID() {
-		return listID;
+		return mListID;
 	}
 
 	public String getListTitle() {
-		return listCursor.getString(listCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_TITLE));
+		return mListCursor.getString(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_TITLE));
 	}
 
 	public long getStoreID() {
-		return listCursor.getLong(listCursor.getColumnIndexOrThrow(ListsTable.COL_STORE_ID));
+		return mListCursor.getLong(mListCursor.getColumnIndexOrThrow(ListsTable.COL_STORE_ID));
 	}
 
 	public boolean getShowGroupsInListsFragment() {
-		int value = listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_SHOW_GROUPS_IN_LISTS_FRAGMENT));
+		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_SHOW_GROUPS_IN_LISTS_FRAGMENT));
 		return AListUtilities.intToBoolean(value);
 	}
 
 	public boolean getShowGroupsInMasterListFragment() {
-		int value = listCursor.getInt(listCursor
+		int value = mListCursor.getInt(mListCursor
 				.getColumnIndexOrThrow(ListsTable.COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT));
 		return AListUtilities.intToBoolean(value);
 	}
 
 	public boolean getShowStores() {
-		int value = listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_SHOW_STORES));
+		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_SHOW_STORES));
 		return AListUtilities.intToBoolean(value);
 	}
 
 	public boolean getDeleteNoteUponDeselectingItem() {
-		int value = listCursor.getInt(listCursor
+		int value = mListCursor.getInt(mListCursor
 				.getColumnIndexOrThrow(ListsTable.COL_DELETE_NOTE_UPON_DESELECTING_ITEM));
 		return AListUtilities.intToBoolean(value);
 	}
 
 	public int getListSortOrder() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_SORT_ORDER));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_SORT_ORDER));
 	}
 
 	public int getMasterListSortOrder() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LIST_SORT_ORDER));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LIST_SORT_ORDER));
 	}
 
 	public int getTitleBackgroundColor() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_TITLE_BACKGROUND_COLOR));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_TITLE_BACKGROUND_COLOR));
 	}
 
 	public int getTitleTextColor() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_TITLE_TEXT_COLOR));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_TITLE_TEXT_COLOR));
 	}
 
 	public int getSeparatorBackgroundColor() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR));
 	}
 
 	public int getSeparatorTextColor() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_SEPARATOR_TEXT_COLOR));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_SEPARATOR_TEXT_COLOR));
 	}
 
 	public int getListBackgroundColor() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_BACKGROUND_COLOR));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_BACKGROUND_COLOR));
 	}
 
 	public int getItemNormalTextColor() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR));
 	}
 
 	public int getItemStrikeoutTextColor() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR));
 	}
 
 	public int getMasterListBackgroundColor() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR));
 	}
 
 	public int getMasterListItemNormalTextColor() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR));
 	}
 
 	public int getMasterListItemSelectedTextColor() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR));
+		return mListCursor.getInt(mListCursor
+				.getColumnIndexOrThrow(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR));
 	}
 
 	public int getListViewFirstVisiblePosition() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_LISTVIEW_FIRST_VISIBLE_POSITION));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LISTVIEW_FIRST_VISIBLE_POSITION));
 	}
 
 	public int getListViewTop() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_LISTVIEW_TOP));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LISTVIEW_TOP));
 	}
 
 	public int getMasterListViewFirstVisiblePosition() {
-		return listCursor.getInt(listCursor
+		return mListCursor.getInt(mListCursor
 				.getColumnIndexOrThrow(ListsTable.COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION));
 	}
 
 	public int getMasterListViewTop() {
-		return listCursor.getInt(listCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LISTVIEW_TOP));
+		return mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LISTVIEW_TOP));
 	}
 
 	public void updateListsTableFieldValues(ContentValues newFieldValues) {
-		ListsTable.UpdateListsTableFieldValues(context, listID, newFieldValues);
+		ListsTable.UpdateListsTableFieldValues(context, mListID, newFieldValues);
 		this.RefreshListSettings();
 	}
 
 	protected void finalize() {
-		if (this.listCursor != null) {
-			this.listCursor.close();
+		if (this.mListCursor != null) {
+			this.mListCursor.close();
 		}
 	}
 }

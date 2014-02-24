@@ -14,9 +14,9 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
-import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -31,10 +31,9 @@ import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
-public class MasterListFragment extends Fragment
-		implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MasterListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-	OnMasterListItemLongClickListener mMasterListItemLongClickCallback;
+	//OnMasterListItemLongClickListener mMasterListItemLongClickCallback;
 
 	// Container Activity must implement this interface
 	public interface OnMasterListItemLongClickListener {
@@ -57,8 +56,9 @@ public class MasterListFragment extends Fragment
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
 
 	private EditText txtItemName;
-	private Button btnAddToMasterList;
 	private EditText txtItemNote;
+	private Button btnAddToMasterList;
+	private Button btnClearEditText;
 	private ListView lvItemsListView;
 
 	private LoaderManager mLoaderManager = null;
@@ -91,12 +91,12 @@ public class MasterListFragment extends Fragment
 		super.onAttach(activity);
 		// This makes sure that the container activity has implemented
 		// the callback interface. If not, it throws an exception
-		try {
-			mMasterListItemLongClickCallback = (OnMasterListItemLongClickListener) activity;
-		} catch (ClassCastException e) {
-			throw new ClassCastException(activity.toString()
-					+ " must implement OnMasterListItemLongClickListener");
-		}
+		/*		try {
+					//mMasterListItemLongClickCallback = (OnMasterListItemLongClickListener) activity;
+				} catch (ClassCastException e) {
+					throw new ClassCastException(activity.toString()
+							+ " must implement OnMasterListItemLongClickListener");
+				}*/
 	}
 
 	@Override
@@ -131,6 +131,23 @@ public class MasterListFragment extends Fragment
 
 		txtItemName = (EditText) view.findViewById(R.id.txtItemName);
 		btnAddToMasterList = (Button) view.findViewById(R.id.btnAddToMasterList);
+		btnAddToMasterList.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				SelectItemForList();
+			}
+		});
+
+		btnClearEditText = (Button) view.findViewById(R.id.btnClearEditText);
+		btnClearEditText.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				ClearEditText();
+			}
+		});
+
 		txtItemNote = (EditText) view.findViewById(R.id.txtItemNote);
 
 		lvItemsListView = (ListView) view.findViewById(R.id.lvItemsListView);
@@ -154,7 +171,7 @@ public class MasterListFragment extends Fragment
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 				mActiveItemID = id;
-				mMasterListItemLongClickCallback.onMasterListItemLongClick(position, id);
+				//mMasterListItemLongClickCallback.onMasterListItemLongClick(position, id);
 				return true;
 			}
 		});
@@ -173,30 +190,8 @@ public class MasterListFragment extends Fragment
 				if ((event.getAction() == KeyEvent.ACTION_DOWN)
 						&& (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.FLAG_EDITOR_ACTION || keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
 
-					String newItemName = txtItemName.getText().toString().trim();
-					if (!newItemName.isEmpty()) {
-						long newItemNameID = ItemsTable.CreateNewItem(getActivity(), mActiveListID, newItemName);
-						ItemsTable.SelectItem(getActivity(), newItemNameID, true);
-
-						String newItemNote = txtItemNote.getText().toString().trim();
-						if (!newItemNote.isEmpty()) {
-							ContentValues newFieldValues = new ContentValues();
-							newFieldValues.put(ItemsTable.COL_ITEM_NOTE, newItemNote);
-							ItemsTable.UpdateItemFieldValues(getActivity(), newItemNameID, newFieldValues);
-						}
-					}
-					txtItemNote.setText("");
-					txtItemName.setText("");
-
-					txtItemName.post(new Runnable()
-					{
-						public void run()
-						{
-							txtItemName.requestFocus();
-						}
-					});
-
-					getActivity().getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+					SelectItemForList();
+					//getActivity().getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 					result = true;
 				}
 				return result;
@@ -207,17 +202,24 @@ public class MasterListFragment extends Fragment
 			// filter master list as the user inputs text
 			@Override
 			public void afterTextChanged(Editable s) {
+
+				MyLog.i("MasterListFragment", "onActivityCreated; txtItemName.afterTextChanged -- "
+						+ txtItemName.getText().toString());
 				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
 			}
 
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+				MyLog.i("MasterListFragment", "onActivityCreated; txtItemName.beforeTextChanged -- "
+						+ txtItemName.getText().toString());
 				// Do nothing
 
 			}
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				MyLog.i("MasterListFragment", "onActivityCreated; txtItemName.onTextChanged -- "
+						+ txtItemName.getText().toString());
 				// Do nothing
 
 			}
@@ -266,6 +268,42 @@ public class MasterListFragment extends Fragment
 		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
 		super.onActivityCreated(savedInstanceState);
 
+	}
+
+	private void SelectItemForList() {
+		String newItemName = txtItemName.getText().toString().trim();
+		if (!newItemName.isEmpty()) {
+			long newItemNameID = ItemsTable.CreateNewItem(getActivity(), mActiveListID, newItemName);
+			ItemsTable.SelectItem(getActivity(), newItemNameID, true);
+
+			String newItemNote = txtItemNote.getText().toString().trim();
+			//if (!newItemNote.isEmpty()) {
+			ContentValues newFieldValues = new ContentValues();
+			newFieldValues.put(ItemsTable.COL_ITEM_NOTE, newItemNote);
+			ItemsTable.UpdateItemFieldValues(getActivity(), newItemNameID, newFieldValues);
+			//}
+		}
+		txtItemNote.setText("");
+		txtItemName.setText("");
+
+		txtItemName.post(new Runnable()
+		{
+			public void run()
+			{
+				txtItemName.requestFocus();
+			}
+		});
+	}
+
+	private void ClearEditText() {
+		String itemNote = txtItemNote.getText().toString();
+		if (itemNote != null && !itemNote.isEmpty()) {
+			// the item has a note ... so clear it
+			txtItemNote.setText("");
+		} else {
+			// the item has no note ... so clear the item
+			txtItemName.setText("");
+		}
 	}
 
 	@Override
@@ -415,7 +453,8 @@ public class MasterListFragment extends Fragment
 	public void onLoadFinished(Loader<Cursor> loader, Cursor newCursor) {
 		int id = loader.getId();
 		String loaderName = loaderNames[id - 1];
-		MyLog.i("MasterListFragment: onLoadFinished; " + loaderName, "; listID = " + mActiveListID);
+		MyLog.i("MasterListFragment: onLoadFinished; " + loaderName, "; listID = " + mActiveListID + "; text = "
+				+ txtItemName.getText().toString());
 		// The asynchronous load is complete and the newCursor is now available for use. 
 		// Update the masterListAdapter to show the changed data.
 		switch (loader.getId()) {
@@ -425,6 +464,16 @@ public class MasterListFragment extends Fragment
 				lvItemsListView.setSelectionFromTop(
 						listSettings.getMasterListViewFirstVisiblePosition(), listSettings.getMasterListViewTop());
 				flag_FirstTimeLoadingItemDataSinceOnResume = false;
+			}
+			if (newCursor != null && newCursor.getCount() == 1) {
+				newCursor.moveToFirst();
+				String itemName = newCursor.getString(newCursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_NAME));
+				if (itemName.equals(txtItemName.getText().toString())) {
+					String itemNote = newCursor.getString(newCursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_NOTE));
+					if (itemNote != null && !itemNote.isEmpty()) {
+						txtItemNote.setText(itemNote);
+					}
+				}
 			}
 			break;
 

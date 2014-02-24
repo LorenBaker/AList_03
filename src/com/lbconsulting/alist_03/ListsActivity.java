@@ -1,7 +1,9 @@
 package com.lbconsulting.alist_03;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -20,6 +22,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.ListsPagerAdapter;
+import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
@@ -45,6 +48,7 @@ public class ListsActivity extends FragmentActivity
 	private long mActiveListID = NO_ACTIVE_LIST_ID;
 	private long mActiveItemID;
 	private int mActiveListPosition = 0;
+	private ListSettings mListSettings;
 
 	private Cursor mAllListsCursor;
 	private BroadcastReceiver mListTitleChanged;
@@ -70,6 +74,7 @@ public class ListsActivity extends FragmentActivity
 		MyLog.i("Lists_ACTIVITY", "onCreate - ViewPager");
 
 		mAllListsCursor = ListsTable.getAllLists(this);
+		mListSettings = new ListSettings(this, mActiveListID);
 
 		mListsPagerAdapter = new ListsPagerAdapter(getSupportFragmentManager(), this);
 		mPager = (ViewPager) findViewById(R.id.listsPager);
@@ -98,6 +103,7 @@ public class ListsActivity extends FragmentActivity
 		});
 
 		mListTitleChanged = new BroadcastReceiver() {
+
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				if (intent.hasExtra("editedListTitle")) {
@@ -124,15 +130,14 @@ public class ListsActivity extends FragmentActivity
 
 	private void SetActiveListID(int position) {
 		if (mAllListsCursor != null) {
-			long listID = -1;
 			try {
 				mAllListsCursor.moveToPosition(position);
-				listID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
+				mActiveListID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
+				mListSettings = new ListSettings(this, mActiveListID);
+				mActiveListPosition = position;
 			} catch (Exception e) {
 				MyLog.d("Lists_ACTIVITY", "Exception in getlistID: " + e);
 			}
-			mActiveListID = listID;
-			mActiveListPosition = position;
 		}
 	}
 
@@ -155,14 +160,35 @@ public class ListsActivity extends FragmentActivity
 		startActivity(intent);
 	}
 
+	private void ReStartListsActivity(int position) {
+		mAllListsCursor = ListsTable.getAllLists(this);
+		if (mAllListsCursor.getCount() >= position + 1) {
+			mActiveListPosition = position;
+		} else {
+			if (mAllListsCursor.getCount() > 0) {
+				mActiveListPosition = 0;
+			} else {
+				// there are no lists in the ListsTable!
+				mActiveListPosition = -1;
+				mActiveListID = -1;
+			}
+
+		}
+		if (mActiveListPosition > -1) {
+			mActiveListID = AListUtilities.getIdByPosition(mAllListsCursor, mActiveListPosition);
+		}
+		Intent intent = new Intent(this, ListsActivity.class);
+		// prohibit the back button from displaying previous version of this ListPreferencesActivity
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(intent);
+	}
+
 	private void SetToFirstList() {
 		long firstListID = ListsTable.getFirstListID(this);
 		if (firstListID > 1) {
 			mActiveListID = firstListID;
 		} else {
-			// the application has no lists
-			// so as that one be created.
-			//TODO create new list
+			CreatNewList();
 		}
 	}
 
@@ -187,7 +213,7 @@ public class ListsActivity extends FragmentActivity
 		startActivity(intent);
 	}
 
-	protected void LoadMasterListFragment() {
+	private void LoadMasterListFragment() {
 		mMasterListFragment = (MasterListFragment) this.getSupportFragmentManager()
 				.findFragmentByTag("MasterListFragment");
 		if (mMasterListFragment == null) {
@@ -290,8 +316,8 @@ public class ListsActivity extends FragmentActivity
 		// handle item selection
 		switch (item.getItemId()) {
 		case R.id.action_removeStruckOffItems:
-			/*mListsFragment.UnStrikeAndDeselectAllStruckOutItems();*/
-			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			ItemsTable.UnStrikeAndDeselectAllStruckOutItems(this, mActiveListID,
+					mListSettings.getDeleteNoteUponDeselectingItem());
 			return true;
 
 		case R.id.action_addItem:
@@ -300,12 +326,11 @@ public class ListsActivity extends FragmentActivity
 
 		case R.id.action_newList:
 			CreatNewList();
-			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
 		case R.id.action_clearList:
-			/*mListsFragment.DeselectAllItemsInList();*/
-			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			ItemsTable
+					.DeselectAllItemsInList(this, mActiveListID, mListSettings.getDeleteNoteUponDeselectingItem());
 			return true;
 
 		case R.id.action_emailList:
@@ -317,21 +342,19 @@ public class ListsActivity extends FragmentActivity
 			return true;
 
 		case R.id.action_deleteList:
-			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			DeleteList();
+			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
 		case R.id.action_stores:
 			StartStoresActivity();
-			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
 		case R.id.action_Preferences:
-			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			StartListPreferencesActivity();
 			return true;
 
 		case R.id.action_about:
-			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			StartAboutActivity();
 			return true;
 
@@ -339,6 +362,38 @@ public class ListsActivity extends FragmentActivity
 			return super.onMenuItemSelected(featureId, item);
 		}
 
+	}
+
+	private void DeleteList() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		// set title
+		builder.setTitle("Delete List");
+
+		String msg = "Permanently delete " + "\"" + mListSettings.getListTitle() + "\" ?";
+		// set dialog message
+		builder
+				.setMessage(msg)
+				.setCancelable(false)
+				.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						ListsTable.DeleteList(ListsActivity.this, mActiveListID);
+						ReStartListsActivity(mActiveListPosition);
+						finish();
+					}
+				})
+				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						// if this button is clicked, just close
+						// the dialog box and do nothing
+						dialog.cancel();
+					}
+				});
+
+		// create alert dialog
+		AlertDialog alertDialog = builder.create();
+
+		// show it
+		alertDialog.show();
 	}
 
 	private void CreatNewList() {

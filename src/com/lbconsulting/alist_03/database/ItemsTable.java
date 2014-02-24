@@ -1,8 +1,5 @@
 package com.lbconsulting.alist_03.database;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -41,8 +38,8 @@ public class ItemsTable {
 	public static final Uri CONTENT_URI = Uri.parse("content://" + AListContentProvider.AUTHORITY + "/" + CONTENT_PATH);
 
 	public static final String SORT_ORDER_ITEM_NAME = COL_ITEM_NAME + " ASC";
-	public static final String SORT_ORDER_SELECTED_AT_TOP = COL_SELECTED + " ASC, " + SORT_ORDER_ITEM_NAME;
-	public static final String SORT_ORDER_SELECTED_AT_BOTTOM = COL_SELECTED + " DESC, " + SORT_ORDER_ITEM_NAME;
+	public static final String SORT_ORDER_SELECTED_AT_TOP = COL_SELECTED + " DESC, " + SORT_ORDER_ITEM_NAME;
+	public static final String SORT_ORDER_SELECTED_AT_BOTTOM = COL_SELECTED + " ASC, " + SORT_ORDER_ITEM_NAME;
 	public static final String SORT_ORDER_LAST_USED = COL_DATE_TIME_LAST_USED + " DESC, " + SORT_ORDER_ITEM_NAME;
 
 	//TODO: SORT by group name not id!
@@ -90,7 +87,7 @@ public class ItemsTable {
 				+ COL_DATE_TIME_LAST_USED
 				+ ") VALUES ";
 
-		ArrayList<String> sqlStatements = new ArrayList<String>();
+		/*ArrayList<String> sqlStatements = new ArrayList<String>();
 
 		Calendar rightNow = Calendar.getInstance();
 		long currentDateTimeInMillis = rightNow.getTimeInMillis();
@@ -174,7 +171,7 @@ public class ItemsTable {
 				.add(insertProjection + "(NULL, 'List Id=4 - Item 07', '', 4, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=4 - Item 08', '', 4, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'List Id=4 - Item 09', 'Note 09', 4, 1, "
+		sqlStatements.add(insertProjection + "(NULL, 'List Id=4 - Item 09', 'Note 09', 4, 0, "
 				+ currentDateTimeInMillis
 				+ ")");
 		sqlStatements
@@ -192,7 +189,7 @@ public class ItemsTable {
 				.add(insertProjection + "(NULL, 'List Id=5 - Item 15', '', 5, 0, " + currentDateTimeInMillis + ")");
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=5 - Item 16', '', 5, 0, " + currentDateTimeInMillis + ")");
-		sqlStatements.add(insertProjection + "(NULL, 'List Id=5 - Item 17', 'Note 17', 5, 1, "
+		sqlStatements.add(insertProjection + "(NULL, 'List Id=5 - Item 17', 'Note 17', 5, 0, "
 				+ currentDateTimeInMillis
 				+ ")");
 		sqlStatements
@@ -226,7 +223,7 @@ public class ItemsTable {
 		sqlStatements
 				.add(insertProjection + "(NULL, 'List Id=7 - Item 06', '', 7, 0, " + currentDateTimeInMillis + ")");
 
-		AListUtilities.execMultipleSQL(database, sqlStatements);
+		AListUtilities.execMultipleSQL(database, sqlStatements);*/
 	}
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {

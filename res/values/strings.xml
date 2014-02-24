@@ -46,5 +46,9 @@
     <string name="sort_option_selected_items_at_bottom">Selected Items At Bottom</string>
     <string name="sort_option_last_used">Last used</string>
     <string name="sort_option_manual">Manual</string>
+    <string name="btnClearEditText_Text">CL</string>
+    <string name="action_clearAllSelectedItems">Clear All Selected Items</string>
+    <string name="action_cullItems">Cull Items</string>
+    <string name="action_deleteAllItems">Permanently Delete All Items</string>
 
 </resources>

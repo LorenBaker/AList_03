@@ -300,15 +300,15 @@ public class ListsFragment extends Fragment
 		checkListID("onViewCreated");
 	}
 
-	public void UnStrikeAndDeselectAllStruckOutItems() {
-		ItemsTable.UnStrikeAndDeselectAllStruckOutItems(getActivity(), mActiveListID,
-				listSettings.getDeleteNoteUponDeselectingItem());
-	}
+	/*	public void UnStrikeAndDeselectAllStruckOutItems() {
+			ItemsTable.UnStrikeAndDeselectAllStruckOutItems(getActivity(), mActiveListID,
+					listSettings.getDeleteNoteUponDeselectingItem());
+		}*/
 
-	public void DeselectAllItemsInList() {
-		ItemsTable
-				.DeselectAllItemsInList(getActivity(), mActiveListID, listSettings.getDeleteNoteUponDeselectingItem());
-	}
+	/*	public void DeselectAllItemsInList() {
+			ItemsTable
+					.DeselectAllItemsInList(getActivity(), mActiveListID, listSettings.getDeleteNoteUponDeselectingItem());
+		}*/
 
 	public void showListTitle(String newListTitle) {
 		mListTitle.setText(newListTitle);
@@ -316,9 +316,6 @@ public class ListsFragment extends Fragment
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-
-		// MTM Usually an ID suffices here, was a little confusing to see this dereferenced 
-		// - but I understand that you want to see it for logging
 		String loaderName = loaderNames[id - 1];
 		checkListID("onCreateLoader; " + loaderName);
 
