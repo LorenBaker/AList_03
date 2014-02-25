@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -29,6 +31,7 @@ import com.lbconsulting.alist_03.adapters.MasterListCursorAdaptor;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
+import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class MasterListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -169,9 +172,18 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 		lvItemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
 			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+			public boolean onItemLongClick(AdapterView<?> parent, View listView, int position, long id) {
 				mActiveItemID = id;
-				//mMasterListItemLongClickCallback.onMasterListItemLongClick(position, id);
+				FragmentManager fm = getFragmentManager();
+				Fragment prev = fm.findFragmentByTag("dialog_edit_item");
+				if (prev != null) {
+					FragmentTransaction ft = fm.beginTransaction();
+					ft.remove(prev);
+					ft.commit();
+				}
+				EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(id);
+				editItemDialog.show(fm, "dialog_edit_item");
+
 				return true;
 			}
 		});

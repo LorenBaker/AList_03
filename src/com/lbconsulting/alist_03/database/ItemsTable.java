@@ -42,6 +42,8 @@ public class ItemsTable {
 	public static final String SORT_ORDER_SELECTED_AT_BOTTOM = COL_SELECTED + " ASC, " + SORT_ORDER_ITEM_NAME;
 	public static final String SORT_ORDER_LAST_USED = COL_DATE_TIME_LAST_USED + " DESC, " + SORT_ORDER_ITEM_NAME;
 
+	//public static final String ITEM_CHANGED_BROADCAST_KEY = "itemChanged";
+
 	//TODO: SORT by group name not id!
 	public static final String SORT_ORDER_BY_GROUP = COL_GROUP_ID + " ASC, " + SORT_ORDER_ITEM_NAME;
 
@@ -283,6 +285,16 @@ public class ItemsTable {
 					MyLog.e("ItemsTable", "Error in CreateNewItem; itemName is Null!");
 				}
 			}
+		}
+		return newItemID;
+	}
+
+	public static long CreateNewItem(Context context, long listID, String itemName, long groupID) {
+		long newItemID = CreateNewItem(context, listID, itemName);
+		if (newItemID > 0) {
+			ContentValues values = new ContentValues();
+			values.put(COL_GROUP_ID, groupID);
+			UpdateItemFieldValues(context, newItemID, values);
 		}
 		return newItemID;
 	}

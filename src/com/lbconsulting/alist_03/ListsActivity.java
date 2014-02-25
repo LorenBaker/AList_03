@@ -1,5 +1,7 @@
 package com.lbconsulting.alist_03;
 
+import java.util.ArrayList;
+
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -23,20 +25,19 @@ import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.ListsPagerAdapter;
 import com.lbconsulting.alist_03.classes.ListSettings;
+import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
-import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
-import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment.EditItemDialogListener;
+import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.dialogs.ListsDialogFragment;
 import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
-import com.lbconsulting.alist_03.fragments.ListsFragment.OnListItemLongClickListener;
 import com.lbconsulting.alist_03.fragments.MasterListFragment;
 import com.lbconsulting.alist_03.fragments.MasterListFragment.OnMasterListItemLongClickListener;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ListsActivity extends FragmentActivity
-		implements OnListItemLongClickListener, EditItemDialogListener, OnMasterListItemLongClickListener {
+		implements OnMasterListItemLongClickListener {
 
 	private ListsPagerAdapter mListsPagerAdapter;
 	private ViewPager mPager;
@@ -61,10 +62,32 @@ public class ListsActivity extends FragmentActivity
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
 		mActiveItemID = storedStates.getLong("ActiveItemID", -1);
-		mActiveListPosition = storedStates.getInt("ActiveListPosition", 0);
+		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
+
+		mListTitleChanged = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				if (intent.hasExtra("editedListTitle")) {
+					// the list title has changed ...
+				}
+
+				if (intent.hasExtra("newListID")) {
+					// a new list has been created ...
+					mActiveListID = intent.getLongExtra("newListID", 0);
+				}
+
+				// restart activity to ensure that all lists are shown in alphabetical order
+				ReStartListsActivity();
+			}
+		};
+		// Register to receive messages.
+		String key = String.valueOf(mActiveListID) + ListPreferencesFragment.LIST_PREFERENCES_CHANGED_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mListTitleChanged, new IntentFilter(key));
 
 		if (mActiveListID < 2) {
-			SetToFirstList();
+			//SetToFirstList();
+			return;
 		}
 
 		View frag_masterList_placeholder = this.findViewById(R.id.frag_masterList_placeholder);
@@ -101,27 +124,6 @@ public class ListsActivity extends FragmentActivity
 				}
 			}
 		});
-
-		mListTitleChanged = new BroadcastReceiver() {
-
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				if (intent.hasExtra("editedListTitle")) {
-					// the list title has changed ...
-				}
-
-				if (intent.hasExtra("newListID")) {
-					// a new list has been created ...
-					mActiveListID = intent.getLongExtra("newListID", 0);
-				}
-
-				// restart activity to ensure that all lists are shown in alphabetical order
-				ReStartListsActivity();
-			}
-		};
-		// Register to receive messages.
-		String key = String.valueOf(mActiveListID) + ListPreferencesFragment.LIST_PREFERENCES_CHANGED_BROADCAST_KEY;
-		LocalBroadcastManager.getInstance(this).registerReceiver(mListTitleChanged, new IntentFilter(key));
 
 		if (mTwoFragmentLayout) {
 			LoadMasterListFragment();
@@ -271,7 +273,12 @@ public class ListsActivity extends FragmentActivity
 	@Override
 	protected void onResume() {
 		MyLog.i("Lists_ACTIVITY", "onResume");
-		mPager.setCurrentItem(mActiveListPosition);
+		if (mActiveListID < 2) {
+			CreatNewList();
+		} else {
+			mPager.setCurrentItem(mActiveListPosition);
+		}
+
 		super.onResume();
 	}
 
@@ -328,6 +335,14 @@ public class ListsActivity extends FragmentActivity
 			CreatNewList();
 			return true;
 
+		case R.id.action_create_groceries_list:
+			CreateGroceriesList();
+			return true;
+
+		case R.id.action_create_todo_list:
+			CreateToDoList();
+			return true;
+
 		case R.id.action_clearList:
 			ItemsTable
 					.DeselectAllItemsInList(this, mActiveListID, mListSettings.getDeleteNoteUponDeselectingItem());
@@ -362,6 +377,61 @@ public class ListsActivity extends FragmentActivity
 			return super.onMenuItemSelected(featureId, item);
 		}
 
+	}
+
+	private void CreateToDoList() {
+		// create new list
+		long todosListID = ListsTable.CreateNewList(this, "To Do");
+
+		if (todosListID > 1) {
+			ArrayList<Long> todoGroupIDs = new ArrayList<Long>();
+			// create todo groups
+			String[] todoGroups = this.getResources().getStringArray(R.array.todo_groups);
+			for (int i = 0; i < todoGroups.length; i++) {
+				todoGroupIDs.add(GroupsTable.CreateNewGroup(this, todosListID, todoGroups[i]));
+			}
+
+			// create todo items
+			String[] todoItems = this.getResources().getStringArray(R.array.todo_items);
+			for (int i = 0; i < todoItems.length; i++) {
+				ItemsTable.CreateNewItem(this, todosListID, todoItems[i], todoGroupIDs.get(i));
+			}
+
+			mActiveListID = todosListID;
+			ReStartListsActivity();
+
+		}
+
+	}
+
+	private void CreateGroceriesList() {
+		// create new list
+		long groceriesListID = ListsTable.CreateNewList(this, "Groceries");
+
+		if (groceriesListID > 1) {
+
+			// create grocery groups
+			String[] groceryGroups = this.getResources().getStringArray(R.array.grocery_groups);
+			for (int i = 0; i < groceryGroups.length; i++) {
+				GroupsTable.CreateNewGroup(this, groceriesListID, groceryGroups[i]);
+			}
+
+			// create grocery items
+			String[] groceryItems = this.getResources().getStringArray(R.array.grocery_items);
+			for (int i = 0; i < groceryItems.length; i++) {
+				ItemsTable.CreateNewItem(this, groceriesListID, groceryItems[i]);
+			}
+
+			// create grocery stores
+			String[] groceryStores = this.getResources().getStringArray(R.array.grocery_stores);
+			for (int i = 0; i < groceryStores.length; i++) {
+				StoresTable.CreateNewStore(this, groceriesListID, groceryStores[i]);
+			}
+
+			mActiveListID = groceriesListID;
+			ReStartListsActivity();
+
+		}
 	}
 
 	private void DeleteList() {
@@ -428,31 +498,32 @@ public class ListsActivity extends FragmentActivity
 		editListTitleDialog.show(fm, "dialog_lists_table_update");
 	}
 
-	@Override
-	public void onListItemLongClick(int position, long itemID) {
-		mActiveItemID = itemID;
-		// Remove any currently showing dialog
-		FragmentManager fm = getSupportFragmentManager();
-		Fragment prev = fm.findFragmentByTag("dialog_edit_item");
-		if (prev != null) {
-			FragmentTransaction ft = fm.beginTransaction();
-			ft.remove(prev);
-			ft.commit();
+	/*	@Override
+		public void onListItemLongClick(int position, long itemID) {
+			mActiveItemID = itemID;
+			// Remove any currently showing dialog
+			FragmentManager fm = getSupportFragmentManager();
+			Fragment prev = fm.findFragmentByTag("dialog_edit_item");
+			if (prev != null) {
+				FragmentTransaction ft = fm.beginTransaction();
+				ft.remove(prev);
+				ft.commit();
+			}
+			EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(itemID);
+			editItemDialog.show(fm, "dialog_edit_item");
+		}*/
+
+	/*
+		@Override
+		public void onApplyEditItemDialog(String itemName, String itemNote, long itemGroupID) {
+			ItemsTable.UpdateItem(this, mActiveItemID, itemName, itemNote, itemGroupID);
 		}
-		EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(itemID);
-		editItemDialog.show(fm, "dialog_edit_item");
-	}
 
-	@Override
-	public void onApplyEditItemDialog(String itemName, String itemNote, long itemGroupID) {
-		ItemsTable.UpdateItem(this, mActiveItemID, itemName, itemNote, itemGroupID);
-	}
+		@Override
+		public void onCancelEditItemDialog() {
+			// Do nothing
 
-	@Override
-	public void onCancelEditItemDialog() {
-		// Do nothing
-
-	}
+		}*/
 
 	@Override
 	public void onMasterListItemLongClick(int position, long itemID) {

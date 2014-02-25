@@ -36,6 +36,8 @@ public class ListsDialogFragment extends DialogFragment {
 	private Button btnApply;
 	private Button btnCancel;
 	private EditText txtEditListTitle;
+	private Button btnCreateGroceriesList;
+	private Button btnCreateToDoList;
 
 	private RadioGroup radioGroup_list_sort_order;
 	private RadioGroup radioGroup_master_list_sort_order;
@@ -85,8 +87,7 @@ public class ListsDialogFragment extends DialogFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		if (savedInstanceState != null && savedInstanceState.containsKey("listID")) {
 			mActiveListID = savedInstanceState.getLong("listID", 0);
 			mDialogType = savedInstanceState.getInt("dialogType", 0);

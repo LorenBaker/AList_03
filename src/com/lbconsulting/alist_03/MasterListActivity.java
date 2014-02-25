@@ -2,6 +2,8 @@ package com.lbconsulting.alist_03;
 
 import android.app.ActionBar;
 import android.app.ActionBar.OnNavigationListener;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
@@ -156,7 +158,8 @@ public class MasterListActivity extends FragmentActivity implements LoaderManage
 			return true;
 
 		case R.id.action_deleteAllItems:
-			ItemsTable.DeleteAllItemsInList(this, mActiveListID);
+			DeleteAllItems();
+
 			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
@@ -170,6 +173,38 @@ public class MasterListActivity extends FragmentActivity implements LoaderManage
 		default:
 			return super.onMenuItemSelected(featureId, item);
 		}
+
+	}
+
+	private void DeleteAllItems() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		// set title
+		builder.setTitle(R.string.dialog_title_delete_all_items);
+
+		String msg = getString(R.string.dialog_message_permanently_delete_all_items_in) + "\""
+				+ mListSettings.getListTitle() + "\" ?";
+		// set dialog message
+		builder
+				.setMessage(msg)
+				.setCancelable(false)
+				.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						ItemsTable.DeleteAllItemsInList(MasterListActivity.this, mActiveListID);
+					}
+				})
+				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						// if this button is clicked, just close
+						// the dialog box and do nothing
+						dialog.cancel();
+					}
+				});
+
+		// create alert dialog
+		AlertDialog alertDialog = builder.create();
+
+		// show it
+		alertDialog.show();
 
 	}
 

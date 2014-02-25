@@ -23,24 +23,22 @@ import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.adapters.GroupsSpinnerCursorAdapter;
 import com.lbconsulting.alist_03.classes.ItemSettings;
 import com.lbconsulting.alist_03.database.GroupsTable;
+import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class EditItemDialogFragment extends DialogFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-	private EditItemDialogListener mFinishEditItemDialogCallback;
+	//private EditItemDialogListener mFinishEditItemDialogCallback;
 
 	private EditText txtEditItemName;
 	private EditText txtEditItemNote;
 	private Spinner spinEditItemGroup;
 	private Button btnApply;
 	private Button btnCancel;
-	private long mItemID;
+	private long mActiveItemID;
 	private ItemSettings itemSettings;
 
-	//private static final int LISTS_LOADER_ID = 1;
-	//private static final int ITEMS_LOADER_ID = 2;
-	//private static final int STORES_LOADER_ID = 3;
 	private static final int GROUPS_LOADER_ID = 4;
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
@@ -77,21 +75,29 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 	public void onAttach(Activity activity) {
 		MyLog.i("EditItemDialogFragment", "onAttach");
 		super.onAttach(activity);
-
-		// This makes sure that the container activity has implemented
-		// the callback interface. If not, it throws an exception
-		try {
-			mFinishEditItemDialogCallback = (EditItemDialogListener) activity;
-		} catch (ClassCastException e) {
-			throw new ClassCastException(activity.toString()
-					+ " must implement EditNameDialogListener");
-		}
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public void onSaveInstanceState(Bundle outState) {
+		MyLog.i("EditItemDialogFragment", "onSaveInstanceState");
+		// Store our itemID
+		outState.putLong("itemID", this.mActiveItemID);
+		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		MyLog.i("EditItemDialogFragment", "onCreateView");
+
+		if (savedInstanceState != null && savedInstanceState.containsKey("itemID")) {
+			mActiveItemID = savedInstanceState.getLong("itemID", -1);
+		} else {
+			Bundle bundle = getArguments();
+			if (bundle != null) {
+				mActiveItemID = bundle.getLong("itemID", -1);
+			}
+		}
+
 		View view = inflater.inflate(R.layout.dialog_edit_item, container);
 		txtEditItemName = (EditText) view.findViewById(R.id.txtEditItemName);
 		txtEditItemNote = (EditText) view.findViewById(R.id.txtEditItemNote);
@@ -100,23 +106,30 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 		btnApply = (Button) view.findViewById(R.id.btnApply);
 		btnApply.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+
+				/*				String key = String.valueOf(mActiveItemID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
+								Intent intent = new Intent(key);
+								intent.putExtra("itemID", mActiveItemID)*/;
+
 				String newItemName = txtEditItemName.getText().toString().trim();
 				String newItemNote = txtEditItemNote.getText().toString().trim();
 				long newItemGroupID = spinEditItemGroup.getSelectedItemId();
-				mFinishEditItemDialogCallback.onApplyEditItemDialog(newItemName, newItemNote, newItemGroupID);
+
+				ItemsTable.UpdateItem(getActivity(), mActiveItemID, newItemName, newItemNote, newItemGroupID);
+				/*				LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);*/
 				getDialog().dismiss();
 			}
 		});
 
 		btnCancel = (Button) view.findViewById(R.id.btnCancel);
-		btnCancel.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				mFinishEditItemDialogCallback.onCancelEditItemDialog();
-				getDialog().dismiss();
-			}
-		});
-
-		getDialog().setTitle("Edit Item");
+		if (btnCancel != null) {
+			btnCancel.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					getDialog().dismiss();
+				}
+			});
+		}
+		getDialog().setTitle(R.string.dialog_title_edit_item);
 
 		// Show soft keyboard automatically
 		txtEditItemName.requestFocus();
@@ -132,10 +145,10 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 
 		Bundle bundle = this.getArguments();
 		if (bundle != null) {
-			mItemID = bundle.getLong("itemID", 0);
+			mActiveItemID = bundle.getLong("itemID", 0);
 		}
-		if (mItemID > 0) {
-			itemSettings = new ItemSettings(getActivity(), mItemID);
+		if (mActiveItemID > 0) {
+			itemSettings = new ItemSettings(getActivity(), mActiveItemID);
 		}
 
 		txtEditItemName.setText(itemSettings.getItemName());

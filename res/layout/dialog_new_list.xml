@@ -7,23 +7,43 @@
     android:paddingRight="4dp" >
 
     <EditText
-        android:id="@+id/txtEditItemName"
+        android:id="@+id/txtEditListTitle"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:hint="@string/txtEditItemName_Hint"
+        android:hint="@string/txtEditListTitle_Hint"
         android:inputType="textAutoCorrect|textCapWords" />
 
-    <EditText
-        android:id="@+id/txtEditItemNote"
+    <LinearLayout
+        android:id="@+id/llCreateLists"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="@string/txtEditItemNote_Hint"
-        android:inputType="textAutoCorrect" />
+        android:layout_height="96dp"
+        android:orientation="horizontal"
+        android:paddingBottom="6dp"
+        android:paddingLeft="2dp"
+        android:paddingRight="2dp"
+        android:paddingTop="2dp" >
 
-    <Spinner
-        android:id="@+id/spinEditItemGroup"
-        android:layout_width="match_parent"
-        android:layout_height="48dp" />
+        <Button
+            android:id="@+id/btnCreateGroceriesList"
+            style="@android:style/ButtonBar"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:text="Create\nGroceries List" />
+
+        <Button
+            android:id="@+id/btnCreateToDoList"
+            style="@android:style/ButtonBar"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:text="Create\nTo Do List" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/llButtons"

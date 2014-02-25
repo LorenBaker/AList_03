@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -27,6 +29,7 @@ import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
+import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -35,7 +38,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class ListsFragment extends Fragment
 		implements LoaderManager.LoaderCallbacks<Cursor> {
 
-	OnListItemLongClickListener mListItemLongClickCallback;
+	//OnListItemLongClickListener mListItemLongClickCallback;
 
 	// Container Activity must implement this interface
 	public interface OnListItemLongClickListener {
@@ -51,6 +54,7 @@ public class ListsFragment extends Fragment
 	private String[] loaderNames = { "Lists_Loader", "Items_Loader", "Stores_Loader", "Groups_Loader" };
 
 	private long mActiveListID = -9999;
+	private long mActiveItemID = -9999;
 
 	private ListSettings listSettings;
 
@@ -109,14 +113,6 @@ public class ListsFragment extends Fragment
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 		checkListID("onAttach");
-
-		// This makes sure that the container activity has implemented
-		// the callback interface. If not, it throws an exception
-		try {
-			mListItemLongClickCallback = (OnListItemLongClickListener) activity;
-		} catch (ClassCastException e) {
-			throw new ClassCastException(activity.toString() + " must implement OnListItemLongClickListener");
-		}
 	}
 
 	@Override
@@ -207,7 +203,17 @@ public class ListsFragment extends Fragment
 
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				mListItemLongClickCallback.onListItemLongClick(position, id);
+				mActiveItemID = id;
+				FragmentManager fm = getFragmentManager();
+				Fragment prev = fm.findFragmentByTag("dialog_edit_item");
+				if (prev != null) {
+					FragmentTransaction ft = fm.beginTransaction();
+					ft.remove(prev);
+					ft.commit();
+				}
+				EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(id);
+				editItemDialog.show(fm, "dialog_edit_item");
+
 				return true;
 			}
 		});

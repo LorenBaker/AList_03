@@ -49,6 +49,101 @@
     <string name="btnClearEditText_Text">CL</string>
     <string name="action_clearAllSelectedItems">Clear All Selected Items</string>
     <string name="action_cullItems">Cull Items</string>
-    <string name="action_deleteAllItems">Permanently Delete All Items</string>
+    <string name="action_deleteAllItems">Delete All Items</string>
+    <string name="dialog_title_delete_all_items">Delete All Items</string>
+    <string name="dialog_message_permanently_delete_all_items_in">"Permanently delete ALL items in "</string>
+    <string name="list_title_groceries">Groceries</string>
+
+    <string-array name="grocery_items">
+        <item>Apples</item>
+        <item>Avocado</item>
+        <item>Bacon</item>
+        <item>Baked Beans</item>
+        <item>Balsamic Vinegar</item>
+        <item>Bananas</item>
+        <item>Beer</item>
+        <item>Black Olives</item>
+        <item>Blue Cheese</item>
+        <item>Blueberries</item>
+        <item>Bread</item>
+        <item>Broccoli</item>
+        <item>Buns</item>
+        <item>Buttermilk</item>
+        <item>Carrots</item>
+        <item>Cereal</item>
+        <item>Cheese</item>
+        <item>Chicken</item>
+        <item>Chicken Broth</item>
+        <item>Corn</item>
+        <item>Cottage Cheese</item>
+        <item>Cream Cheese</item>
+        <item>Distilled Water</item>
+        <item>Eggs</item>
+        <item>Garlic</item>
+        <item>Ground Beef</item>
+        <item>Hummus</item>
+        <item>Kleenex</item>
+        <item>Lemons</item>
+        <item>Limes</item>
+        <item>Manicotti Noodles</item>
+        <item>Mustard</item>
+        <item>Olive Oil</item>
+        <item>Parmesan Cheese</item>
+        <item>Peanut Butter</item>
+        <item>Pickles</item>
+        <item>Pineapple</item>
+        <item>Potatoes</item>
+        <item>Relish</item>
+        <item>Sour Cream</item>
+        <item>String Cheese</item>
+        <item>Toilet Paper</item>
+        <item>Tomatoes</item>
+        <item>Toothpaste</item>
+        <item>Tuna</item>
+        <item>Vanilla</item>
+        <item>Vinegar</item>
+        <item>Wine</item>
+        <item>Yogurt</item>
+    </string-array>
+    <string-array name="grocery_groups">
+        <item>Baking Supplies</item>
+        <item>Bathroom Supplies</item>
+        <item>Beer</item>
+        <item>Bread</item>
+        <item>Breakfast</item>
+        <item>Candy</item>
+        <item>Canned Meats</item>
+        <item>Canned Vegetables</item>
+        <item>Cereals</item>
+        <item>Chilled Beverages</item>
+        <item>Cleaning Supplies</item>
+        <item>Coffee</item>
+        <item>Condiments</item>
+        <item>Crackers</item>
+        <item>Dairy</item>
+        <item>Flour</item>
+        <item>Fresh Produce</item>
+        <item>Laundry Supplies</item>
+        <item>Nuts</item>
+        <item>Pet Supplies</item>
+        <item>Snacks</item>
+    </string-array>
+    <string-array name="grocery_stores">
+        <item>Safeway-Factoria</item>
+        <item>QFC-Factoria</item>
+        <item>QFC-Issaquah</item>
+        <item>Albertson-Eastgate</item>
+    </string-array>
+    <string-array name="todo_items">
+        <item>To Do Item A</item>
+        <item>To Do Item B</item>
+        <item>To Do Item C</item>
+    </string-array>
+    <string-array name="todo_groups">
+        <item>Priority 1</item>
+        <item>Priority 2</item>
+        <item>Priority 3</item>
+    </string-array>
+        <string name="dialog_title_edit_item">Edit Item</string>
 
 </resources>

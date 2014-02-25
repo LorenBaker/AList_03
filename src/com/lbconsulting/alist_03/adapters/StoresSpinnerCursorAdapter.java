@@ -51,12 +51,12 @@ public class StoresSpinnerCursorAdapter extends CursorAdapter {
 			StringBuilder sb = new StringBuilder();
 			sb.append(cursor.getString(cursor.getColumnIndexOrThrow(StoresTable.COL_STORE_NAME)));
 			String city = cursor.getString(cursor.getColumnIndexOrThrow(StoresTable.COL_CITY));
-			if (!city.isEmpty()) {
+			if (city != null && !city.isEmpty()) {
 				sb.append(", ");
 				sb.append(city);
 			}
 			String state = cursor.getString(cursor.getColumnIndexOrThrow(StoresTable.COL_STATE));
-			if (!state.isEmpty()) {
+			if (state != null && !state.isEmpty()) {
 				sb.append(", ");
 				sb.append(state);
 			}

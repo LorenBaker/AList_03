@@ -50,9 +50,9 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#046380"));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#EFECCA"));
-				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
 						AListUtilities.GetColorInt("#002F2F"));
+				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
+						AListUtilities.GetColorInt("#EFECCA"));
 
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#A7A37E"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#E6E2AF"));
@@ -73,9 +73,9 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#4E7AC7"));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#ADD5F7"));
-				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
 						AListUtilities.GetColorInt("#16193B"));
+				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
+						AListUtilities.GetColorInt("#ADD5F7"));
 
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#35478C"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#7FB2F0"));
@@ -85,6 +85,7 @@ public class ListSettings {
 
 			case 2:
 				// This Green
+				// Master Selected == Item Normal
 				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR, AListUtilities.GetColorInt("#00261C"));
 				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, AListUtilities.GetColorInt("#96ED89"));
 
@@ -98,11 +99,6 @@ public class ListSettings {
 						AListUtilities.GetColorInt("#00261C"));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
 						AListUtilities.GetColorInt("#96ED89"));
-
-				/*newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#96ED89"));
-				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
-						AListUtilities.GetColorInt("#00261C"));*/
 
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#044D29"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#45BF55"));
@@ -122,9 +118,9 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#7E827A"));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#2F343B"));
-				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
 						AListUtilities.GetColorInt("#E3CDA4"));
+				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
+						AListUtilities.GetColorInt("#2F343B"));
 
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#C77966"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#2F343B"));
@@ -145,9 +141,9 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#FFC887"));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#CC5400"));
-				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
 						AListUtilities.GetColorInt("#B31E00"));
+				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
+						AListUtilities.GetColorInt("#CC5400"));
 
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#B33600"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#FFC887"));
@@ -167,9 +163,9 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#778C7A"));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#F1F2D8"));
-				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
 						AListUtilities.GetColorInt("#425955"));
+				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
+						AListUtilities.GetColorInt("#F1F2D8"));
 
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#BFBD9F"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#778C7A"));
@@ -190,9 +186,9 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#046380"));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#EFECCA"));
-				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
 						AListUtilities.GetColorInt("#002F2F"));
+				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
+						AListUtilities.GetColorInt("#EFECCA"));
 
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#A7A37E"));
 				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#E6E2AF"));

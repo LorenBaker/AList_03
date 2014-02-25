@@ -64,7 +64,7 @@ public class MasterListCursorAdaptor extends CursorAdapter {
 			if (tvItemNote != null) {
 				// if a note exists ... then show it
 				String note = cursor.getString(cursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_NOTE));
-				if (!note.isEmpty()) {
+				if (note != null && !note.isEmpty()) {
 					StringBuilder sb = new StringBuilder();
 					sb.append("(");
 					sb.append(cursor.getString(cursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_NOTE)));
