@@ -28,6 +28,7 @@
     <string name="btn_cancel_text">Cancel</string>
     <string name="btn_yes_text">Yes</string>
     <string name="btn_no_text">No</string>
+    <string name="btn_ok_text">OK</string>
     <string name="txtItemName_Text">Item</string>
     <string name="txtItemNote_Text">Note</string>
     <string name="btnAddToMasterList_Text">Add</string>
@@ -48,7 +49,7 @@
     <string name="sort_option_manual">Manual</string>
     <string name="btnClearEditText_Text">CL</string>
     <string name="action_clearAllSelectedItems">Clear All Selected Items</string>
-    <string name="action_cullItems">Cull Items</string>
+    <string name="action_cullItems">Cull or Move Items</string>
     <string name="action_deleteAllItems">Delete All Items</string>
     <string name="dialog_title_delete_all_items">Delete All Items</string>
     <string name="dialog_message_permanently_delete_all_items_in">"Permanently delete ALL items in "</string>
@@ -144,6 +145,8 @@
         <item>Priority 2</item>
         <item>Priority 3</item>
     </string-array>
-        <string name="dialog_title_edit_item">Edit Item</string>
+
+    <string name="dialog_title_edit_item">Edit Item</string>
+    <string name="dialog_title_delete_all_checked_items">Delete All Checked Items</string>
 
 </resources>

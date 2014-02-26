@@ -32,12 +32,10 @@ import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.dialogs.ListsDialogFragment;
 import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
 import com.lbconsulting.alist_03.fragments.MasterListFragment;
-import com.lbconsulting.alist_03.fragments.MasterListFragment.OnMasterListItemLongClickListener;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
-public class ListsActivity extends FragmentActivity
-		implements OnMasterListItemLongClickListener {
+public class ListsActivity extends FragmentActivity {
 
 	private ListsPagerAdapter mListsPagerAdapter;
 	private ViewPager mPager;
@@ -496,40 +494,6 @@ public class ListsActivity extends FragmentActivity
 		ListsDialogFragment editListTitleDialog = ListsDialogFragment
 				.newInstance(mActiveListID, ListsDialogFragment.EDIT_LIST_TITLE);
 		editListTitleDialog.show(fm, "dialog_lists_table_update");
-	}
-
-	/*	@Override
-		public void onListItemLongClick(int position, long itemID) {
-			mActiveItemID = itemID;
-			// Remove any currently showing dialog
-			FragmentManager fm = getSupportFragmentManager();
-			Fragment prev = fm.findFragmentByTag("dialog_edit_item");
-			if (prev != null) {
-				FragmentTransaction ft = fm.beginTransaction();
-				ft.remove(prev);
-				ft.commit();
-			}
-			EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(itemID);
-			editItemDialog.show(fm, "dialog_edit_item");
-		}*/
-
-	/*
-		@Override
-		public void onApplyEditItemDialog(String itemName, String itemNote, long itemGroupID) {
-			ItemsTable.UpdateItem(this, mActiveItemID, itemName, itemNote, itemGroupID);
-		}
-
-		@Override
-		public void onCancelEditItemDialog() {
-			// Do nothing
-
-		}*/
-
-	@Override
-	public void onMasterListItemLongClick(int position, long itemID) {
-		// TODO Edit Item ... Edit Item Dialog
-		mActiveListID = itemID;
-
 	}
 
 }

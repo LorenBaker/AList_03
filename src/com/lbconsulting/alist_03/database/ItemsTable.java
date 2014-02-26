@@ -1,5 +1,7 @@
 package com.lbconsulting.alist_03.database;
 
+import java.util.Calendar;
+
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -55,6 +57,9 @@ public class ItemsTable {
 
 	public static final int CHECKED_TRUE = 1;
 	public static final int CHECKED_FALSE = 0;
+
+	//private static final long milliSecondsPerDay = 1000;
+	private static final long milliSecondsPerDay = 1000 * 60 * 60 * 24;
 
 	// Database creation SQL statements
 	private static final String DATATABLE_CREATE =
@@ -267,11 +272,18 @@ public class ItemsTable {
 							ContentResolver cr = context.getContentResolver();
 							Uri uri = CONTENT_URI;
 							ContentValues values = new ContentValues();
-							values.put(COL_LIST_ID, listID);
 							values.put(COL_ITEM_NAME, itemName);
+							values.put(COL_LIST_ID, listID);
+							Calendar now = Calendar.getInstance();
+							//values.put(COL_DATE_TIME_LAST_USED, now.getTimeInMillis());
+
 							Uri newListUri = cr.insert(uri, values);
 							if (newListUri != null) {
 								newItemID = Long.parseLong(newListUri.getLastPathSegment());
+								values = new ContentValues();
+								values.put(COL_MANUAL_SORT_ORDER, newItemID);
+								values.put(COL_DATE_TIME_LAST_USED, newItemID * 100);
+								UpdateItemFieldValues(context, newItemID, values);
 							}
 						} catch (Exception e) {
 							MyLog.e("Exception error in CreateNewList. ", e.toString());
@@ -437,22 +449,23 @@ public class ItemsTable {
 	 * @param sortOrder
 	 * @return
 	 */
-	public static Cursor getAllStruckOutItemsInList(Context context, long listID, boolean struckOut, String sortOrder) {
+	private static Cursor getItems(Context context, long listID) {
 		Cursor cursor = null;
 		if (listID > 1) {
-			int struckOutValue = AListUtilities.boolToInt(struckOut);
-			if (sortOrder == null) {
-				sortOrder = SORT_ORDER_ITEM_NAME;
-			}
+
 			Uri uri = CONTENT_URI;
 			String[] projection = PROJECTION_ALL;
-			String selection = COL_LIST_ID + " = ? AND " + COL_STRUCK_OUT + " = ?";
-			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(struckOutValue) };
+			/*String selection = COL_LIST_ID + " = ? AND " + COL_STRUCK_OUT + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(struckOutValue) };*/
+
+			String selection = COL_LIST_ID + " = ? ";
+			String selectionArgs[] = { String.valueOf(listID) };
+
 			ContentResolver cr = context.getContentResolver();
 			try {
-				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+				cursor = cr.query(uri, projection, selection, selectionArgs, SORT_ORDER_ITEM_NAME);
 			} catch (Exception e) {
-				MyLog.e("Exception error  in ItemsTable: getAllStruckOutItemsInList. ", e.toString());
+				MyLog.e("Exception error  in ItemsTable: getItems. ", e.toString());
 			}
 		}
 		return cursor;
@@ -460,12 +473,13 @@ public class ItemsTable {
 
 	public static Cursor getAllCheckedItemsInList(Context context, long listID, boolean checked) {
 		Cursor cursor = null;
+		int checkedValue = AListUtilities.boolToInt(checked);
 		if (listID > 1) {
 
 			Uri uri = CONTENT_URI;
 			String[] projection = PROJECTION_ALL;
 			String selection = COL_LIST_ID + " = ? AND " + COL_CHECKED + " = ?";
-			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(checked) };
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(checkedValue) };
 			String sortOrder = null;
 			ContentResolver cr = context.getContentResolver();
 			try {
@@ -475,6 +489,16 @@ public class ItemsTable {
 			}
 		}
 		return cursor;
+	}
+
+	public static int getNumberOfCheckedItmes(Context context, long listID) {
+		int numberOfCheckedItmes = -1;
+		Cursor cursor = getAllCheckedItemsInList(context, listID, true);
+		if (cursor != null) {
+			numberOfCheckedItmes = cursor.getCount();
+			cursor.close();
+		}
+		return numberOfCheckedItmes;
 	}
 
 	/**
@@ -638,6 +662,10 @@ public class ItemsTable {
 
 				ContentValues values = new ContentValues();
 				int selectedValue = AListUtilities.boolToInt(selected);
+				if (selected) {
+					Calendar now = Calendar.getInstance();
+					values.put(COL_DATE_TIME_LAST_USED, now.getTimeInMillis());
+				}
 				values.put(COL_SELECTED, selectedValue);
 				numberOfUpdatedRecords = cr.update(uri, values, where, whereArgs);
 			} catch (Exception e) {
@@ -712,6 +740,18 @@ public class ItemsTable {
 			SelectItem(context, itemID, !selectedValue);
 		}
 
+	}
+
+	public static void ToggleCheckBox(Context context, long itemID) {
+		Cursor cursor = getItem(context, itemID);
+		if (cursor != null) {
+			cursor.moveToFirst();
+			int columnIndex = cursor.getColumnIndexOrThrow(COL_CHECKED);
+			int checkIntValue = cursor.getInt(columnIndex);
+			boolean checkValue = AListUtilities.intToBoolean(checkIntValue);
+			cursor.close();
+			CheckItem(context, itemID, !checkValue);
+		}
 	}
 
 	public static int StrikeItem(Context context, long itemID, boolean struckOut) {
@@ -814,6 +854,107 @@ public class ItemsTable {
 			}
 		}
 		return numberOfUpdatedRecords;
+	}
+
+	public static int CheckItemsUnused(Context context, long listID, long numberOfDays) {
+		int numberOfCheckedItems = -1;
+		if (listID > 1) {
+
+			long numberOfMilliSeconds = numberOfDays * milliSecondsPerDay;
+			Calendar now = Calendar.getInstance();
+			long dateTimeCutOff = now.getTimeInMillis() - numberOfMilliSeconds;
+
+			ContentResolver cr = context.getContentResolver();
+			Uri itemUri = CONTENT_URI;
+			String selection = COL_DATE_TIME_LAST_USED + " < ?";
+			String[] selectionArgs = { String.valueOf(dateTimeCutOff) };
+
+			ContentValues values = new ContentValues();
+			values.put(COL_CHECKED, CHECKED_TRUE);
+
+			numberOfCheckedItems = cr.update(itemUri, values, selection, selectionArgs);
+		}
+		return numberOfCheckedItems;
+	}
+
+	public static void TrialUsedTimes(Context context, long listID) {
+		Calendar now = Calendar.getInstance();
+		/*long minus91days = now.getTimeInMillis() - (91 * milliSecondsPerDay);
+		long minus181days = now.getTimeInMillis() - (181 * milliSecondsPerDay);
+		long minus366days = now.getTimeInMillis() - (366 * milliSecondsPerDay);*/
+		long minus91days = Long.valueOf(123456);
+		long minus181days = Long.valueOf(234567);
+		long minus366days = Long.valueOf(345678);
+
+		//Cursor cursor = getItems(context, listID);
+
+		//if (cursor != null) {
+		//cursor.moveToPosition(-1);
+
+		ContentValues values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus366days);
+		UpdateItemFieldValues(context, 1, values);
+
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus366days);
+		UpdateItemFieldValues(context, 2, values);
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus366days);
+		UpdateItemFieldValues(context, 3, values);
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus366days);
+		UpdateItemFieldValues(context, 4, values);
+
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus181days);
+		UpdateItemFieldValues(context, 5, values);
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus181days);
+		UpdateItemFieldValues(context, 6, values);
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus181days);
+		UpdateItemFieldValues(context, 7, values);
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus181days);
+		UpdateItemFieldValues(context, 8, values);
+
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus91days);
+		UpdateItemFieldValues(context, 9, values);
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus91days);
+		UpdateItemFieldValues(context, 10, values);
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus91days);
+		UpdateItemFieldValues(context, 11, values);
+		values = new ContentValues();
+		values.put(COL_DATE_TIME_LAST_USED, minus91days);
+		UpdateItemFieldValues(context, 12, values);
+
+		/*			for (int i = 0; i < 4; i++) {
+						cursor.moveToNext();
+						long itemID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ITEM_ID));
+						UpdateItemFieldValues(context, itemID, values);
+					}
+
+					values = new ContentValues();
+					values.put(COL_DATE_TIME_LAST_USED, minus181days);
+					for (int i = 0; i < 4; i++) {
+						cursor.moveToNext();
+						long itemID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ITEM_ID));
+						UpdateItemFieldValues(context, itemID, values);
+					}
+
+					values = new ContentValues();
+					values.put(COL_DATE_TIME_LAST_USED, minus91days);
+					for (int i = 0; i < 4; i++) {
+						cursor.moveToNext();
+						long itemID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ITEM_ID));
+						UpdateItemFieldValues(context, itemID, values);
+					}*/
+		//cursor.close();
+		//}
+
 	}
 
 	public static int MoveItem(Context context, long itemID, long newListID) {
@@ -1005,5 +1146,4 @@ public class ItemsTable {
 		}
 		return numberOfDeletedRecords;
 	}
-
 }

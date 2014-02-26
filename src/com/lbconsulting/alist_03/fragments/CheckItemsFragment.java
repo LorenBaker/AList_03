@@ -17,71 +17,50 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.lbconsulting.alist_03.R;
-import com.lbconsulting.alist_03.adapters.ItemsCursorAdaptor;
-import com.lbconsulting.alist_03.adapters.StoresSpinnerCursorAdapter;
+import com.lbconsulting.alist_03.adapters.CheckItemsCursorAdaptor;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
-import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
-import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
-/*import android.app.Fragment;*/
-
-public class ListsFragment extends Fragment
+public class CheckItemsFragment extends Fragment
 		implements LoaderManager.LoaderCallbacks<Cursor> {
 
-	//OnListItemLongClickListener mListItemLongClickCallback;
-
-	// Container Activity must implement this interface
-	public interface OnListItemLongClickListener {
-		public void onListItemLongClick(int position, long itemID);
-	}
-
-	//OnListItemSelectedListener mListsCallback;
-	//private static final int LISTS_LOADER_ID = 1;
 	private static final int ITEMS_LOADER_ID = 2;
-	private static final int STORES_LOADER_ID = 3;
-	//private static final int GROUPS_LOADER_ID = 4;
-
-	private String[] loaderNames = { "Lists_Loader", "Items_Loader", "Stores_Loader", "Groups_Loader" };
 
 	private long mActiveListID = -9999;
 	private long mActiveItemID = -9999;
+	private int mActivePosition = -9999;
 
 	private ListSettings listSettings;
 
-	//private Cursor mList;
 	private TextView mListTitle;
 	private ListView mItemsListView;
 	private Spinner mStoreSpinner;
 
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
-	private LoaderManager.LoaderCallbacks<Cursor> mListsFragmentCallbacks;
-	private ItemsCursorAdaptor mItemsCursorAdaptor;
-	private StoresSpinnerCursorAdapter mStoresSpinnerCursorAdapter;
-	//private GroupsSpinnerCursorAdapter mGroupsSpinnerCursorAdapter;
+	private LoaderManager.LoaderCallbacks<Cursor> mCheckItemsFragmentCallbacks;
+	private CheckItemsCursorAdaptor mCheckItemsCursorAdaptor;
 
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
 
 	private boolean checkListID(String method) {
 		if (mActiveListID < 2) {
-			MyLog.e("ListsFragment", method + "; listID = " + mActiveListID + " is less than 2!!!!");
+			MyLog.e("CheckItemsFragment", method + "; listID = " + mActiveListID + " is less than 2!!!!");
 		} else {
-			MyLog.i("ListsFragment", method + "; listID = " + mActiveListID);
+			MyLog.i("CheckItemsFragment", method + "; listID = " + mActiveListID);
 		}
 		return (mActiveListID > 1);
 	}
 
-	public ListsFragment() {
+	public CheckItemsFragment() {
 		// Empty constructor
 	}
 
@@ -91,14 +70,14 @@ public class ListsFragment extends Fragment
 	 * @param itemID
 	 * @return EditItemDialogFragment
 	 */
-	public static ListsFragment newInstance(long newListID) {
+	public static CheckItemsFragment newInstance(long newListID) {
 
 		if (newListID < 2) {
-			MyLog.e("ListsFragment: newInstance; listID = " + newListID, " is less than 2!!!!");
+			MyLog.e("CheckItemsFragment: newInstance; listID = " + newListID, " is less than 2!!!!");
 			return null;
 		} else {
 
-			ListsFragment f = new ListsFragment();
+			CheckItemsFragment f = new CheckItemsFragment();
 
 			// Supply listID input as an argument.
 			Bundle args = new Bundle();
@@ -131,11 +110,6 @@ public class ListsFragment extends Fragment
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-		// MTM The real issue was in this method.  You were using getActivity().findViewById to resolve the views to modify.  Problem is, there are going to be a couple
-		// - other of those Fragments in the view hierarchy of the Activity - notably the ones before and after this Fragment.  So, to properly initialize this Fragment we need to treat
-		// - it as the holder for the views based on the passed in container.  So we inflate this into a view and use findViewById on that smaller hierarchy to properly set the Spinner and ListView.
-
 		checkListID("onCreateView");
 
 		if (savedInstanceState != null && savedInstanceState.containsKey("listID")) {
@@ -156,46 +130,20 @@ public class ListsFragment extends Fragment
 		mListTitle.setTextColor(this.listSettings.getTitleTextColor());
 
 		mStoreSpinner = (Spinner) view.findViewById(R.id.spinStores);
-		mStoresSpinnerCursorAdapter = new StoresSpinnerCursorAdapter(getActivity(), null, 0, listSettings);
-		mStoreSpinner.setAdapter(mStoresSpinnerCursorAdapter);
-		if (listSettings.getShowStores()) {
-			mStoreSpinner.setBackgroundColor(this.listSettings.getTitleBackgroundColor());
-			mStoreSpinner.setVisibility(View.VISIBLE);
-		} else {
-			mStoreSpinner.setVisibility(View.GONE);
-		}
+		mStoreSpinner.setVisibility(View.GONE);
 
-		mItemsCursorAdaptor = new ItemsCursorAdaptor(getActivity(), null, 0, listSettings);
+		mCheckItemsCursorAdaptor = new CheckItemsCursorAdaptor(getActivity(), null, 0, listSettings);
 		mItemsListView = (ListView) view.findViewById(R.id.itemsListView);
-		mItemsListView.setAdapter(mItemsCursorAdaptor);
+		mItemsListView.setAdapter(mCheckItemsCursorAdaptor);
 		mItemsListView.setBackgroundColor(this.listSettings.getListBackgroundColor());
 
-		mListsFragmentCallbacks = this;
+		mCheckItemsFragmentCallbacks = this;
 
 		mItemsListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				ItemsTable.ToggleStrikeOut(getActivity(), id);
+				ItemsTable.ToggleCheckBox(getActivity(), id);
 			}
-		});
-
-		mStoreSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-			@Override
-			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				ContentValues cv = new ContentValues();
-				cv.put(ListsTable.COL_STORE_ID, id);
-				listSettings.updateListsTableFieldValues(cv);
-				//listSettings.setStoreID(id);
-
-				long storeIDCheck = listSettings.getStoreID();
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> parent) {
-				// TODO Auto-generated method stub
-			}
-
 		});
 
 		mItemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -224,13 +172,8 @@ public class ListsFragment extends Fragment
 	public void onActivityCreated(Bundle savedInstanceState) {
 		checkListID("onActivityCreated");
 		mLoaderManager = getLoaderManager();
-		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
-		mLoaderManager.initLoader(STORES_LOADER_ID, null, mListsFragmentCallbacks);
+		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
 		super.onActivityCreated(savedInstanceState);
-	}
-
-	public void DeleteList() {
-		ListsTable.DeleteList(getActivity(), mActiveListID);
 	}
 
 	@Override
@@ -243,13 +186,12 @@ public class ListsFragment extends Fragment
 	public void onResume() {
 		super.onResume();
 
-		MyLog.i("ListsFragment", "onResume()");
+		MyLog.i("CheckItemsFragment", "onResume()");
 
 		Bundle bundle = this.getArguments();
 		if (bundle != null) {
 			mActiveListID = bundle.getLong("listID", 0);
 		}
-
 		listSettings = new ListSettings(getActivity(), mActiveListID);
 
 		checkListID("onResume");
@@ -262,7 +204,7 @@ public class ListsFragment extends Fragment
 	public void onPause() {
 		super.onPause();
 
-		MyLog.i("ListsFragment", "onPause()");
+		MyLog.i("CheckItemsFragment", "onPause()");
 
 		checkListID("onPause");
 
@@ -270,8 +212,9 @@ public class ListsFragment extends Fragment
 		View v = mItemsListView.getChildAt(0);
 		int ListViewTop = (v == null) ? 0 : v.getTop();
 		ContentValues newFieldValues = new ContentValues();
-		newFieldValues.put(ListsTable.COL_LISTVIEW_FIRST_VISIBLE_POSITION, mItemsListView.getFirstVisiblePosition());
-		newFieldValues.put(ListsTable.COL_LISTVIEW_TOP, ListViewTop);
+		newFieldValues.put(ListsTable.COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION,
+				mItemsListView.getFirstVisiblePosition());
+		newFieldValues.put(ListsTable.COL_MASTER_LISTVIEW_TOP, ListViewTop);
 		ListsTable.UpdateListsTableFieldValues(getActivity(), mActiveListID, newFieldValues);
 	}
 
@@ -305,55 +248,53 @@ public class ListsFragment extends Fragment
 		checkListID("onViewCreated");
 	}
 
-	/*	public void UnStrikeAndDeselectAllStruckOutItems() {
-			ItemsTable.UnStrikeAndDeselectAllStruckOutItems(getActivity(), mActiveListID,
-					listSettings.getDeleteNoteUponDeselectingItem());
-		}*/
-
-	/*	public void DeselectAllItemsInList() {
-			ItemsTable
-					.DeselectAllItemsInList(getActivity(), mActiveListID, listSettings.getDeleteNoteUponDeselectingItem());
-		}*/
-
-	public void showListTitle(String newListTitle) {
-		mListTitle.setText(newListTitle);
-	}
-
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String loaderName = loaderNames[id - 1];
-		checkListID("onCreateLoader; " + loaderName);
+		checkListID("onCreateLoader; id = " + id);
 
 		CursorLoader cursorLoader = null;
+		String selection = null;
 
 		switch (id) {
 
 		case ITEMS_LOADER_ID:
-			try {
-				cursorLoader = ItemsTable.getAllSelectedItemsInList(getActivity(), mActiveListID, true,
-						ItemsTable.SORT_ORDER_ITEM_NAME);
+			int masterListSortOrder = listSettings.getMasterListSortOrder();
+			String sortOrder = "";
+			switch (masterListSortOrder) {
+			case ListPreferencesFragment.ALPHABETICAL:
+				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+				break;
 
-			} catch (SQLiteException e) {
-				MyLog.e("ListsFragment: onCreateLoader SQLiteException: ", e.toString());
-				return null;
+			case ListPreferencesFragment.BY_GROUP:
+				sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
+				break;
 
-			} catch (IllegalArgumentException e) {
-				MyLog.e("ListsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
-				return null;
+			case ListPreferencesFragment.SELECTED_AT_TOP:
+				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
+				break;
+
+			case ListPreferencesFragment.SELECTED_AT_BOTTOM:
+				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
+				break;
+
+			case ListPreferencesFragment.LAST_USED:
+				sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
+				break;
+
+			default:
+				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+				break;
 			}
-			break;
 
-		case STORES_LOADER_ID:
 			try {
-				cursorLoader = StoresTable.getAllStoresInList(getActivity(), mActiveListID,
-						StoresTable.SORT_ORDER_STORE_NAME);
+				cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
 
 			} catch (SQLiteException e) {
-				MyLog.e("ListsFragment: onCreateLoader SQLiteException: ", e.toString());
+				MyLog.e("CheckItemsFragment: onCreateLoader SQLiteException: ", e.toString());
 				return null;
 
 			} catch (IllegalArgumentException e) {
-				MyLog.e("ListsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
+				MyLog.e("CheckItemsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
 				return null;
 			}
 			break;
@@ -367,30 +308,18 @@ public class ListsFragment extends Fragment
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor newCursor) {
-
-		// Log out the loader information for comparison
-		MyLog.i("ListsFragment", "onLoadFinished; loader: " + loader.toString());
-
 		int id = loader.getId();
-		String loaderName = loaderNames[id - 1];
-		checkListID("onLoadFinished; " + loaderName);
-
+		MyLog.i("CheckItemsFragment: onLoadFinished; id = " + id, "; listID = " + mActiveListID);
 		// The asynchronous load is complete and the newCursor is now available for use. 
+		// Update the adapter to show the changed data.
 		switch (loader.getId()) {
 		case ITEMS_LOADER_ID:
-			mItemsCursorAdaptor.swapCursor(newCursor);
-
+			mCheckItemsCursorAdaptor.swapCursor(newCursor);
 			if (flag_FirstTimeLoadingItemDataSinceOnResume) {
-				mItemsListView.setSelectionFromTop(listSettings.getListViewFirstVisiblePosition(),
-						listSettings.getListViewTop());
+				mItemsListView.setSelectionFromTop(
+						listSettings.getMasterListViewFirstVisiblePosition(), listSettings.getMasterListViewTop());
 				flag_FirstTimeLoadingItemDataSinceOnResume = false;
 			}
-
-			break;
-
-		case STORES_LOADER_ID:
-			mStoresSpinnerCursorAdapter.swapCursor(newCursor);
-			mStoreSpinner.setSelection(AListUtilities.getIndex(mStoreSpinner, listSettings.getStoreID()));
 			break;
 
 		default:
@@ -402,21 +331,12 @@ public class ListsFragment extends Fragment
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
 		int id = loader.getId();
-		String loaderName = loaderNames[id - 1];
-		checkListID("onLoaderReset; " + loaderName);
+		MyLog.i("CheckItemsFragment: onLoaderReset; id = " + id, "; listID = " + mActiveListID);
 
 		switch (loader.getId()) {
 		case ITEMS_LOADER_ID:
-			mItemsCursorAdaptor.swapCursor(null);
+			mCheckItemsCursorAdaptor.swapCursor(null);
 			break;
-
-		case STORES_LOADER_ID:
-			mStoresSpinnerCursorAdapter.swapCursor(null);
-			break;
-
-		/*case GROUPS_LOADER_ID:
-			mGroupsSpinnerCursorAdapter.swapCursor(null);
-			break;*/
 
 		default:
 			break;

@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.ActionBar.OnNavigationListener;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
@@ -16,7 +17,6 @@ import android.support.v4.content.Loader;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.ListsSpinnerCursorAdapter;
 import com.lbconsulting.alist_03.classes.ListSettings;
@@ -154,26 +154,35 @@ public class MasterListActivity extends FragmentActivity implements LoaderManage
 
 		case R.id.action_clearAllSelectedItems:
 			ItemsTable.DeselectAllItemsInList(this, mActiveListID, mListSettings.getDeleteNoteUponDeselectingItem());
-			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
 		case R.id.action_deleteAllItems:
 			DeleteAllItems();
-
-			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
 		case R.id.action_cullItems:
-			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			StartCheckItemsActivity();
+			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
 		case R.id.action_about:
-			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			StartAboutActivity();
+			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 		default:
 			return super.onMenuItemSelected(featureId, item);
 		}
 
+	}
+
+	private void StartCheckItemsActivity() {
+		Intent checkItemsActivityIntent = new Intent(this, CheckItemsActivity.class);
+		startActivity(checkItemsActivityIntent);
+	}
+
+	private void StartAboutActivity() {
+		Intent intent = new Intent(this, AboutActivity.class);
+		startActivity(intent);
 	}
 
 	private void DeleteAllItems() {
