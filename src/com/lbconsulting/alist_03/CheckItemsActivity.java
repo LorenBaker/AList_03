@@ -1,12 +1,20 @@
 package com.lbconsulting.alist_03;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
@@ -17,6 +25,7 @@ import com.lbconsulting.alist_03.adapters.CheckItemsPagerAdapter;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
+import com.lbconsulting.alist_03.dialogs.MoveCheckedItemsDialogFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class CheckItemsActivity extends FragmentActivity {
@@ -28,6 +37,8 @@ public class CheckItemsActivity extends FragmentActivity {
 	private int mActiveListPosition = -1;
 	private ListSettings mListSettings;
 	private Cursor mAllListsCursor;
+	private BroadcastReceiver mItemsMovedReceiver;
+	private long mSelectedListID = -1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +51,22 @@ public class CheckItemsActivity extends FragmentActivity {
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
 		mActiveItemID = storedStates.getLong("ActiveItemID", -1);
 		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
+
+		mItemsMovedReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				if (intent.hasExtra("selectedListID")) {
+					// the new list ID has been selected ...
+					mSelectedListID = intent.getLongExtra("selectedListID", -1);
+					int numberOfItemsMoved = ItemsTable.MoveAllCheckedItemsInList(CheckItemsActivity.this,
+							mActiveListID, mSelectedListID);
+
+				}
+			}
+		};
+		// Register to receive messages.
+		String key = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(key));
 
 		getActionBar().setTitle("Cull or Move Items");
 
@@ -63,9 +90,19 @@ public class CheckItemsActivity extends FragmentActivity {
 			public void onPageSelected(int position) {
 				// A list page has been selected
 				SetActiveListID(position);
-				MyLog.d("Lists_ACTIVITY", "onPageSelected() - position = " + position + " ; listID = " + mActiveListID);
+				SetActiveListBroadcastReceivers();
+				MyLog.d("CheckItems_ACTIVITY", "onPageSelected() - position = " + position + " ; listID = "
+						+ mActiveListID);
 			}
 		});
+	}
+
+	protected void SetActiveListBroadcastReceivers() {
+		// Unregister old receiver
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mItemsMovedReceiver);
+		// Register new receiver
+		String key = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(key));
 	}
 
 	@Override
@@ -122,7 +159,6 @@ public class CheckItemsActivity extends FragmentActivity {
 		switch (item.getItemId()) {
 		case R.id.action_deleteCheckedItems:
 			DeleteCheckedItems();
-			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
 		case R.id.action_clearAllCheckedItems:
@@ -130,25 +166,20 @@ public class CheckItemsActivity extends FragmentActivity {
 			return true;
 
 		case R.id.action_moveCheckedItmes:
-			ItemsTable.TrialUsedTimes(this, mActiveListID);
-			//MoveCheckedItems();
+			MoveCheckedItems();
 			//Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
 		case R.id.action_checkUnused90:
 			CheckUnused(90);
-			//Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
 		case R.id.action_checkUnused180:
 			CheckUnused(180);
-			//Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
 		case R.id.action_checkUnused365:
-
 			CheckUnused(365);
-			//Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
 		case R.id.action_sortOrder:
@@ -159,11 +190,6 @@ public class CheckItemsActivity extends FragmentActivity {
 		default:
 			return super.onMenuItemSelected(featureId, item);
 		}
-	}
-
-	private void DoTrialTimes() {
-		// TODO Auto-generated method stub
-
 	}
 
 	private void SetActiveListID(int position) {
@@ -236,8 +262,17 @@ public class CheckItemsActivity extends FragmentActivity {
 	}
 
 	private void MoveCheckedItems() {
-		// TODO Auto-generated method stub
-
+		FragmentManager fm = getSupportFragmentManager();
+		Fragment prev = fm.findFragmentByTag("dialog_move_checked_items");
+		if (prev != null) {
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.remove(prev);
+			ft.commit();
+		}
+		int numberOfCheckedItems = ItemsTable.getNumberOfCheckedItmes(this, mActiveListID);
+		MoveCheckedItemsDialogFragment moveCheckedItemsDialog = MoveCheckedItemsDialogFragment.newInstance(
+				mActiveListID, numberOfCheckedItems);
+		moveCheckedItemsDialog.show(fm, "dialog_move_checked_items");
 	}
 
 	private void CheckUnused(long numberOfDays) {
@@ -255,6 +290,8 @@ public class CheckItemsActivity extends FragmentActivity {
 		if (mAllListsCursor != null) {
 			mAllListsCursor.close();
 		}
+		// Unregister since the activity is about to be closed.
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mItemsMovedReceiver);
 		super.onDestroy();
 	}
 }

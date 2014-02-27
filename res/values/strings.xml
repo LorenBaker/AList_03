@@ -148,5 +148,6 @@
 
     <string name="dialog_title_edit_item">Edit Item</string>
     <string name="dialog_title_delete_all_checked_items">Delete All Checked Items</string>
+    <string name="dialog_title_move_checked_items">Move Checked Items</string>
 
 </resources>

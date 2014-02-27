@@ -267,6 +267,29 @@ public class ListsTable {
 		return cursorLoader;
 	}
 
+	/**
+	 * Returns a CursorLoader with all lists excluding the default list and the
+	 * provided active list.
+	 * 
+	 * @param context
+	 * @param activeListID
+	 * @return
+	 */
+	public static CursorLoader getMoveItemListSelection(Context context, long activeListID) {
+		CursorLoader cursorLoader = null;
+		Uri uri = CONTENT_URI;
+		String[] projection = { COL_LIST_ID, COL_LIST_TITLE };
+		String selection = COL_LIST_ID + "> ? AND " + COL_LIST_ID + " !=  ?";
+		String[] selectionArgs = { String.valueOf(DEFAULT_LIST_PREFERENCES), String.valueOf(activeListID) }; //DEFAULT_LIST_PREFERENCES=1
+		String sortOrder = SORT_ORDER_LIST_TITLE;
+		try {
+			cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+		} catch (Exception e) {
+			MyLog.e("Exception error  in ItemsTable: getMoveItemListSelection. ", e.toString());
+		}
+		return cursorLoader;
+	}
+
 	public static int getNumberOfLists(Context context) {
 		int numberOfLists = -1;
 		Cursor cursor = getAllLists(context);

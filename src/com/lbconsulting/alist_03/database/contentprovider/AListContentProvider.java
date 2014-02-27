@@ -409,7 +409,14 @@ public class AListContentProvider extends ContentProvider {
 		int uriType = sURIMatcher.match(uri);
 		switch (uriType) {
 		case ITEMS_MULTI_ROWS:
-			values.put(ItemsTable.COL_DATE_TIME_LAST_USED, Calendar.getInstance().getTimeInMillis());
+			if (values.containsKey(ItemsTable.COL_SELECTED)) {
+				// update time last used if item is being selected
+				int selectedValue = values.getAsInteger(ItemsTable.COL_SELECTED);
+				if (selectedValue == 1) {
+					values.put(ItemsTable.COL_DATE_TIME_LAST_USED, Calendar.getInstance().getTimeInMillis());
+				}
+			}
+
 			updateCount = db.update(ItemsTable.TABLE_ITEMS, values, selection, selectionArgs);
 			break;
 
@@ -418,8 +425,15 @@ public class AListContentProvider extends ContentProvider {
 			rowID = uri.getLastPathSegment();
 			selection = ItemsTable.COL_ITEM_ID + "=" + rowID
 					+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
+
+			if (values.containsKey(ItemsTable.COL_SELECTED)) {
+				// update time last used if item is being selected
+				int selectedValue = values.getAsInteger(ItemsTable.COL_SELECTED);
+				if (selectedValue == 1) {
+					values.put(ItemsTable.COL_DATE_TIME_LAST_USED, Calendar.getInstance().getTimeInMillis());
+				}
+			}
 			// Perform the update
-			values.put(ItemsTable.COL_DATE_TIME_LAST_USED, Calendar.getInstance().getTimeInMillis());
 			updateCount = db.update(ItemsTable.TABLE_ITEMS, values, selection, selectionArgs);
 			break;
 
