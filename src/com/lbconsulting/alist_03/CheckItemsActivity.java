@@ -2,6 +2,7 @@ package com.lbconsulting.alist_03;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -61,6 +62,30 @@ public class CheckItemsActivity extends FragmentActivity {
 					int numberOfItemsMoved = ItemsTable.MoveAllCheckedItemsInList(CheckItemsActivity.this,
 							mActiveListID, mSelectedListID);
 
+					AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
+					// set title
+					Resources res = getResources();
+					String numberOfCheckedItemsMoved = res.getQuantityString(R.plurals.numberOfCheckedItems,
+							numberOfItemsMoved, numberOfItemsMoved);
+					StringBuilder sb = new StringBuilder();
+					sb.append("Successfully moved  ");
+					sb.append(numberOfCheckedItemsMoved);
+					sb.append(".");
+					builder.setTitle(sb.toString());
+					builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// close the dialog box and do nothing
+							dialog.cancel();
+						}
+					});
+
+					// create alert dialog
+					AlertDialog alertDialog = builder.create();
+					// show it
+					alertDialog.show();
+
 				}
 			}
 		};
@@ -68,7 +93,7 @@ public class CheckItemsActivity extends FragmentActivity {
 		String key = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(key));
 
-		getActionBar().setTitle("Cull or Move Items");
+		getActionBar().setTitle(R.string.action_bar_title_cull_or_move_items);
 
 		mAllListsCursor = ListsTable.getAllLists(this);
 		mListSettings = new ListSettings(this, mActiveListID);
@@ -208,47 +233,49 @@ public class CheckItemsActivity extends FragmentActivity {
 	private void DeleteCheckedItems() {
 		int numberOfCheckedItems = ItemsTable.getNumberOfCheckedItmes(this, mActiveListID);
 
-		if (numberOfCheckedItems > -1) {
+		if (numberOfCheckedItems > 0) {
 			Resources res = getResources();
 			String numberOfCheckedItemsFound = res.getQuantityString(R.plurals.numberOfCheckedItems,
 					numberOfCheckedItems, numberOfCheckedItems);
-			String msg = "";
-
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			// set title
 			builder.setTitle(R.string.dialog_title_delete_all_checked_items);
 
-			if (numberOfCheckedItems > 0) {
-				msg = "Permanently delete " + numberOfCheckedItemsFound + "?";
-				builder
-						.setMessage(msg)
-						.setCancelable(false)
-						.setPositiveButton(R.string.btn_yes_text, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								ItemsTable.DeleteAllCheckedItemsInList(CheckItemsActivity.this, mActiveListID);
-							}
-						})
-						.setNegativeButton(R.string.btn_no_text, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								// if this button is clicked,
-								// close the dialog box and do nothing
-								dialog.cancel();
-							}
-						});
-			} else {
-				//numberOfCheckedItems == 0
-				msg = numberOfCheckedItemsFound + "!";
-				builder
-						.setMessage(msg)
-						.setCancelable(false)
-						.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								// if this button is clicked,
-								// close the dialog box and do nothing
-								dialog.cancel();
-							}
-						});
-			}
+			String msg = "Permanently delete " + numberOfCheckedItemsFound + "?";
+			builder
+					.setMessage(msg)
+					.setCancelable(false)
+					.setPositiveButton(R.string.btn_yes_text, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							// delete all checked items
+							ItemsTable.DeleteAllCheckedItemsInList(CheckItemsActivity.this, mActiveListID);
+						}
+					})
+					.setNegativeButton(R.string.btn_no_text, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							// close the dialog box and do nothing
+							dialog.cancel();
+						}
+					});
+
+			// create alert dialog
+			AlertDialog alertDialog = builder.create();
+			// show it
+			alertDialog.show();
+		} else {
+			// number of checked items == 0
+			AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
+			// set title and message
+			builder.setTitle("Unable to delete items.");
+			builder.setMessage("No checked items available!");
+			builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// close the dialog box and do nothing
+					dialog.cancel();
+				}
+			});
 
 			// create alert dialog
 			AlertDialog alertDialog = builder.create();
@@ -262,17 +289,58 @@ public class CheckItemsActivity extends FragmentActivity {
 	}
 
 	private void MoveCheckedItems() {
-		FragmentManager fm = getSupportFragmentManager();
-		Fragment prev = fm.findFragmentByTag("dialog_move_checked_items");
-		if (prev != null) {
-			FragmentTransaction ft = fm.beginTransaction();
-			ft.remove(prev);
-			ft.commit();
+		int numberOfLists = ListsTable.getNumberOfLists(this);
+		if (numberOfLists > 1) {
+			FragmentManager fm = getSupportFragmentManager();
+			Fragment prev = fm.findFragmentByTag("dialog_move_checked_items");
+			if (prev != null) {
+				FragmentTransaction ft = fm.beginTransaction();
+				ft.remove(prev);
+				ft.commit();
+			}
+			int numberOfCheckedItems = ItemsTable.getNumberOfCheckedItmes(this, mActiveListID);
+			if (numberOfCheckedItems > 0) {
+				MoveCheckedItemsDialogFragment moveCheckedItemsDialog = MoveCheckedItemsDialogFragment.newInstance(
+						mActiveListID, numberOfCheckedItems);
+				moveCheckedItemsDialog.show(fm, "dialog_move_checked_items");
+			} else {
+				AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
+				// set title and message
+				builder.setTitle("Unable to move items.");
+				builder.setMessage("No checked items available!");
+				builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// close the dialog box and do nothing
+						dialog.cancel();
+					}
+				});
+
+				// create alert dialog
+				AlertDialog alertDialog = builder.create();
+				// show it
+				alertDialog.show();
+			}
+		} else {
+			AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
+			// set title and message
+			builder.setTitle("Unable to move items.");
+			builder.setMessage("No target list available. There must be more than one list in the database before you can move items.");
+			builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// close the dialog box and do nothing
+					dialog.cancel();
+				}
+			});
+
+			// create alert dialog
+			AlertDialog alertDialog = builder.create();
+			// show it
+			alertDialog.show();
 		}
-		int numberOfCheckedItems = ItemsTable.getNumberOfCheckedItmes(this, mActiveListID);
-		MoveCheckedItemsDialogFragment moveCheckedItemsDialog = MoveCheckedItemsDialogFragment.newInstance(
-				mActiveListID, numberOfCheckedItems);
-		moveCheckedItemsDialog.show(fm, "dialog_move_checked_items");
 	}
 
 	private void CheckUnused(long numberOfDays) {
@@ -281,6 +349,36 @@ public class CheckItemsActivity extends FragmentActivity {
 
 	private void ChangeSortOrder() {
 		// TODO Auto-generated method stub
+		int numberOfItmesProcessed = 0;
+		Cursor cursor = ItemsTable.getAllItems(this);
+		if (cursor != null) {
+			long itemID = -1;
+			cursor.moveToPosition(-1);
+			while (cursor.moveToNext()) {
+				itemID = cursor.getLong(cursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_ID));
+				ContentValues values = new ContentValues();
+				values.put(ItemsTable.COL_MANUAL_SORT_ORDER, itemID);
+				numberOfItmesProcessed += ItemsTable.UpdateItemFieldValues(this, itemID, values);
+			}
+			cursor.close();
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
+			// set title and message
+			builder.setTitle(numberOfItmesProcessed + " items updated.");
+			builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// close the dialog box and do nothing
+					dialog.cancel();
+				}
+			});
+
+			// create alert dialog
+			AlertDialog alertDialog = builder.create();
+			// show it
+			alertDialog.show();
+		}
 
 	}
 

@@ -323,6 +323,24 @@ public class ItemsTable {
 		return cursor;
 	}
 
+	public static Cursor getAllItems(Context context) {
+		Cursor cursor = null;
+
+		Uri uri = CONTENT_URI;
+		String[] projection = PROJECTION_ALL;
+		String selection = null;
+		String selectionArgs[] = null;
+		String sortOrder = null;
+
+		ContentResolver cr = context.getContentResolver();
+		try {
+			cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+		} catch (Exception e) {
+			MyLog.e("Exception error  in ItemsTable: getAllItems. ", e.toString());
+		}
+		return cursor;
+	}
+
 	public static Cursor getAllCheckedItemsInList(Context context, long listID, boolean checked) {
 		Cursor cursor = null;
 		int checkedValue = AListUtilities.boolToInt(checked);

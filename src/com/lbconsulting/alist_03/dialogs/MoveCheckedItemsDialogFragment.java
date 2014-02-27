@@ -93,18 +93,9 @@ public class MoveCheckedItemsDialogFragment extends DialogFragment implements Lo
 		}
 
 		View view = inflater.inflate(R.layout.dialog_move_item, container);
-		spinLists = (Spinner) view.findViewById(R.id.spinLists);
-
 		tvMessage = (TextView) view.findViewById(R.id.tvMessage);
-		Resources res = getResources();
-		String numberOfCheckedItemsFound = res.getQuantityString(R.plurals.numberOfCheckedItems,
-				mNumberOfCheckedItems, mNumberOfCheckedItems);
-		StringBuilder sb = new StringBuilder();
-		sb.append("Move ");
-		sb.append(numberOfCheckedItemsFound);
-		sb.append("?");
-		sb.append(System.getProperty("line.separator"));
-		tvMessage.setText(sb.toString());
+		tvMessage.setText("Please select the target list.");
+		spinLists = (Spinner) view.findViewById(R.id.spinLists);
 
 		btnApply = (Button) view.findViewById(R.id.btnApply);
 		btnApply.setOnClickListener(new OnClickListener() {
@@ -127,7 +118,16 @@ public class MoveCheckedItemsDialogFragment extends DialogFragment implements Lo
 			});
 		}
 
-		getDialog().setTitle(R.string.dialog_title_move_checked_items);
+		Resources res = getResources();
+		String numberOfCheckedItemsFound = res.getQuantityString(R.plurals.numberOfCheckedItems,
+				mNumberOfCheckedItems, mNumberOfCheckedItems);
+		StringBuilder sb = new StringBuilder();
+		sb.append("Move ");
+		sb.append(numberOfCheckedItemsFound);
+		sb.append("?");
+		/*sb.append(System.getProperty("line.separator"));*/
+		//sb.append(" Please select target the list.");
+		getDialog().setTitle(sb.toString());
 		return view;
 	}
 
