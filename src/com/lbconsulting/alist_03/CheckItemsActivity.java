@@ -208,7 +208,7 @@ public class CheckItemsActivity extends FragmentActivity {
 			return true;
 
 		case R.id.action_sortOrder:
-			ChangeSortOrder();
+			//ChangeSortOrder();
 			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
@@ -347,7 +347,7 @@ public class CheckItemsActivity extends FragmentActivity {
 		ItemsTable.CheckItemsUnused(this, mActiveListID, numberOfDays);
 	}
 
-	private void ChangeSortOrder() {
+	private void ResetManualSortOrderToIDs() {
 		// TODO Auto-generated method stub
 		int numberOfItmesProcessed = 0;
 		Cursor cursor = ItemsTable.getAllItems(this);

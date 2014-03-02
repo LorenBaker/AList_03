@@ -5,7 +5,6 @@ import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
 import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -16,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ScrollView;
-import com.lbconsulting.alist_03.R;
 
 import com.lbconsulting.alist_03.adapters.ColorsPreviewPagerAdapter;
 import com.lbconsulting.alist_03.classes.ListSettings;
@@ -136,25 +134,6 @@ public class ColorsActivity extends FragmentActivity {
 		btnPreset3 = (Button) findViewById(R.id.btnPreset3);
 		btnPreset4 = (Button) findViewById(R.id.btnPreset4);
 		btnPreset5 = (Button) findViewById(R.id.btnPreset5);
-
-		Resources res = this.getResources();
-		btnPreset0.setBackgroundColor(R.color.preset0_list_background);
-		btnPreset0.setTextColor(R.color.preset0_list_normal_text);
-
-		btnPreset1.setBackgroundColor(R.color.preset1_list_background);
-		btnPreset1.setTextColor(R.color.preset1_list_normal_text);
-
-		btnPreset2.setBackgroundColor(R.color.preset2_list_background);
-		btnPreset2.setTextColor(R.color.preset2_list_normal_text);
-
-		btnPreset3.setBackgroundColor(R.color.preset3_list_background);
-		btnPreset3.setTextColor(R.color.preset3_list_normal_text);
-
-		btnPreset4.setBackgroundColor(R.color.preset4_list_background);
-		btnPreset4.setTextColor(R.color.preset4_list_normal_text);
-
-		btnPreset5.setBackgroundColor(R.color.preset5_list_background);
-		btnPreset5.setTextColor(R.color.preset5_list_normal_text);
 
 	}
 

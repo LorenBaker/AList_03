@@ -18,7 +18,7 @@ public class ColorsPreviewFragment extends Fragment {
 
 	private long mActiveListID = -9999;
 
-	private ListSettings listSettings;
+	private ListSettings mListSettings;
 
 	private LinearLayout colorsPreviewFragmentLinearLayout;
 	private TextView tvListTitle;
@@ -27,6 +27,14 @@ public class ColorsPreviewFragment extends Fragment {
 	private TextView tvListItemSeparator;
 	private TextView tvMasterListNotSelectedText;
 	private TextView tvMasterListSelectedText;
+
+	private int mTitle_background_color;
+	private int mTitle_text_color;
+	private int mList_background_color;
+	private int mList_normal_text_color;
+	private int mList_strikeout_text_color;
+	private int mSeparator_background_color;
+	private int mSeparator_text_color;
 
 	public ColorsPreviewFragment() {
 		// Empty constructor
@@ -89,42 +97,31 @@ public class ColorsPreviewFragment extends Fragment {
 
 		View view = inflater.inflate(R.layout.frag_colors_preview, container, false);
 
-		listSettings = new ListSettings(getActivity(), mActiveListID);
-		if (listSettings != null) {
+		mListSettings = new ListSettings(getActivity(), mActiveListID);
+		if (mListSettings != null) {
+
+			getColorsFromListSettings();
 
 			colorsPreviewFragmentLinearLayout = (LinearLayout) view
 					.findViewById(R.id.colorsPreviewFragmentLinearLayout);
-			if (colorsPreviewFragmentLinearLayout != null) {
-				colorsPreviewFragmentLinearLayout.setBackgroundColor(listSettings.getListBackgroundColor());
-			}
 
 			tvListTitle = (TextView) view.findViewById(R.id.tvListTitle);
 			if (tvListTitle != null) {
-				tvListTitle.setText(listSettings.getListTitle());
-				tvListTitle.setBackgroundColor(this.listSettings.getTitleBackgroundColor());
-				tvListTitle.setTextColor(this.listSettings.getTitleTextColor());
+				tvListTitle.setText(mListSettings.getListTitle());
 			}
 
 			tvListNormalText = (TextView) view.findViewById(R.id.tvListNormalText);
-			if (tvListNormalText != null) {
-				tvListNormalText.setBackgroundColor(this.listSettings.getListBackgroundColor());
-				tvListNormalText.setTextColor(this.listSettings.getItemNormalTextColor());
-			}
 
 			tvListStrikeOutText = (TextView) view.findViewById(R.id.tvListStrikeOutText);
 			if (tvListStrikeOutText != null) {
-				tvListStrikeOutText.setBackgroundColor(this.listSettings.getListBackgroundColor());
-				tvListStrikeOutText.setTextColor(this.listSettings.getItemStrikeoutTextColor());
 				tvListStrikeOutText.setPaintFlags(tvListStrikeOutText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
 			}
 
 			tvListItemSeparator = (TextView) view.findViewById(R.id.tvListItemSeparator);
-			if (tvListItemSeparator != null) {
-				tvListItemSeparator.setBackgroundColor(this.listSettings.getSeparatorBackgroundColor());
-				tvListItemSeparator.setTextColor(this.listSettings.getSeparatorTextColor());
-			}
 
-			tvMasterListNotSelectedText = (TextView) view.findViewById(R.id.tvMasterListNotSelectedText);
+			setAllColors();
+
+			/*tvMasterListNotSelectedText = (TextView) view.findViewById(R.id.tvMasterListNotSelectedText);
 			if (tvMasterListNotSelectedText != null) {
 				tvMasterListNotSelectedText.setBackgroundColor(this.listSettings.getMasterListBackgroundColor());
 				tvMasterListNotSelectedText.setTextColor(this.listSettings.getMasterListItemNormalTextColor());
@@ -134,10 +131,80 @@ public class ColorsPreviewFragment extends Fragment {
 			if (tvMasterListSelectedText != null) {
 				tvMasterListSelectedText.setBackgroundColor(this.listSettings.getMasterListBackgroundColor());
 				tvMasterListSelectedText.setTextColor(this.listSettings.getMasterListItemSelectedTextColor());
-			}
+			}*/
 
 		}
 		return view;
+	}
+
+	private void setAllColors() {
+		setPreviewFragmentLinearLayoutBackgroundColor();
+		setTitleBackgroundColor();
+		setTitleTextColor();
+		setListBackgroundColor();
+		setItemNormalTextColor();
+		setItemStrikeoutTextColor();
+		setSeparatorBackgroundColor();
+		setSeparatorTextColor();
+	}
+
+	private void setPreviewFragmentLinearLayoutBackgroundColor() {
+		if (colorsPreviewFragmentLinearLayout != null) {
+			colorsPreviewFragmentLinearLayout.setBackgroundColor(mList_background_color);
+		}
+	}
+
+	private void setTitleBackgroundColor() {
+		if (tvListTitle != null) {
+			tvListTitle.setBackgroundColor(mTitle_background_color);
+		}
+	}
+
+	private void setTitleTextColor() {
+		if (tvListTitle != null) {
+			tvListTitle.setTextColor(mTitle_text_color);
+		}
+	}
+
+	private void setListBackgroundColor() {
+		if (tvListNormalText != null && tvListStrikeOutText != null) {
+			tvListNormalText.setBackgroundColor(mList_background_color);
+			tvListStrikeOutText.setBackgroundColor(mList_background_color);
+		}
+	}
+
+	private void setItemNormalTextColor() {
+		if (tvListNormalText != null) {
+			tvListNormalText.setTextColor(mList_normal_text_color);
+		}
+	}
+
+	private void setItemStrikeoutTextColor() {
+		if (tvListStrikeOutText != null) {
+			tvListStrikeOutText.setTextColor(mList_strikeout_text_color);
+		}
+	}
+
+	private void setSeparatorBackgroundColor() {
+		if (tvListItemSeparator != null) {
+			tvListItemSeparator.setBackgroundColor(mSeparator_background_color);
+		}
+	}
+
+	private void setSeparatorTextColor() {
+		if (tvListItemSeparator != null) {
+			tvListItemSeparator.setTextColor(mSeparator_text_color);
+		}
+	}
+
+	private void getColorsFromListSettings() {
+		mTitle_background_color = mListSettings.getTitleBackgroundColor();
+		mTitle_text_color = mListSettings.getTitleTextColor();
+		mList_background_color = mListSettings.getListBackgroundColor();
+		mList_normal_text_color = mListSettings.getItemNormalTextColor();
+		mList_strikeout_text_color = mListSettings.getItemStrikeoutTextColor();
+		mSeparator_background_color = mListSettings.getSeparatorBackgroundColor();
+		mSeparator_text_color = mListSettings.getSeparatorTextColor();
 	}
 
 	@Override
@@ -161,7 +228,7 @@ public class ColorsPreviewFragment extends Fragment {
 			mActiveListID = bundle.getLong("listID", 0);
 		}
 
-		listSettings = new ListSettings(getActivity(), mActiveListID);
+		mListSettings = new ListSettings(getActivity(), mActiveListID);
 	}
 
 	@Override

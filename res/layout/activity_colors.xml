@@ -22,14 +22,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_marginRight="4dp"
-                android:layout_weight="1" />
+                android:layout_weight="6" />
 
             <RelativeLayout
                 android:id="@+id/colorsPicker"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_marginRight="4dp"
-                android:layout_weight="1" >
+                android:layout_weight="11" >
             </RelativeLayout>
         </LinearLayout>
 
@@ -56,48 +56,54 @@
                         android:id="@+id/btnPreset0"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="60dp"
                         android:layout_gravity="right"
+                        android:background="@drawable/preset0_background"
                         android:text="@string/btnPreset0_text" />
 
                     <Button
                         android:id="@+id/btnPreset1"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="60dp"
                         android:layout_gravity="right"
+                        android:background="@drawable/preset1_background"
                         android:text="@string/btnPreset1_text" />
 
                     <Button
                         android:id="@+id/btnPreset2"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="60dp"
                         android:layout_gravity="right"
+                        android:background="@drawable/preset2_background"
                         android:text="@string/btnPreset2_text" />
 
                     <Button
                         android:id="@+id/btnPreset3"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="60dp"
                         android:layout_gravity="right"
+                        android:background="@drawable/preset3_background"
                         android:text="@string/btnPreset3_text" />
 
                     <Button
                         android:id="@+id/btnPreset4"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="60dp"
                         android:layout_gravity="right"
+                        android:background="@drawable/preset4_background"
                         android:text="@string/btnPreset4_text" />
 
                     <Button
                         android:id="@+id/btnPreset5"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="60dp"
                         android:layout_gravity="right"
+                        android:background="@drawable/preset5_background"
                         android:text="@string/btnPreset5_text" />
                 </LinearLayout>
             </ScrollView>
@@ -118,7 +124,7 @@
                         android:id="@+id/btnTitleBackground"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="55dp"
                         android:layout_gravity="right"
                         android:text="@string/btnTitleBackground" />
 
@@ -126,7 +132,7 @@
                         android:id="@+id/btnTitleText"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="55dp"
                         android:layout_gravity="right"
                         android:text="@string/btnTitleText" />
 
@@ -134,7 +140,7 @@
                         android:id="@+id/btnListBackground"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="55dp"
                         android:layout_gravity="right"
                         android:text="@string/btnListBackground" />
 
@@ -142,7 +148,7 @@
                         android:id="@+id/btnListNormalText"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="55dp"
                         android:layout_gravity="right"
                         android:text="@string/btnListNormalText" />
 
@@ -150,7 +156,7 @@
                         android:id="@+id/btnListStrikeOutText"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="55dp"
                         android:layout_gravity="right"
                         android:text="@string/btnListStrikeOutText" />
 
@@ -158,7 +164,7 @@
                         android:id="@+id/btnSeparatorBackground"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="55dp"
                         android:layout_gravity="right"
                         android:text="@string/btnSeparatorBackground" />
 
@@ -166,7 +172,7 @@
                         android:id="@+id/btnSeparatorText"
                         style="@android:style/ButtonBar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="55dp"
                         android:layout_gravity="right"
                         android:text="@string/btnSeparatorText" />
                 </LinearLayout>

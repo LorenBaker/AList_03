@@ -27,20 +27,4 @@
 
     <include layout="@layout/list_items_separator" />
 
-    <TextView
-        android:id="@+id/tvMasterListNotSelectedText"
-        style="@android:style/TextAppearance.Medium"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:text="@string/tvMasterListNotSelectedText" />
-
-    <TextView
-        android:id="@+id/tvMasterListSelectedText"
-        style="@android:style/TextAppearance.Medium"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:text="@string/tvMasterListSelectedText" />
-
 </LinearLayout>
