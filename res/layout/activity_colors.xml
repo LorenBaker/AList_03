@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="4dp" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal" >
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="18"
+            android:orientation="vertical" >
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/colorsPreviewFragmentPager"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginRight="4dp"
+                android:layout_weight="1" />
+
+            <RelativeLayout
+                android:id="@+id/colorsPicker"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginRight="4dp"
+                android:layout_weight="1" >
+            </RelativeLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="7"
+            android:baselineAligned="false"
+            android:orientation="vertical" >
+
+            <ScrollView
+                android:id="@+id/presetsScrollView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right" >
+
+                <LinearLayout
+                    android:id="@+id/preSetButtonsLinearLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" >
+
+                    <Button
+                        android:id="@+id/btnPreset0"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnPreset0_text" />
+
+                    <Button
+                        android:id="@+id/btnPreset1"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnPreset1_text" />
+
+                    <Button
+                        android:id="@+id/btnPreset2"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnPreset2_text" />
+
+                    <Button
+                        android:id="@+id/btnPreset3"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnPreset3_text" />
+
+                    <Button
+                        android:id="@+id/btnPreset4"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnPreset4_text" />
+
+                    <Button
+                        android:id="@+id/btnPreset5"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnPreset5_text" />
+                </LinearLayout>
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/pickerScrollView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right" >
+
+                <LinearLayout
+                    android:id="@+id/colorControlButtonsLinearLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" >
+
+                    <Button
+                        android:id="@+id/btnTitleBackground"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnTitleBackground" />
+
+                    <Button
+                        android:id="@+id/btnTitleText"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnTitleText" />
+
+                    <Button
+                        android:id="@+id/btnListBackground"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnListBackground" />
+
+                    <Button
+                        android:id="@+id/btnListNormalText"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnListNormalText" />
+
+                    <Button
+                        android:id="@+id/btnListStrikeOutText"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnListStrikeOutText" />
+
+                    <Button
+                        android:id="@+id/btnSeparatorBackground"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnSeparatorBackground" />
+
+                    <Button
+                        android:id="@+id/btnSeparatorText"
+                        style="@android:style/ButtonBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/btnSeparatorText" />
+                </LinearLayout>
+            </ScrollView>
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnApply"
+        style="@android:style/ButtonBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_apply_text" />
+
+</LinearLayout>

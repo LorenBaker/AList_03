@@ -21,6 +21,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.lbconsulting.alist_03.ColorsActivity;
 import com.lbconsulting.alist_03.ListPreferencesActivity;
 import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
@@ -238,8 +239,9 @@ public class ListPreferencesFragment extends Fragment {
 				break;
 
 			case R.id.btnColors:
-				Toast.makeText(getActivity(), "\"" + "btnColors" + "\"" + " is under construction.", Toast.LENGTH_SHORT)
-						.show();
+				StartColorsActivity();
+				/*				Toast.makeText(getActivity(), "\"" + "btnColors" + "\"" + " is under construction.", Toast.LENGTH_SHORT)
+										.show();*/
 				break;
 
 			case R.id.btnMakeDefaultPreferences:
@@ -285,6 +287,11 @@ public class ListPreferencesFragment extends Fragment {
 			}
 		}
 	};
+
+	private void StartColorsActivity() {
+		Intent colorsActivityIntent = new Intent(getActivity(), ColorsActivity.class);
+		getActivity().startActivity(colorsActivityIntent);
+	}
 
 	private void fillListPreferencesViews() {
 		if (listSettings != null) {

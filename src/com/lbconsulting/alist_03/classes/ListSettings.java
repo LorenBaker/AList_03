@@ -2,8 +2,10 @@ package com.lbconsulting.alist_03.classes;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 
+import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 
@@ -32,7 +34,7 @@ public class ListSettings {
 	}
 
 	private void SetDefaultColors() {
-		//Resources res = context.getResources();
+		Resources res = context.getResources();
 		if (mListID > 0) {
 			// select the new list title's colors
 			ContentValues newDefaultValues = new ContentValues();
@@ -40,22 +42,28 @@ public class ListSettings {
 			switch (selector) {
 			case 0:
 				// Sandy Stone
-				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR, AListUtilities.GetColorInt("#002F2F"));
-				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, AListUtilities.GetColorInt("#EFECCA"));
+				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR,
+						res.getColor(R.color.preset0_title_background));
+				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, res.getColor(R.color.preset0_title_text));
 
-				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#046380"));
-				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR, AListUtilities.GetColorInt("#EFECCA"));
-				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR, AListUtilities.GetColorInt("#A7A37E"));
+				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR,
+						res.getColor(R.color.preset0_list_background));
+				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR,
+						res.getColor(R.color.preset0_list_normal_text));
+				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR,
+						res.getColor(R.color.preset0_list_strikeout_text));
 
 				newDefaultValues
-						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#046380"));
+						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, res.getColor(R.color.preset0_list_background));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#002F2F"));
+						res.getColor(R.color.preset0_list_strikeout_text));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
-						AListUtilities.GetColorInt("#EFECCA"));
+						res.getColor(R.color.preset0_list_normal_text));
 
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#A7A37E"));
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#E6E2AF"));
+				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR,
+						res.getColor(R.color.preset0_separator_background));
+				newDefaultValues
+						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset0_separator_text));
 
 				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 
@@ -63,22 +71,28 @@ public class ListSettings {
 
 			case 1:
 				// Blue Sky
-				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR, AListUtilities.GetColorInt("#16193B"));
-				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, AListUtilities.GetColorInt("#ADD5F7"));
+				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR,
+						res.getColor(R.color.preset1_title_background));
+				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, res.getColor(R.color.preset1_title_text));
 
-				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#4E7AC7"));
-				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR, AListUtilities.GetColorInt("#ADD5F7"));
-				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR, AListUtilities.GetColorInt("#7FB2F0"));
+				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR,
+						res.getColor(R.color.preset1_list_background));
+				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR,
+						res.getColor(R.color.preset1_list_normal_text));
+				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR,
+						res.getColor(R.color.preset1_list_strikeout_text));
 
 				newDefaultValues
-						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#4E7AC7"));
+						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, res.getColor(R.color.preset1_list_background));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#16193B"));
+						res.getColor(R.color.preset1_list_strikeout_text));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
-						AListUtilities.GetColorInt("#ADD5F7"));
+						res.getColor(R.color.preset1_list_normal_text));
 
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#35478C"));
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#7FB2F0"));
+				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR,
+						res.getColor(R.color.preset1_separator_background));
+				newDefaultValues
+						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset1_separator_text));
 
 				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 				break;
@@ -86,44 +100,56 @@ public class ListSettings {
 			case 2:
 				// This Green
 				// Master Selected == Item Normal
-				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR, AListUtilities.GetColorInt("#00261C"));
-				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, AListUtilities.GetColorInt("#96ED89"));
+				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR,
+						res.getColor(R.color.preset2_title_background));
+				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, res.getColor(R.color.preset2_title_text));
 
-				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#168039"));
-				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR, AListUtilities.GetColorInt("#96ED89"));
-				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR, AListUtilities.GetColorInt("#044D29"));
+				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR,
+						res.getColor(R.color.preset2_list_background));
+				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR,
+						res.getColor(R.color.preset2_list_normal_text));
+				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR,
+						res.getColor(R.color.preset2_list_strikeout_text));
 
 				newDefaultValues
-						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#168039"));
+						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, res.getColor(R.color.preset2_list_background));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#00261C"));
+						res.getColor(R.color.preset2_list_strikeout_text));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
-						AListUtilities.GetColorInt("#96ED89"));
+						res.getColor(R.color.preset2_list_normal_text));
 
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#044D29"));
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#45BF55"));
+				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR,
+						res.getColor(R.color.preset2_separator_background));
+				newDefaultValues
+						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset2_separator_text));
 
 				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 				break;
 
 			case 3:
 				// Vintage Ralph Lauren
-				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR, AListUtilities.GetColorInt("#E3CDA4"));
-				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, AListUtilities.GetColorInt("#2F343B"));
+				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR,
+						res.getColor(R.color.preset3_title_background));
+				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, res.getColor(R.color.preset3_title_text));
 
-				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#7E827A"));
-				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR, AListUtilities.GetColorInt("#2F343B"));
-				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR, AListUtilities.GetColorInt("#703030"));
+				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR,
+						res.getColor(R.color.preset3_list_background));
+				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR,
+						res.getColor(R.color.preset3_list_normal_text));
+				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR,
+						res.getColor(R.color.preset3_list_strikeout_text));
 
 				newDefaultValues
-						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#7E827A"));
+						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, res.getColor(R.color.preset3_list_background));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#E3CDA4"));
+						res.getColor(R.color.preset3_list_strikeout_text));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
-						AListUtilities.GetColorInt("#2F343B"));
+						res.getColor(R.color.preset3_list_normal_text));
 
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#C77966"));
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#2F343B"));
+				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR,
+						res.getColor(R.color.preset3_separator_background));
+				newDefaultValues
+						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset3_separator_text));
 
 				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 
@@ -131,44 +157,56 @@ public class ListSettings {
 
 			case 4:
 				// Five Oranges
-				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR, AListUtilities.GetColorInt("#B31E00"));
-				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, AListUtilities.GetColorInt("#FFC887"));
+				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR,
+						res.getColor(R.color.preset4_title_background));
+				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, res.getColor(R.color.preset4_title_text));
 
-				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#FFC887"));
-				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR, AListUtilities.GetColorInt("#CC5400"));
-				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR, AListUtilities.GetColorInt("#FF8A00"));
+				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR,
+						res.getColor(R.color.preset4_list_background));
+				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR,
+						res.getColor(R.color.preset4_list_normal_text));
+				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR,
+						res.getColor(R.color.preset4_list_strikeout_text));
 
 				newDefaultValues
-						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#FFC887"));
+						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, res.getColor(R.color.preset4_list_background));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#B31E00"));
+						res.getColor(R.color.preset4_list_strikeout_text));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
-						AListUtilities.GetColorInt("#CC5400"));
+						res.getColor(R.color.preset4_list_normal_text));
 
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#B33600"));
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#FFC887"));
+				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR,
+						res.getColor(R.color.preset4_separator_background));
+				newDefaultValues
+						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset4_separator_text));
 
 				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 				break;
 
 			case 5:
 				// Winter Road
-				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR, AListUtilities.GetColorInt("#425955"));
-				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, AListUtilities.GetColorInt("#F1F2D8"));
+				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR,
+						res.getColor(R.color.preset5_title_background));
+				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, res.getColor(R.color.preset5_title_text));
 
-				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#778C7A"));
-				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR, AListUtilities.GetColorInt("#F1F2D8"));
-				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR, AListUtilities.GetColorInt("#BFBD9F"));
+				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR,
+						res.getColor(R.color.preset5_list_background));
+				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR,
+						res.getColor(R.color.preset5_list_normal_text));
+				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR,
+						res.getColor(R.color.preset5_list_strikeout_text));
 
 				newDefaultValues
-						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#778C7A"));
+						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, res.getColor(R.color.preset5_list_background));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#425955"));
+						res.getColor(R.color.preset5_list_strikeout_text));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
-						AListUtilities.GetColorInt("#F1F2D8"));
+						res.getColor(R.color.preset5_list_normal_text));
 
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#BFBD9F"));
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#778C7A"));
+				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR,
+						res.getColor(R.color.preset5_separator_background));
+				newDefaultValues
+						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset5_separator_text));
 
 				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 
@@ -176,24 +214,29 @@ public class ListSettings {
 
 			default:
 				// Sandy Stone
-				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR, AListUtilities.GetColorInt("#002F2F"));
-				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, AListUtilities.GetColorInt("#EFECCA"));
+				newDefaultValues.put(ListsTable.COL_TITLE_BACKGROUND_COLOR,
+						res.getColor(R.color.preset0_title_background));
+				newDefaultValues.put(ListsTable.COL_TITLE_TEXT_COLOR, res.getColor(R.color.preset0_title_text));
 
-				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#046380"));
-				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR, AListUtilities.GetColorInt("#EFECCA"));
-				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR, AListUtilities.GetColorInt("#A7A37E"));
+				newDefaultValues.put(ListsTable.COL_LIST_BACKGROUND_COLOR,
+						res.getColor(R.color.preset0_list_background));
+				newDefaultValues.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR,
+						res.getColor(R.color.preset0_list_normal_text));
+				newDefaultValues.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR,
+						res.getColor(R.color.preset0_list_strikeout_text));
 
 				newDefaultValues
-						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, AListUtilities.GetColorInt("#046380"));
+						.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, res.getColor(R.color.preset0_list_background));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR,
-						AListUtilities.GetColorInt("#002F2F"));
+						res.getColor(R.color.preset0_list_strikeout_text));
 				newDefaultValues.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR,
-						AListUtilities.GetColorInt("#EFECCA"));
+						res.getColor(R.color.preset0_list_normal_text));
 
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, AListUtilities.GetColorInt("#A7A37E"));
-				newDefaultValues.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, AListUtilities.GetColorInt("#E6E2AF"));
+				newDefaultValues.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR,
+						res.getColor(R.color.preset0_separator_background));
+				newDefaultValues
+						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset0_separator_text));
 
-				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
 				break;
 			}
 		}
