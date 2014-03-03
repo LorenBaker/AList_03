@@ -18,13 +18,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ScrollView;
 
+import com.larswerkman.holocolorpicker.ColorPicker;
+import com.larswerkman.holocolorpicker.ColorPicker.OnColorChangedListener;
+import com.larswerkman.holocolorpicker.OpacityBar;
+import com.larswerkman.holocolorpicker.SVBar;
 import com.lbconsulting.alist_03.adapters.ColorsPreviewPagerAdapter;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.fragments.ColorsPreviewFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
-public class ColorsActivity extends FragmentActivity implements View.OnClickListener {
+public class ColorsActivity extends FragmentActivity implements View.OnClickListener, OnColorChangedListener {
 	private ColorsPreviewPagerAdapter mColorsPreviewPagerAdapter;
 	private ViewPager mPager;
 	private Cursor mAllListsCursor;
@@ -45,6 +49,18 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 	private Button btnPreset5;
 	private Button btnApply;
 
+	private Button btnSetTitleBackground;
+	private Button btnSetTitleText;
+	private Button btnSetListBackground;
+	private Button btnSetListNormalText;
+	private Button btnSetListStrikeOutText;
+	private Button btnSetSeparatorBackground;
+	private Button btnSetSeparatorText;
+
+	private ColorPicker picker;
+	private SVBar svBar;
+	private OpacityBar opacityBar;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		MyLog.i("Colors_ACTIVITY", "onCreate");
@@ -58,6 +74,14 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
 		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
+
+		picker = (ColorPicker) findViewById(R.id.picker);
+		svBar = (SVBar) findViewById(R.id.svbar);
+		opacityBar = (OpacityBar) findViewById(R.id.opacitybar);
+
+		picker.addSVBar(svBar);
+		picker.addOpacityBar(opacityBar);
+		picker.setOnColorChangedListener(this);
 
 		final ActionBar actionBar = getActionBar();
 		actionBar.setTitle(R.string.action_bar_title_select_list_colors);
@@ -148,6 +172,14 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 		btnPreset5 = (Button) findViewById(R.id.btnPreset5);
 		btnApply = (Button) findViewById(R.id.btnApply);
 
+		btnSetTitleBackground = (Button) findViewById(R.id.btnSetTitleBackground);
+		btnSetTitleText = (Button) findViewById(R.id.btnSetTitleText);
+		btnSetListBackground = (Button) findViewById(R.id.btnSetListBackground);
+		btnSetListNormalText = (Button) findViewById(R.id.btnSetListNormalText);
+		btnSetListStrikeOutText = (Button) findViewById(R.id.btnSetListStrikeOutText);
+		btnSetSeparatorBackground = (Button) findViewById(R.id.btnSetSeparatorBackground);
+		btnSetSeparatorText = (Button) findViewById(R.id.btnSetSeparatorText);
+
 		btnPreset0.setOnClickListener(this);
 		btnPreset1.setOnClickListener(this);
 		btnPreset2.setOnClickListener(this);
@@ -156,6 +188,14 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 		btnPreset5.setOnClickListener(this);
 		btnApply.setOnClickListener(this);
 
+		btnSetTitleBackground.setOnClickListener(this);
+		btnSetTitleText.setOnClickListener(this);
+		btnSetListBackground.setOnClickListener(this);
+		btnSetListNormalText.setOnClickListener(this);
+		btnSetListStrikeOutText.setOnClickListener(this);
+		btnSetSeparatorBackground.setOnClickListener(this);
+		btnSetSeparatorText.setOnClickListener(this);
+
 	}
 
 	@Override
@@ -163,6 +203,10 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 		String setPresetColorsKey = String.valueOf(mActiveListID)
 				+ ColorsPreviewFragment.SET_PRESET_COLORS_BROADCAST_KEY;
 		Intent setPresetColorsIntent = new Intent(setPresetColorsKey);
+
+		String setViewIdKey = String.valueOf(mActiveListID)
+				+ ColorsPreviewFragment.SET_VIEW_BROADCAST_KEY;
+		Intent setViewIntent = new Intent(setViewIdKey);
 
 		switch (v.getId()) {
 
@@ -203,11 +247,44 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 			LocalBroadcastManager.getInstance(this).sendBroadcast(applyPresetColorsIntent);
 			break;
 
-		default:
+		case R.id.btnSetTitleBackground:
+			setViewIntent.putExtra("setViewID", ColorsPreviewFragment.TITLE_BACKGROUND_COLOR);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setViewIntent);
 			break;
 
-		}
+		case R.id.btnSetTitleText:
+			setViewIntent.putExtra("setViewID", ColorsPreviewFragment.TITLE_TEXT_COLOR);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setViewIntent);
+			break;
 
+		case R.id.btnSetListBackground:
+			setViewIntent.putExtra("setViewID", ColorsPreviewFragment.LIST_BACKGROUND_COLOR);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setViewIntent);
+			break;
+
+		case R.id.btnSetListNormalText:
+			setViewIntent.putExtra("setViewID", ColorsPreviewFragment.LIST_NORMAL_TEXT_COLOR);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setViewIntent);
+			break;
+
+		case R.id.btnSetListStrikeOutText:
+			setViewIntent.putExtra("setViewID", ColorsPreviewFragment.LIST_STRIKEOUT_TEXT_COLOR);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setViewIntent);
+			break;
+
+		case R.id.btnSetSeparatorBackground:
+			setViewIntent.putExtra("setViewID", ColorsPreviewFragment.SEPARATOR_BACKGROUND_COLOR);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setViewIntent);
+			break;
+
+		case R.id.btnSetSeparatorText:
+			setViewIntent.putExtra("setViewID", ColorsPreviewFragment.SEPARATOR_TEXT_COLOR);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setViewIntent);
+			break;
+
+		default:
+			break;
+		}
 	}
 
 	private void SetActiveListID(int position) {
@@ -287,6 +364,17 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 			mAllListsCursor.close();
 		}
 		super.onDestroy();
+	}
+
+	@Override
+	public void onColorChanged(int color) {
+
+		String setByColorPickerKey = String.valueOf(mActiveListID)
+				+ ColorsPreviewFragment.SET_BY_COLOR_PICKER_BROADCAST_KEY;
+		Intent setByColorPickerIntent = new Intent(setByColorPickerKey);
+		setByColorPickerIntent.putExtra("colorPickerColor", color);
+		LocalBroadcastManager.getInstance(this).sendBroadcast(setByColorPickerIntent);
+
 	}
 
 }

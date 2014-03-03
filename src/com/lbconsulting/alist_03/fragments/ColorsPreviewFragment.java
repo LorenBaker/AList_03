@@ -28,7 +28,8 @@ public class ColorsPreviewFragment extends Fragment {
 
 	private Resources res;
 
-	private long mActiveListID = -9999;
+	private long mActiveListID = -1;
+	private int mActiveViewID = -1;
 
 	private ListSettings mListSettings;
 
@@ -49,9 +50,13 @@ public class ColorsPreviewFragment extends Fragment {
 	private BroadcastReceiver mApplyPresetColors;
 	private BroadcastReceiver mSetPresetColors;
 	private BroadcastReceiver mSetListSettingsColors;
+	private BroadcastReceiver mSetByColorPicker;
+	private BroadcastReceiver mSetView;
 
+	public static final String SET_BY_COLOR_PICKER_BROADCAST_KEY = "setByColorPickerBroadcastKey";
 	public static final String APPLY_PRESET_COLORS_BROADCAST_KEY = "applyPresetColorsBroadcastKey";
 	public static final String SET_LIST_SETTINGS_COLORS_BROADCAST_KEY = "setListSettingsColorsBroadcastKey";
+	public static final String SET_VIEW_BROADCAST_KEY = "setViewBroadcastKey";
 
 	public static final String SET_PRESET_COLORS_BROADCAST_KEY = "setPresetColorsBroadcastKey";
 	public static final int SET_PRESET_0_COLORS = 10;
@@ -60,6 +65,14 @@ public class ColorsPreviewFragment extends Fragment {
 	public static final int SET_PRESET_3_COLORS = 40;
 	public static final int SET_PRESET_4_COLORS = 50;
 	public static final int SET_PRESET_5_COLORS = 60;
+
+	public static final int TITLE_BACKGROUND_COLOR = 100;
+	public static final int TITLE_TEXT_COLOR = 110;
+	public static final int LIST_BACKGROUND_COLOR = 120;
+	public static final int LIST_NORMAL_TEXT_COLOR = 130;
+	public static final int LIST_STRIKEOUT_TEXT_COLOR = 140;
+	public static final int SEPARATOR_BACKGROUND_COLOR = 150;
+	public static final int SEPARATOR_TEXT_COLOR = 160;
 
 	public ColorsPreviewFragment() {
 		// Empty constructor
@@ -168,6 +181,66 @@ public class ColorsPreviewFragment extends Fragment {
 		super.onActivityCreated(savedInstanceState);
 		res = getActivity().getResources();
 
+		mSetView = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				if (intent.hasExtra("setViewID")) {
+					mActiveViewID = intent.getExtras().getInt("setViewID", -1);
+				}
+			}
+		};
+
+		mSetByColorPicker = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				if (intent.hasExtra("colorPickerColor")) {
+
+					switch (mActiveViewID) {
+
+					case TITLE_BACKGROUND_COLOR:
+						mTitle_background_color = intent.getExtras().getInt("colorPickerColor", -1);
+						setTitleBackgroundColor();
+						break;
+
+					case TITLE_TEXT_COLOR:
+						mTitle_text_color = intent.getExtras().getInt("colorPickerColor", -1);
+						setTitleTextColor();
+						break;
+
+					case LIST_BACKGROUND_COLOR:
+						mList_background_color = intent.getExtras().getInt("colorPickerColor", -1);
+						setPreviewFragmentLinearLayoutBackgroundColor();
+						setListBackgroundColor();
+						break;
+
+					case LIST_NORMAL_TEXT_COLOR:
+						mList_normal_text_color = intent.getExtras().getInt("colorPickerColor", -1);
+						setItemNormalTextColor();
+						break;
+
+					case LIST_STRIKEOUT_TEXT_COLOR:
+						mList_strikeout_text_color = intent.getExtras().getInt("colorPickerColor", -1);
+						setItemStrikeoutTextColor();
+						break;
+
+					case SEPARATOR_BACKGROUND_COLOR:
+						mSeparator_background_color = intent.getExtras().getInt("colorPickerColor", -1);
+						setSeparatorBackgroundColor();
+						break;
+
+					case SEPARATOR_TEXT_COLOR:
+						mSeparator_text_color = intent.getExtras().getInt("colorPickerColor", -1);
+						setSeparatorTextColor();
+						break;
+
+					default:
+						break;
+
+					}
+				}
+			}
+		};
+
 		mSetListSettingsColors = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -264,6 +337,16 @@ public class ColorsPreviewFragment extends Fragment {
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mSetListSettingsColors,
 				new IntentFilter(setListSettingsColorsKey));
 
+		String setByColorPickerKey = String.valueOf(mActiveListID)
+				+ ColorsPreviewFragment.SET_BY_COLOR_PICKER_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mSetByColorPicker,
+				new IntentFilter(setByColorPickerKey));
+
+		String setViewKey = String.valueOf(mActiveListID)
+				+ ColorsPreviewFragment.SET_VIEW_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mSetView,
+				new IntentFilter(setViewKey));
+
 	}
 
 	@Override
@@ -309,6 +392,8 @@ public class ColorsPreviewFragment extends Fragment {
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mApplyPresetColors);
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mSetPresetColors);
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mSetListSettingsColors);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mSetByColorPicker);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mSetView);
 		super.onDestroy();
 	}
 
