@@ -170,5 +170,6 @@
     <string name="btnPreset4_text">Five Oranges</string>
     <string name="btnPreset5_text">Winter Road</string>
     <string name="btnPreset2_text">This Green</string>
+    <string name="dialog_title_colors_applied">Colors Applied</string>
 
 </resources>

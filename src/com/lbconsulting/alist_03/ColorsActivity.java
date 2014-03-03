@@ -4,10 +4,12 @@ import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
@@ -19,9 +21,10 @@ import android.widget.ScrollView;
 import com.lbconsulting.alist_03.adapters.ColorsPreviewPagerAdapter;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ListsTable;
+import com.lbconsulting.alist_03.fragments.ColorsPreviewFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
-public class ColorsActivity extends FragmentActivity {
+public class ColorsActivity extends FragmentActivity implements View.OnClickListener {
 	private ColorsPreviewPagerAdapter mColorsPreviewPagerAdapter;
 	private ViewPager mPager;
 	private Cursor mAllListsCursor;
@@ -40,6 +43,7 @@ public class ColorsActivity extends FragmentActivity {
 	private Button btnPreset3;
 	private Button btnPreset4;
 	private Button btnPreset5;
+	private Button btnApply;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -122,6 +126,14 @@ public class ColorsActivity extends FragmentActivity {
 			@Override
 			public void onPageSelected(int position) {
 				// A list page has been selected
+
+				// send broadcast to revert colors in fragment to those saved in the database
+				String setListSettingsColorsKey = String.valueOf(mActiveListID)
+						+ ColorsPreviewFragment.SET_LIST_SETTINGS_COLORS_BROADCAST_KEY;
+				Intent setListSettingsColorsIntent = new Intent(setListSettingsColorsKey);
+				LocalBroadcastManager.getInstance(ColorsActivity.this).sendBroadcast(setListSettingsColorsIntent);
+
+				// set the ActiveID
 				SetActiveListID(position);
 				MyLog.d("CheckItems_ACTIVITY", "onPageSelected() - position = " + position + " ; listID = "
 						+ mActiveListID);
@@ -134,6 +146,67 @@ public class ColorsActivity extends FragmentActivity {
 		btnPreset3 = (Button) findViewById(R.id.btnPreset3);
 		btnPreset4 = (Button) findViewById(R.id.btnPreset4);
 		btnPreset5 = (Button) findViewById(R.id.btnPreset5);
+		btnApply = (Button) findViewById(R.id.btnApply);
+
+		btnPreset0.setOnClickListener(this);
+		btnPreset1.setOnClickListener(this);
+		btnPreset2.setOnClickListener(this);
+		btnPreset3.setOnClickListener(this);
+		btnPreset4.setOnClickListener(this);
+		btnPreset5.setOnClickListener(this);
+		btnApply.setOnClickListener(this);
+
+	}
+
+	@Override
+	public void onClick(View v) {
+		String setPresetColorsKey = String.valueOf(mActiveListID)
+				+ ColorsPreviewFragment.SET_PRESET_COLORS_BROADCAST_KEY;
+		Intent setPresetColorsIntent = new Intent(setPresetColorsKey);
+
+		switch (v.getId()) {
+
+		case R.id.btnPreset0:
+			setPresetColorsIntent.putExtra("setPresetColors", ColorsPreviewFragment.SET_PRESET_0_COLORS);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setPresetColorsIntent);
+			break;
+
+		case R.id.btnPreset1:
+			setPresetColorsIntent.putExtra("setPresetColors", ColorsPreviewFragment.SET_PRESET_1_COLORS);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setPresetColorsIntent);
+			break;
+
+		case R.id.btnPreset2:
+			setPresetColorsIntent.putExtra("setPresetColors", ColorsPreviewFragment.SET_PRESET_2_COLORS);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setPresetColorsIntent);
+			break;
+
+		case R.id.btnPreset3:
+			setPresetColorsIntent.putExtra("setPresetColors", ColorsPreviewFragment.SET_PRESET_3_COLORS);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setPresetColorsIntent);
+			break;
+
+		case R.id.btnPreset4:
+			setPresetColorsIntent.putExtra("setPresetColors", ColorsPreviewFragment.SET_PRESET_4_COLORS);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setPresetColorsIntent);
+			break;
+
+		case R.id.btnPreset5:
+			setPresetColorsIntent.putExtra("setPresetColors", ColorsPreviewFragment.SET_PRESET_5_COLORS);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(setPresetColorsIntent);
+			break;
+
+		case R.id.btnApply:
+			String applyPresetColorsKey = String.valueOf(mActiveListID)
+					+ ColorsPreviewFragment.APPLY_PRESET_COLORS_BROADCAST_KEY;
+			Intent applyPresetColorsIntent = new Intent(applyPresetColorsKey);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(applyPresetColorsIntent);
+			break;
+
+		default:
+			break;
+
+		}
 
 	}
 

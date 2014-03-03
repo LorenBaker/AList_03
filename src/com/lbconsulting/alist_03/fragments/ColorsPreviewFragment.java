@@ -1,9 +1,18 @@
 package com.lbconsulting.alist_03.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +21,12 @@ import android.widget.TextView;
 
 import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
+import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ColorsPreviewFragment extends Fragment {
+
+	private Resources res;
 
 	private long mActiveListID = -9999;
 
@@ -25,8 +37,6 @@ public class ColorsPreviewFragment extends Fragment {
 	private TextView tvListNormalText;
 	private TextView tvListStrikeOutText;
 	private TextView tvListItemSeparator;
-	private TextView tvMasterListNotSelectedText;
-	private TextView tvMasterListSelectedText;
 
 	private int mTitle_background_color;
 	private int mTitle_text_color;
@@ -35,6 +45,21 @@ public class ColorsPreviewFragment extends Fragment {
 	private int mList_strikeout_text_color;
 	private int mSeparator_background_color;
 	private int mSeparator_text_color;
+
+	private BroadcastReceiver mApplyPresetColors;
+	private BroadcastReceiver mSetPresetColors;
+	private BroadcastReceiver mSetListSettingsColors;
+
+	public static final String APPLY_PRESET_COLORS_BROADCAST_KEY = "applyPresetColorsBroadcastKey";
+	public static final String SET_LIST_SETTINGS_COLORS_BROADCAST_KEY = "setListSettingsColorsBroadcastKey";
+
+	public static final String SET_PRESET_COLORS_BROADCAST_KEY = "setPresetColorsBroadcastKey";
+	public static final int SET_PRESET_0_COLORS = 10;
+	public static final int SET_PRESET_1_COLORS = 20;
+	public static final int SET_PRESET_2_COLORS = 30;
+	public static final int SET_PRESET_3_COLORS = 40;
+	public static final int SET_PRESET_4_COLORS = 50;
+	public static final int SET_PRESET_5_COLORS = 60;
 
 	public ColorsPreviewFragment() {
 		// Empty constructor
@@ -100,7 +125,7 @@ public class ColorsPreviewFragment extends Fragment {
 		mListSettings = new ListSettings(getActivity(), mActiveListID);
 		if (mListSettings != null) {
 
-			getColorsFromListSettings();
+			setListSettingsColors();
 
 			colorsPreviewFragmentLinearLayout = (LinearLayout) view
 					.findViewById(R.id.colorsPreviewFragmentLinearLayout);
@@ -136,6 +161,176 @@ public class ColorsPreviewFragment extends Fragment {
 		}
 		return view;
 	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		MyLog.i("ColorsPreviewFragment", "onActivityCreated");
+		super.onActivityCreated(savedInstanceState);
+		res = getActivity().getResources();
+
+		mSetListSettingsColors = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				setListSettingsColors();
+				setAllColors();
+			}
+
+		};
+
+		mApplyPresetColors = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				applyColorsToListSettings();
+
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+				// set title
+				builder.setTitle(R.string.dialog_title_colors_applied);
+
+				String msg = "Colors for " + "\"" + mListSettings.getListTitle() + "\" saved.";
+				// set dialog message
+				builder
+						.setMessage(msg)
+						.setCancelable(false)
+						.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								// do nothing
+							}
+						});
+				// create alert dialog
+				AlertDialog alertDialog = builder.create();
+				// show it
+				alertDialog.show();
+			}
+		};
+
+		mSetPresetColors = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				// set colors to a color preset
+				if (intent.hasExtra("setPresetColors")) {
+					int presetcolorValue = intent.getExtras().getInt("setPresetColors", -1);
+					switch (presetcolorValue) {
+
+					case SET_PRESET_0_COLORS:
+						setPreset0colors();
+						setAllColors();
+						break;
+
+					case SET_PRESET_1_COLORS:
+						setPreset1colors();
+						setAllColors();
+						break;
+
+					case SET_PRESET_2_COLORS:
+						setPreset2colors();
+						setAllColors();
+						break;
+
+					case SET_PRESET_3_COLORS:
+						setPreset3colors();
+						setAllColors();
+						break;
+
+					case SET_PRESET_4_COLORS:
+						setPreset4colors();
+						setAllColors();
+						break;
+
+					case SET_PRESET_5_COLORS:
+						setPreset5colors();
+						setAllColors();
+						break;
+
+					default:
+						break;
+					}
+				}
+			}
+		};
+
+		// Register local broadcast receivers.
+		String applyPresetColorsKey = String.valueOf(mActiveListID)
+				+ ColorsPreviewFragment.APPLY_PRESET_COLORS_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mApplyPresetColors,
+				new IntentFilter(applyPresetColorsKey));
+
+		String setPresetColorsKey = String.valueOf(mActiveListID)
+				+ ColorsPreviewFragment.SET_PRESET_COLORS_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mSetPresetColors,
+				new IntentFilter(setPresetColorsKey));
+
+		String setListSettingsColorsKey = String.valueOf(mActiveListID)
+				+ ColorsPreviewFragment.SET_LIST_SETTINGS_COLORS_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mSetListSettingsColors,
+				new IntentFilter(setListSettingsColorsKey));
+
+	}
+
+	@Override
+	public void onStart() {
+		MyLog.i("ColorsPreviewFragment", "onStart");
+		super.onStart();
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		MyLog.i("ColorsPreviewFragment", "onResume");
+		Bundle bundle = this.getArguments();
+		if (bundle != null) {
+			mActiveListID = bundle.getLong("listID", 0);
+		}
+
+		mListSettings = new ListSettings(getActivity(), mActiveListID);
+	}
+
+	@Override
+	public void onPause() {
+		MyLog.i("ColorsPreviewFragment", "onPause");
+		super.onPause();
+	}
+
+	@Override
+	public void onStop() {
+		MyLog.i("ColorsPreviewFragment", "onStop");
+		super.onStop();
+	}
+
+	@Override
+	public void onDestroyView() {
+		MyLog.i("ColorsPreviewFragment", "onDestroyView");
+		super.onDestroyView();
+	}
+
+	@Override
+	public void onDestroy() {
+		MyLog.i("ColorsPreviewFragment", "onDestroy");
+		// Unregister local broadcast receivers
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mApplyPresetColors);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mSetPresetColors);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mSetListSettingsColors);
+		super.onDestroy();
+	}
+
+	@Override
+	public void onDetach() {
+		MyLog.i("ColorsPreviewFragment", "onDetach");
+		super.onDetach();
+	}
+
+	@Override
+	public View getView() {
+		MyLog.i("ColorsPreviewFragment", "getView");
+		return super.getView();
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		MyLog.i("ColorsPreviewFragment", "onViewCreated");
+		super.onViewCreated(view, savedInstanceState);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	private void setAllColors() {
 		setPreviewFragmentLinearLayoutBackgroundColor();
@@ -197,7 +392,24 @@ public class ColorsPreviewFragment extends Fragment {
 		}
 	}
 
-	private void getColorsFromListSettings() {
+	private void applyColorsToListSettings() {
+
+		ContentValues values = new ContentValues();
+		values.put(ListsTable.COL_TITLE_BACKGROUND_COLOR, mTitle_background_color);
+		values.put(ListsTable.COL_TITLE_TEXT_COLOR, mTitle_text_color);
+		values.put(ListsTable.COL_LIST_BACKGROUND_COLOR, mList_background_color);
+		values.put(ListsTable.COL_ITEM_NORMAL_TEXT_COLOR, mList_normal_text_color);
+		values.put(ListsTable.COL_ITEM_STRIKEOUT_TEXT_COLOR, mList_strikeout_text_color);
+		values.put(ListsTable.COL_MASTER_LIST_BACKGROUND_COLOR, mList_background_color);
+		values.put(ListsTable.COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR, mList_normal_text_color);
+		values.put(ListsTable.COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR, mList_strikeout_text_color);
+		values.put(ListsTable.COL_SEPARATOR_BACKGROUND_COLOR, mSeparator_background_color);
+		values.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, mSeparator_text_color);
+
+		ListsTable.UpdateListsTableFieldValues(getActivity(), mActiveListID, values);
+	}
+
+	private void setListSettingsColors() {
 		mTitle_background_color = mListSettings.getTitleBackgroundColor();
 		mTitle_text_color = mListSettings.getTitleTextColor();
 		mList_background_color = mListSettings.getListBackgroundColor();
@@ -207,70 +419,64 @@ public class ColorsPreviewFragment extends Fragment {
 		mSeparator_text_color = mListSettings.getSeparatorTextColor();
 	}
 
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		MyLog.i("ColorsPreviewFragment", "onActivityCreated");
-		super.onActivityCreated(savedInstanceState);
+	private void setPreset0colors() {
+		mTitle_background_color = res.getColor(R.color.preset0_title_background);
+		mTitle_text_color = res.getColor(R.color.preset0_title_text);
+		mList_background_color = res.getColor(R.color.preset0_list_background);
+		mList_normal_text_color = res.getColor(R.color.preset0_list_normal_text);
+		mList_strikeout_text_color = res.getColor(R.color.preset0_list_strikeout_text);
+		mSeparator_background_color = res.getColor(R.color.preset0_separator_background);
+		mSeparator_text_color = res.getColor(R.color.preset0_separator_text);
 	}
 
-	@Override
-	public void onStart() {
-		MyLog.i("ColorsPreviewFragment", "onStart");
-		super.onStart();
+	private void setPreset1colors() {
+		mTitle_background_color = res.getColor(R.color.preset1_title_background);
+		mTitle_text_color = res.getColor(R.color.preset1_title_text);
+		mList_background_color = res.getColor(R.color.preset1_list_background);
+		mList_normal_text_color = res.getColor(R.color.preset1_list_normal_text);
+		mList_strikeout_text_color = res.getColor(R.color.preset1_list_strikeout_text);
+		mSeparator_background_color = res.getColor(R.color.preset1_separator_background);
+		mSeparator_text_color = res.getColor(R.color.preset1_separator_text);
 	}
 
-	@Override
-	public void onResume() {
-		super.onResume();
-		MyLog.i("ColorsPreviewFragment", "onResume");
-		Bundle bundle = this.getArguments();
-		if (bundle != null) {
-			mActiveListID = bundle.getLong("listID", 0);
-		}
-
-		mListSettings = new ListSettings(getActivity(), mActiveListID);
+	private void setPreset2colors() {
+		mTitle_background_color = res.getColor(R.color.preset2_title_background);
+		mTitle_text_color = res.getColor(R.color.preset2_title_text);
+		mList_background_color = res.getColor(R.color.preset2_list_background);
+		mList_normal_text_color = res.getColor(R.color.preset2_list_normal_text);
+		mList_strikeout_text_color = res.getColor(R.color.preset2_list_strikeout_text);
+		mSeparator_background_color = res.getColor(R.color.preset2_separator_background);
+		mSeparator_text_color = res.getColor(R.color.preset2_separator_text);
 	}
 
-	@Override
-	public void onPause() {
-		MyLog.i("ColorsPreviewFragment", "onPause");
-		super.onPause();
+	private void setPreset3colors() {
+		mTitle_background_color = res.getColor(R.color.preset3_title_background);
+		mTitle_text_color = res.getColor(R.color.preset3_title_text);
+		mList_background_color = res.getColor(R.color.preset3_list_background);
+		mList_normal_text_color = res.getColor(R.color.preset3_list_normal_text);
+		mList_strikeout_text_color = res.getColor(R.color.preset3_list_strikeout_text);
+		mSeparator_background_color = res.getColor(R.color.preset3_separator_background);
+		mSeparator_text_color = res.getColor(R.color.preset3_separator_text);
 	}
 
-	@Override
-	public void onStop() {
-		MyLog.i("ColorsPreviewFragment", "onStop");
-		super.onStop();
+	private void setPreset4colors() {
+		mTitle_background_color = res.getColor(R.color.preset4_title_background);
+		mTitle_text_color = res.getColor(R.color.preset4_title_text);
+		mList_background_color = res.getColor(R.color.preset4_list_background);
+		mList_normal_text_color = res.getColor(R.color.preset4_list_normal_text);
+		mList_strikeout_text_color = res.getColor(R.color.preset4_list_strikeout_text);
+		mSeparator_background_color = res.getColor(R.color.preset4_separator_background);
+		mSeparator_text_color = res.getColor(R.color.preset4_separator_text);
 	}
 
-	@Override
-	public void onDestroyView() {
-		MyLog.i("ColorsPreviewFragment", "onDestroyView");
-		super.onDestroyView();
-	}
-
-	@Override
-	public void onDestroy() {
-		MyLog.i("ColorsPreviewFragment", "onDestroy");
-		super.onDestroy();
-	}
-
-	@Override
-	public void onDetach() {
-		MyLog.i("ColorsPreviewFragment", "onDetach");
-		super.onDetach();
-	}
-
-	@Override
-	public View getView() {
-		MyLog.i("ColorsPreviewFragment", "getView");
-		return super.getView();
-	}
-
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		MyLog.i("ColorsPreviewFragment", "onViewCreated");
-		super.onViewCreated(view, savedInstanceState);
+	private void setPreset5colors() {
+		mTitle_background_color = res.getColor(R.color.preset5_title_background);
+		mTitle_text_color = res.getColor(R.color.preset5_title_text);
+		mList_background_color = res.getColor(R.color.preset5_list_background);
+		mList_normal_text_color = res.getColor(R.color.preset5_list_normal_text);
+		mList_strikeout_text_color = res.getColor(R.color.preset5_list_strikeout_text);
+		mSeparator_background_color = res.getColor(R.color.preset5_separator_background);
+		mSeparator_text_color = res.getColor(R.color.preset5_separator_text);
 	}
 
 }
