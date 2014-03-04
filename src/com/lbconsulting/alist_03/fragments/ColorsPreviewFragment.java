@@ -57,6 +57,7 @@ public class ColorsPreviewFragment extends Fragment {
 	public static final String APPLY_PRESET_COLORS_BROADCAST_KEY = "applyPresetColorsBroadcastKey";
 	public static final String SET_LIST_SETTINGS_COLORS_BROADCAST_KEY = "setListSettingsColorsBroadcastKey";
 	public static final String SET_VIEW_BROADCAST_KEY = "setViewBroadcastKey";
+	public static final String INITIAL_COLOR_BROADCAST_KEY = "setInitialColorKey";
 
 	public static final String SET_PRESET_COLORS_BROADCAST_KEY = "setPresetColorsBroadcastKey";
 	public static final int SET_PRESET_0_COLORS = 10;
@@ -186,6 +187,49 @@ public class ColorsPreviewFragment extends Fragment {
 			public void onReceive(Context context, Intent intent) {
 				if (intent.hasExtra("setViewID")) {
 					mActiveViewID = intent.getExtras().getInt("setViewID", -1);
+
+					Intent setInitialColorIntent = new Intent(INITIAL_COLOR_BROADCAST_KEY);
+					switch (mActiveViewID) {
+
+					case TITLE_BACKGROUND_COLOR:
+						setInitialColorIntent.putExtra("initialColorPickerColor", mTitle_background_color);
+						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(setInitialColorIntent);
+						break;
+
+					case TITLE_TEXT_COLOR:
+						setInitialColorIntent.putExtra("initialColorPickerColor", mTitle_text_color);
+						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(setInitialColorIntent);
+						break;
+
+					case LIST_BACKGROUND_COLOR:
+						setInitialColorIntent.putExtra("initialColorPickerColor", mList_background_color);
+						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(setInitialColorIntent);
+						break;
+
+					case LIST_NORMAL_TEXT_COLOR:
+						setInitialColorIntent.putExtra("initialColorPickerColor", mList_normal_text_color);
+						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(setInitialColorIntent);
+						break;
+
+					case LIST_STRIKEOUT_TEXT_COLOR:
+						setInitialColorIntent.putExtra("initialColorPickerColor", mList_strikeout_text_color);
+						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(setInitialColorIntent);
+						break;
+
+					case SEPARATOR_BACKGROUND_COLOR:
+						setInitialColorIntent.putExtra("initialColorPickerColor", mSeparator_background_color);
+						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(setInitialColorIntent);
+						break;
+
+					case SEPARATOR_TEXT_COLOR:
+						setInitialColorIntent.putExtra("initialColorPickerColor", mSeparator_text_color);
+						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(setInitialColorIntent);
+						break;
+
+					default:
+						break;
+
+					}
 				}
 			}
 		};
@@ -492,6 +536,7 @@ public class ColorsPreviewFragment extends Fragment {
 		values.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, mSeparator_text_color);
 
 		ListsTable.UpdateListsTableFieldValues(getActivity(), mActiveListID, values);
+		mListSettings = new ListSettings(getActivity(), mActiveListID);
 	}
 
 	private void setListSettingsColors() {

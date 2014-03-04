@@ -38,7 +38,7 @@ public class CheckItemsFragment extends Fragment
 	private long mActiveItemID = -9999;
 	private int mActivePosition = -9999;
 
-	private ListSettings listSettings;
+	private ListSettings mListSettings;
 
 	private TextView mListTitle;
 	private ListView mItemsListView;
@@ -122,20 +122,17 @@ public class CheckItemsFragment extends Fragment
 
 		View view = inflater.inflate(R.layout.frag_lists, container, false);
 
-		listSettings = new ListSettings(getActivity(), mActiveListID);
+		mListSettings = new ListSettings(getActivity(), mActiveListID);
 
 		mListTitle = (TextView) view.findViewById(R.id.tvListTitle);
-		mListTitle.setText(listSettings.getListTitle());
-		mListTitle.setBackgroundColor(this.listSettings.getTitleBackgroundColor());
-		mListTitle.setTextColor(this.listSettings.getTitleTextColor());
+		mListTitle.setText(mListSettings.getListTitle());
 
 		mStoreSpinner = (Spinner) view.findViewById(R.id.spinStores);
 		mStoreSpinner.setVisibility(View.GONE);
 
-		mCheckItemsCursorAdaptor = new CheckItemsCursorAdaptor(getActivity(), null, 0, listSettings);
+		mCheckItemsCursorAdaptor = new CheckItemsCursorAdaptor(getActivity(), null, 0, mListSettings);
 		mItemsListView = (ListView) view.findViewById(R.id.itemsListView);
 		mItemsListView.setAdapter(mCheckItemsCursorAdaptor);
-		mItemsListView.setBackgroundColor(this.listSettings.getListBackgroundColor());
 
 		mCheckItemsFragmentCallbacks = this;
 
@@ -168,6 +165,13 @@ public class CheckItemsFragment extends Fragment
 		return view;
 	}
 
+	private void setFragmentColors() {
+		mListTitle.setBackgroundColor(this.mListSettings.getTitleBackgroundColor());
+		mListTitle.setTextColor(this.mListSettings.getTitleTextColor());
+		mItemsListView.setBackgroundColor(this.mListSettings.getListBackgroundColor());
+
+	}
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		checkListID("onActivityCreated");
@@ -192,8 +196,8 @@ public class CheckItemsFragment extends Fragment
 		if (bundle != null) {
 			mActiveListID = bundle.getLong("listID", 0);
 		}
-		listSettings = new ListSettings(getActivity(), mActiveListID);
-
+		mListSettings = new ListSettings(getActivity(), mActiveListID);
+		setFragmentColors();
 		checkListID("onResume");
 
 		// Set onResume flags
@@ -258,7 +262,7 @@ public class CheckItemsFragment extends Fragment
 		switch (id) {
 
 		case ITEMS_LOADER_ID:
-			int masterListSortOrder = listSettings.getMasterListSortOrder();
+			int masterListSortOrder = mListSettings.getMasterListSortOrder();
 			String sortOrder = "";
 			switch (masterListSortOrder) {
 			case ListPreferencesFragment.ALPHABETICAL:
@@ -317,7 +321,7 @@ public class CheckItemsFragment extends Fragment
 			mCheckItemsCursorAdaptor.swapCursor(newCursor);
 			if (flag_FirstTimeLoadingItemDataSinceOnResume) {
 				mItemsListView.setSelectionFromTop(
-						listSettings.getMasterListViewFirstVisiblePosition(), listSettings.getMasterListViewTop());
+						mListSettings.getMasterListViewFirstVisiblePosition(), mListSettings.getMasterListViewTop());
 				flag_FirstTimeLoadingItemDataSinceOnResume = false;
 			}
 			break;

@@ -419,6 +419,8 @@ public class ListPreferencesFragment extends Fragment {
 	@Override
 	public void onResume() {
 		checkListID("onResume");
+		listSettings = new ListSettings(getActivity(), mActiveListID);
+		fillListPreferencesViews();
 		super.onResume();
 	}
 

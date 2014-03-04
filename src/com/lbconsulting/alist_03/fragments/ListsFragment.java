@@ -152,14 +152,11 @@ public class ListsFragment extends Fragment
 
 		mListTitle = (TextView) view.findViewById(R.id.tvListTitle);
 		mListTitle.setText(listSettings.getListTitle());
-		mListTitle.setBackgroundColor(this.listSettings.getTitleBackgroundColor());
-		mListTitle.setTextColor(this.listSettings.getTitleTextColor());
 
 		mStoreSpinner = (Spinner) view.findViewById(R.id.spinStores);
 		mStoresSpinnerCursorAdapter = new StoresSpinnerCursorAdapter(getActivity(), null, 0, listSettings);
 		mStoreSpinner.setAdapter(mStoresSpinnerCursorAdapter);
 		if (listSettings.getShowStores()) {
-			mStoreSpinner.setBackgroundColor(this.listSettings.getTitleBackgroundColor());
 			mStoreSpinner.setVisibility(View.VISIBLE);
 		} else {
 			mStoreSpinner.setVisibility(View.GONE);
@@ -168,7 +165,8 @@ public class ListsFragment extends Fragment
 		mItemsCursorAdaptor = new ItemsCursorAdaptor(getActivity(), null, 0, listSettings);
 		mItemsListView = (ListView) view.findViewById(R.id.itemsListView);
 		mItemsListView.setAdapter(mItemsCursorAdaptor);
-		mItemsListView.setBackgroundColor(this.listSettings.getListBackgroundColor());
+
+		setViewColors();
 
 		mListsFragmentCallbacks = this;
 
@@ -220,6 +218,13 @@ public class ListsFragment extends Fragment
 		return view;
 	}
 
+	private void setViewColors() {
+		mListTitle.setBackgroundColor(this.listSettings.getTitleBackgroundColor());
+		mListTitle.setTextColor(this.listSettings.getTitleTextColor());
+		mStoreSpinner.setBackgroundColor(this.listSettings.getTitleBackgroundColor());
+		mItemsListView.setBackgroundColor(this.listSettings.getListBackgroundColor());
+	}
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		checkListID("onActivityCreated");
@@ -251,6 +256,7 @@ public class ListsFragment extends Fragment
 		}
 
 		listSettings = new ListSettings(getActivity(), mActiveListID);
+		setViewColors();
 
 		checkListID("onResume");
 

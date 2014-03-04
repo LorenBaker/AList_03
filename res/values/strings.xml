@@ -160,9 +160,9 @@
     <string name="btnListNormalText">List Text</string>
     <string name="btnListStrikeOutText">List SkOut</string>
     <string name="btnSeparatorBackground">Sep. BkGd</string>
-    <string name="btnSeparatorText">Sep Text</string>
+    <string name="btnSeparatorText">Sep. Text</string>
     <string name="action_bar_title_select_list_colors">Select List Colors</string>
-   <string name="actionBar_tab_color_presets">Color Presets</string>
+    <string name="actionBar_tab_color_presets">Color Presets</string>
     <string name="actionBar_tab_color_picker">Color Picker</string>
     <string name="btnPreset0_text">Sandy Stone</string>
     <string name="btnPreset1_text">Blue Sky</string>
