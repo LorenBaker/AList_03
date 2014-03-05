@@ -40,6 +40,8 @@ public class AListContentProvider extends ContentProvider {
 	private static final int STORES_MULTI_ROWS = 40;
 	private static final int STORES_SINGLE_ROW = 41;
 
+	private static final int ITEMS_FROM_SINGLE_LIST = 51;
+
 	public static final String AUTHORITY = "com.lbconsulting.alist_03.contentprovider";
 
 	private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -55,6 +57,8 @@ public class AListContentProvider extends ContentProvider {
 
 		sURIMatcher.addURI(AUTHORITY, StoresTable.CONTENT_PATH, STORES_MULTI_ROWS);
 		sURIMatcher.addURI(AUTHORITY, StoresTable.CONTENT_PATH + "/#", STORES_SINGLE_ROW);
+
+		sURIMatcher.addURI(AUTHORITY, ItemsTable.CONTENT_PATH_ITEMS_BY_GROUP, ITEMS_FROM_SINGLE_LIST);
 
 	}
 
@@ -367,6 +371,24 @@ public class AListContentProvider extends ContentProvider {
 			queryBuilder.appendWhere(StoresTable.COL_STORE_ID + "=" + uri.getLastPathSegment());
 			break;
 
+		case ITEMS_FROM_SINGLE_LIST:
+
+			/*SELECT tblItems._id, itemName, groupID, groupName 
+			  FROM tblItems JOIN tblGroups ON tblItems.groupID = tblGroups._id
+			  WHERE tblItems.listID=3
+			  ORDER BY groupName ASC, itemName ASC*/
+
+			projection = ItemsTable.PROJECTION_ALL_WITH_GROUP_NAME;
+
+			String tables = ItemsTable.TABLE_ITEMS + " JOIN " + GroupsTable.TABLE_GROUPS
+					+ " ON "
+					+ ItemsTable.TABLE_ITEMS + "." + ItemsTable.COL_GROUP_ID + " = "
+					+ GroupsTable.TABLE_GROUPS + "." + GroupsTable.COL_GROUP_ID;
+			queryBuilder.setTables(tables);
+
+			sortOrder = GroupsTable.SORT_ORDER_GROUP + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
+
+			break;
 		default:
 			throw new IllegalArgumentException("Method query. Unknown URI: " + uri);
 		}

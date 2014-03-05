@@ -32,12 +32,24 @@ public class ItemsTable {
 	public static final String[] PROJECTION_ALL = { COL_ITEM_ID, COL_ITEM_NAME, COL_ITEM_NOTE, COL_LIST_ID,
 			COL_GROUP_ID, COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED };
 
+	public static final String[] PROJECTION_ALL_WITH_GROUP_NAME = { TABLE_ITEMS + "." + COL_ITEM_ID,
+			COL_ITEM_NAME, COL_ITEM_NOTE,
+			TABLE_ITEMS + "." + COL_LIST_ID,
+			TABLE_ITEMS + "." + COL_GROUP_ID,
+			COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED,
+			GroupsTable.COL_GROUP_NAME };
+
 	public static final String CONTENT_PATH = TABLE_ITEMS;
+	public static final String CONTENT_PATH_ITEMS_BY_GROUP = "itemsByGroup";
+
 	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + "vnd.lbconsulting."
 			+ TABLE_ITEMS;
 	public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + "vnd.lbconsulting."
 			+ TABLE_ITEMS;
 	public static final Uri CONTENT_URI = Uri.parse("content://" + AListContentProvider.AUTHORITY + "/" + CONTENT_PATH);
+
+	public static final Uri CONTENT_URI_ITEMS_BY_GROUP = Uri.parse("content://" + AListContentProvider.AUTHORITY + "/"
+			+ CONTENT_PATH_ITEMS_BY_GROUP);
 
 	public static final String SORT_ORDER_ITEM_NAME = COL_ITEM_NAME + " ASC";
 	public static final String SORT_ORDER_SELECTED_AT_TOP = COL_SELECTED + " DESC, " + SORT_ORDER_ITEM_NAME;
@@ -47,7 +59,7 @@ public class ItemsTable {
 	public static final String ITEM_MOVE_BROADCAST_KEY = "itemMoved";
 
 	//TODO: SORT by group name not id!
-	public static final String SORT_ORDER_BY_GROUP = COL_GROUP_ID + " ASC, " + SORT_ORDER_ITEM_NAME;
+	//public static final String SORT_ORDER_BY_GROUP = COL_GROUP_ID + " ASC, " + SORT_ORDER_ITEM_NAME;
 
 	public static final int SELECTED_TRUE = 1;
 	public static final int SELECTED_FALSE = 0;
@@ -238,6 +250,23 @@ public class ItemsTable {
 		return cursorLoader;
 	}
 
+	public static CursorLoader getAllItemsInListByGroup(Context context, long listID) {
+		CursorLoader cursorLoader = null;
+		if (listID > 1) {
+			Uri uri = CONTENT_URI_ITEMS_BY_GROUP;
+			String[] projection = null;
+			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID) };
+			String sortOrder = null;
+			try {
+				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllItemsInListByGroup. ", e.toString());
+			}
+		}
+		return cursorLoader;
+	}
+
 	public static CursorLoader getAllItemsInList(Context context, long listID, String selection, String sortOrder) {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
@@ -286,6 +315,26 @@ public class ItemsTable {
 				/*				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);*/
 			} catch (Exception e) {
 				MyLog.e("Exception error  in ItemsTable: getAllSelectedItemsInList. ", e.toString());
+			}
+		}
+		return cursorLoader;
+	}
+
+	public static CursorLoader getAllSelectedItemsInListByGroup(Context context, long listID, boolean selected) {
+		CursorLoader cursorLoader = null;
+		if (listID > 1) {
+			int selectedValue = AListUtilities.boolToInt(selected);
+			Uri uri = CONTENT_URI_ITEMS_BY_GROUP;
+			String[] projection = null;
+			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
+					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";
+			//String selection = COL_LIST_ID + " = ? AND " + COL_SELECTED + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(selectedValue) };
+			String sortOrder = null;
+			try {
+				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllSelectedItemsInListByGroup. ", e.toString());
 			}
 		}
 		return cursorLoader;

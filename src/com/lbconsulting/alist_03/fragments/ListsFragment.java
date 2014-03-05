@@ -335,9 +335,41 @@ public class ListsFragment extends Fragment
 		switch (id) {
 
 		case ITEMS_LOADER_ID:
+
+			int masterListSortOrder = listSettings.getMasterListSortOrder();
+			String sortOrder = "";
+			switch (masterListSortOrder) {
+			case ListPreferencesFragment.ALPHABETICAL:
+				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+				break;
+
+			/*			case ListPreferencesFragment.BY_GROUP:
+							sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
+							break;*/
+
+			case ListPreferencesFragment.SELECTED_AT_TOP:
+				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
+				break;
+
+			case ListPreferencesFragment.SELECTED_AT_BOTTOM:
+				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
+				break;
+
+			case ListPreferencesFragment.LAST_USED:
+				sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
+				break;
+
+			default:
+				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+				break;
+			}
 			try {
-				cursorLoader = ItemsTable.getAllSelectedItemsInList(getActivity(), mActiveListID, true,
-						ItemsTable.SORT_ORDER_ITEM_NAME);
+				if (masterListSortOrder == ListPreferencesFragment.BY_GROUP) {
+					cursorLoader = ItemsTable.getAllSelectedItemsInListByGroup(getActivity(), mActiveListID, true);
+				} else {
+					cursorLoader = ItemsTable.getAllSelectedItemsInList(getActivity(), mActiveListID, true,
+							ItemsTable.SORT_ORDER_ITEM_NAME);
+				}
 
 			} catch (SQLiteException e) {
 				MyLog.e("ListsFragment: onCreateLoader SQLiteException: ", e.toString());

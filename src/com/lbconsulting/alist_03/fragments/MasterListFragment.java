@@ -399,9 +399,9 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
 				break;
 
-			case ListPreferencesFragment.BY_GROUP:
-				sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
-				break;
+			/*			case ListPreferencesFragment.BY_GROUP:
+							sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
+							break;*/
 
 			case ListPreferencesFragment.SELECTED_AT_TOP:
 				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
@@ -428,7 +428,11 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 			}
 
 			try {
-				cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+				if (masterListSortOrder == ListPreferencesFragment.BY_GROUP) {
+					cursorLoader = ItemsTable.getAllItemsInListByGroup(getActivity(), mActiveListID);
+				} else {
+					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+				}
 
 			} catch (SQLiteException e) {
 				MyLog.e("MasterListFragment: onCreateLoader SQLiteException: ", e.toString());
