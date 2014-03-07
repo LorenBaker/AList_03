@@ -101,25 +101,25 @@ public class CheckItemsCursorAdaptor extends CursorAdapter {
 				}
 			}
 
-			TextView tvItemGroup = (TextView) view.findViewById(R.id.tvItemGroup);
-			if (tvItemGroup != null) {
-				if (mListSettings.getShowGroupsInMasterListFragment()) {
-					long groupID = cursor.getLong(cursor.getColumnIndexOrThrow(ItemsTable.COL_GROUP_ID));
-					tvItemGroup.setText(GroupsTable.getGroupName(mAdaptorContext, groupID));
-					tvItemGroup.setTextColor(this.mListSettings.getItemNormalTextColor());
-					tvItemGroup.setVisibility(View.VISIBLE);
-				} else {
-					// no note exists ... 
-					tvItemGroup.setVisibility(View.GONE);
-				}
-			}
+			/*			TextView tvItemGroup = (TextView) view.findViewById(R.id.tvItemGroup);
+						if (tvItemGroup != null) {
+							if (mListSettings.getShowGroupsInMasterListFragment()) {
+								long groupID = cursor.getLong(cursor.getColumnIndexOrThrow(ItemsTable.COL_GROUP_ID));
+								tvItemGroup.setText(GroupsTable.getGroupName(mAdaptorContext, groupID));
+								tvItemGroup.setTextColor(this.mListSettings.getItemNormalTextColor());
+								tvItemGroup.setVisibility(View.VISIBLE);
+							} else {
+								// no note exists ... 
+								tvItemGroup.setVisibility(View.GONE);
+							}
+						}*/
 		}
 	}
 
 	@Override
 	public View newView(Context context, Cursor cursor, ViewGroup parent) {
 		LayoutInflater inflater = LayoutInflater.from(context);
-		View view = inflater.inflate(R.layout.row_master_list_item, parent, false);
+		View view = inflater.inflate(R.layout.row_check_items, parent, false);
 		return view;
 	}
 

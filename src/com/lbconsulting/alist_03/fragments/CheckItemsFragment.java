@@ -1,7 +1,11 @@
 package com.lbconsulting.alist_03.fragments;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
@@ -11,12 +15,14 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -40,9 +46,10 @@ public class CheckItemsFragment extends Fragment
 
 	private ListSettings mListSettings;
 
-	private TextView mListTitle;
-	private ListView mItemsListView;
-	private Spinner mGroupsSpinner;
+	private TextView tvListTitle;
+	private ListView itemsListView;
+	private Spinner spinGroups;
+	private Button btnApplyGroup;
 
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
@@ -50,6 +57,12 @@ public class CheckItemsFragment extends Fragment
 	private CheckItemsCursorAdaptor mCheckItemsCursorAdaptor;
 
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
+
+	public static final String CHECK_ITEMS_TAB_BROADCAST_KEY = "CheckItemsTabBroadcastKey";
+	private BroadcastReceiver mCheckItemsTabBroadcastReceiver;
+
+	public static final int CHECK_ITEMS_TAB_CULL_MOVE_ITEMS = 0;
+	public static final int CHECK_ITEMS_TAB_SET_GROUPS = 1;
 
 	private boolean checkListID(String method) {
 		if (mActiveListID < 2) {
@@ -124,27 +137,30 @@ public class CheckItemsFragment extends Fragment
 
 		mListSettings = new ListSettings(getActivity(), mActiveListID);
 
-		mListTitle = (TextView) view.findViewById(R.id.tvListTitle);
-		mListTitle.setText(mListSettings.getListTitle());
+		tvListTitle = (TextView) view.findViewById(R.id.tvListTitle);
+		tvListTitle.setText(mListSettings.getListTitle());
 
-		mGroupsSpinner = (Spinner) view.findViewById(R.id.spinGroups);
-		mGroupsSpinner.setVisibility(View.GONE);
+		spinGroups = (Spinner) view.findViewById(R.id.spinGroups);
+		spinGroups.setVisibility(View.GONE);
+
+		btnApplyGroup = (Button) view.findViewById(R.id.btnApplyGroup);
 
 		mCheckItemsCursorAdaptor = new CheckItemsCursorAdaptor(getActivity(), null, 0, mListSettings);
-		mItemsListView = (ListView) view.findViewById(R.id.itemsListView);
-		mItemsListView.setAdapter(mCheckItemsCursorAdaptor);
+		itemsListView = (ListView) view.findViewById(R.id.itemsListView);
+		itemsListView.setAdapter(mCheckItemsCursorAdaptor);
 
 		mCheckItemsFragmentCallbacks = this;
 
-		mItemsListView.setOnItemClickListener(new OnItemClickListener() {
+		itemsListView.setOnItemClickListener(new OnItemClickListener() {
 			// toggle check box
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				ItemsTable.ToggleCheckBox(getActivity(), id);
+				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
 			}
 		});
 
-		mItemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+		itemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
 			// edit item dialog
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -167,9 +183,9 @@ public class CheckItemsFragment extends Fragment
 	}
 
 	private void setFragmentColors() {
-		mListTitle.setBackgroundColor(this.mListSettings.getTitleBackgroundColor());
-		mListTitle.setTextColor(this.mListSettings.getTitleTextColor());
-		mItemsListView.setBackgroundColor(this.mListSettings.getListBackgroundColor());
+		tvListTitle.setBackgroundColor(this.mListSettings.getTitleBackgroundColor());
+		tvListTitle.setTextColor(this.mListSettings.getTitleTextColor());
+		itemsListView.setBackgroundColor(this.mListSettings.getListBackgroundColor());
 
 	}
 
@@ -178,6 +194,37 @@ public class CheckItemsFragment extends Fragment
 		checkListID("onActivityCreated");
 		mLoaderManager = getLoaderManager();
 		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
+
+		mCheckItemsTabBroadcastReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				if (intent.hasExtra("checkItemsTabPosition")) {
+					int checkItemsTabPosition = intent.getExtras().getInt("checkItemsTabPosition", 0);
+					switch (checkItemsTabPosition) {
+
+					case CHECK_ITEMS_TAB_CULL_MOVE_ITEMS:
+						spinGroups.setVisibility(View.GONE);
+						btnApplyGroup.setVisibility(View.GONE);
+						break;
+
+					case CHECK_ITEMS_TAB_SET_GROUPS:
+						spinGroups.setVisibility(View.VISIBLE);
+						btnApplyGroup.setVisibility(View.VISIBLE);
+						break;
+
+					default:
+						break;
+					}
+				}
+			}
+		};
+
+		// Register local broadcast receivers.
+		String applyCheckItemsTabPositionKey = String.valueOf(mActiveListID) + CHECK_ITEMS_TAB_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mCheckItemsTabBroadcastReceiver,
+				new IntentFilter(applyCheckItemsTabPositionKey));
+
 		super.onActivityCreated(savedInstanceState);
 	}
 
@@ -214,11 +261,11 @@ public class CheckItemsFragment extends Fragment
 		checkListID("onPause");
 
 		// save ItemsListView position
-		View v = mItemsListView.getChildAt(0);
+		View v = itemsListView.getChildAt(0);
 		int ListViewTop = (v == null) ? 0 : v.getTop();
 		ContentValues newFieldValues = new ContentValues();
 		newFieldValues.put(ListsTable.COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION,
-				mItemsListView.getFirstVisiblePosition());
+				itemsListView.getFirstVisiblePosition());
 		newFieldValues.put(ListsTable.COL_MASTER_LISTVIEW_TOP, ListViewTop);
 		ListsTable.UpdateListsTableFieldValues(getActivity(), mActiveListID, newFieldValues);
 	}
@@ -239,6 +286,8 @@ public class CheckItemsFragment extends Fragment
 	public void onDestroy() {
 		super.onDestroy();
 		checkListID("onDestroy");
+		// Unregister local broadcast receivers
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mCheckItemsTabBroadcastReceiver);
 	}
 
 	@Override
@@ -325,7 +374,7 @@ public class CheckItemsFragment extends Fragment
 		case ITEMS_LOADER_ID:
 			mCheckItemsCursorAdaptor.swapCursor(newCursor);
 			if (flag_FirstTimeLoadingItemDataSinceOnResume) {
-				mItemsListView.setSelectionFromTop(
+				itemsListView.setSelectionFromTop(
 						mListSettings.getMasterListViewFirstVisiblePosition(), mListSettings.getMasterListViewTop());
 				flag_FirstTimeLoadingItemDataSinceOnResume = false;
 			}

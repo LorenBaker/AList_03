@@ -160,7 +160,7 @@ public class MasterListActivity extends FragmentActivity implements LoaderManage
 			DeleteAllItems();
 			return true;
 
-		case R.id.action_cullItems:
+		case R.id.action_manageItems:
 			StartCheckItemsActivity();
 			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;

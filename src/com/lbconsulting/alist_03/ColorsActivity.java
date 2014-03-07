@@ -38,7 +38,7 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 
 	private long mActiveListID = -1;
 	private int mActiveListPosition = -1;
-	private int mSelectedNavigationIndex = 0;
+	private int mColorsActivitySelectedNavigationIndex = 0;
 	private boolean mInhibitColorChangeBroadcast = false;
 	private ListSettings mListSettings;
 
@@ -428,12 +428,12 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
 		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
-		mSelectedNavigationIndex = storedStates.getInt("SelectedNavigationIndex", 0);
+		mColorsActivitySelectedNavigationIndex = storedStates.getInt("ColorsActivitySelectedNavigationIndex", 0);
 
 		if (mActiveListPosition > -1) {
 			mPager.setCurrentItem(mActiveListPosition);
 		}
-		getActionBar().setSelectedNavigationItem(mSelectedNavigationIndex);
+		getActionBar().setSelectedNavigationItem(mColorsActivitySelectedNavigationIndex);
 		super.onResume();
 	}
 
@@ -444,7 +444,7 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 		SharedPreferences.Editor applicationStates = preferences.edit();
 		applicationStates.putLong("ActiveListID", mActiveListID);
 		applicationStates.putInt("ActiveListPosition", mActiveListPosition);
-		applicationStates.putInt("SelectedNavigationIndex", getActionBar().getSelectedNavigationIndex());
+		applicationStates.putInt("ColorsActivitySelectedNavigationIndex", getActionBar().getSelectedNavigationIndex());
 		applicationStates.commit();
 		super.onPause();
 	}
