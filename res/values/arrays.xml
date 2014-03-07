@@ -4,6 +4,7 @@
     <string-array name="grocery_items">
         <item>Apples</item>
         <item>Avocado</item>
+        <item>Baby Food</item>
         <item>Bacon</item>
         <item>Baked Beans</item>
         <item>Balsamic Vinegar</item>
@@ -21,11 +22,15 @@
         <item>Cheese</item>
         <item>Chicken</item>
         <item>Chicken Broth</item>
-        <item>Corn</item>
+        <item>Corn - Canned</item>
+        <item>Corn - Fresh</item>
+        <item>Corn - Frozen</item>
         <item>Cottage Cheese</item>
         <item>Cream Cheese</item>
         <item>Distilled Water</item>
         <item>Eggs</item>
+        <item>Flour - white</item>
+        <item>Flour - whole wheat</item>
         <item>Garlic</item>
         <item>Ground Beef</item>
         <item>Hummus</item>
@@ -33,6 +38,7 @@
         <item>Lemons</item>
         <item>Limes</item>
         <item>Manicotti Noodles</item>
+        <item>Milk</item>
         <item>Mustard</item>
         <item>Olive Oil</item>
         <item>Parmesan Cheese</item>
@@ -53,27 +59,59 @@
         <item>Yogurt</item>
     </string-array>
     <string-array name="grocery_groups">
-        <item>Baking Supplies</item>
-        <item>Bathroom Supplies</item>
+        <item>Baby Products</item>
+        <item>Bakery</item>
+        <item>Baking Products</item>
+        <item>Beans (canned)</item>
+        <item>Beans/rice/soup (dried)</item>
         <item>Beer</item>
-        <item>Bread</item>
-        <item>Breakfast</item>
+        <item>Beverages</item>
+        <item>Beverages (chilled)</item>
+        <item>Books-Cards</item>
+        <item>Breads</item>
+        <item>Breakfast Products</item>
         <item>Candy</item>
-        <item>Canned Meats</item>
-        <item>Canned Vegetables</item>
         <item>Cereals</item>
-        <item>Chilled Beverages</item>
+        <item>Cheese</item>
         <item>Cleaning Supplies</item>
-        <item>Coffee</item>
+        <item>Coffee/Tea</item>
         <item>Condiments</item>
+        <item>Cookies</item>
         <item>Crackers</item>
         <item>Dairy</item>
-        <item>Flour</item>
-        <item>Fresh Produce</item>
-        <item>Laundry Supplies</item>
-        <item>Nuts</item>
+        <item>Deli</item>
+        <item>Desserts (frozen)</item>
+        <item>Dried Fruit</item>
+        <item>Ethnic Foods</item>
+        <item>Feminine Care</item>
+        <item>Floral</item>
+        <item>Foil-Plastic Wrap</item>
+        <item>Fruit (canned)</item>
+        <item>Health-Beauty</item>
+        <item>Household Goods</item>
+        <item>Jams, Jellies, Honey</item>
+        <item>Juices</item>
+        <item>Juices (chilled)</item>
+        <item>Juices (frozen)</item>
+        <item>Meals (frozen)</item>
+        <item>Meat-Seafood</item>
+        <item>Meat-Seafood (canned)</item>
+        <item>Meat-Seafood (frozen)</item>
+        <item>Nuts (packaged)</item>
+        <item>Paper Products</item>
+        <item>Pasta/Pasta Sauce</item>
+        <item>Peanut Butter</item>
         <item>Pet Supplies</item>
+        <item>Pharmacy</item>
+        <item>Potatoes (dried)</item>
+        <item>Produce</item>
         <item>Snacks</item>
+        <item>Soups</item>
+        <item>Spices</item>
+        <item>Tomato Products (canned)</item>
+        <item>Vegetables (canned)</item>
+        <item>Vegetables (frozen)</item>
+        <item>Wine</item>
     </string-array>
     <string-array name="grocery_stores">
         <item>Safeway-Factoria</item>

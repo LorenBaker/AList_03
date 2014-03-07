@@ -38,15 +38,22 @@ public class CheckItemsActivity extends FragmentActivity {
 	private ViewPager mPager;
 
 	private long mActiveListID = -1;
-	private long mActiveItemID = -1;
+	//private long mActiveItemID = -1;
 	private int mActiveListPosition = -1;
 	private ListSettings mListSettings;
 	private Cursor mAllListsCursor;
 	private BroadcastReceiver mItemsMovedReceiver;
 	private long mSelectedListID = -1;
+
 	private int mCheckItemsActivitySelectedNavigationIndex = 0;
+	String mApplyCheckItemsTabPositionKey = "";
+
 	private static boolean isTAB_MoveORCullItemsSelected = true;
 	private Menu mCheckItemsMenu;
+	private BroadcastReceiver mRequestCheckItemsTabPositionReceiver;
+
+	String mRestartGroupsLoaderKey = "";
+	String mRestartItemsLoaderKey = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +64,14 @@ public class CheckItemsActivity extends FragmentActivity {
 
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
-		mActiveItemID = storedStates.getLong("ActiveItemID", -1);
+		//mActiveItemID = storedStates.getLong("ActiveItemID", -1);
 		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
+
+		mApplyCheckItemsTabPositionKey = String.valueOf(mActiveListID)
+				+ CheckItemsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
+
+		mRestartGroupsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_GROUPS_LOADER_KEY;
+		mRestartItemsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_ITEMS_LOADER_KEY;
 
 		mItemsMovedReceiver = new BroadcastReceiver() {
 			@Override
@@ -96,9 +109,6 @@ public class CheckItemsActivity extends FragmentActivity {
 				}
 			}
 		};
-		// Register to receive messages.
-		String key = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
-		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(key));
 
 		final ActionBar actionBar = getActionBar();
 		actionBar.setTitle(R.string.action_bar_title_manage_items);
@@ -118,13 +128,7 @@ public class CheckItemsActivity extends FragmentActivity {
 					@Override
 					public void onTabSelected(Tab tab, android.app.FragmentTransaction ft) {
 						mCheckItemsActivitySelectedNavigationIndex = tab.getPosition();
-						String applyCheckItemsTabPositionKey = String.valueOf(mActiveListID)
-								+ CheckItemsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
-						Intent applyCheckItemsTabPositionIntent = new Intent(applyCheckItemsTabPositionKey);
-						applyCheckItemsTabPositionIntent.putExtra("checkItemsTabPosition",
-								mCheckItemsActivitySelectedNavigationIndex);
-						LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(
-								applyCheckItemsTabPositionIntent);
+						SendApplyCheckItemsTabPositionBroadCast();
 						onPrepareOptionsMenu(mCheckItemsMenu);
 					}
 
@@ -146,13 +150,7 @@ public class CheckItemsActivity extends FragmentActivity {
 					@Override
 					public void onTabSelected(Tab tab, android.app.FragmentTransaction ft) {
 						mCheckItemsActivitySelectedNavigationIndex = tab.getPosition();
-						String applyCheckItemsTabPositionKey = String.valueOf(mActiveListID)
-								+ CheckItemsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
-						Intent applyCheckItemsTabPositionIntent = new Intent(applyCheckItemsTabPositionKey);
-						applyCheckItemsTabPositionIntent.putExtra("checkItemsTabPosition",
-								mCheckItemsActivitySelectedNavigationIndex);
-						LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(
-								applyCheckItemsTabPositionIntent);
+						SendApplyCheckItemsTabPositionBroadCast();
 						onPrepareOptionsMenu(mCheckItemsMenu);
 					}
 
@@ -163,6 +161,22 @@ public class CheckItemsActivity extends FragmentActivity {
 
 				})
 				);
+
+		mRequestCheckItemsTabPositionReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				SendApplyCheckItemsTabPositionBroadCast();
+			}
+		};
+
+		// Register local broadcast receivers.
+		String itemsMovedKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(itemsMovedKey));
+
+		String requestCheckItemsTabPositionReceiverKey = String.valueOf(mActiveListID)
+				+ CheckItemsFragment.REQUEST_CHECK_ITEMS_TAB_POSITION_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mRequestCheckItemsTabPositionReceiver,
+				new IntentFilter(requestCheckItemsTabPositionReceiverKey));
 
 		mAllListsCursor = ListsTable.getAllLists(this);
 		mListSettings = new ListSettings(this, mActiveListID);
@@ -185,9 +199,8 @@ public class CheckItemsActivity extends FragmentActivity {
 				// A list page has been selected
 				SetActiveListID(position);
 				SetActiveListBroadcastReceivers();
-				String applyCheckItemsTabPositionKey = String.valueOf(mActiveListID)
-						+ CheckItemsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
-				Intent applyCheckItemsTabPositionIntent = new Intent(applyCheckItemsTabPositionKey);
+
+				Intent applyCheckItemsTabPositionIntent = new Intent(mApplyCheckItemsTabPositionKey);
 				applyCheckItemsTabPositionIntent.putExtra("checkItemsTabPosition",
 						mCheckItemsActivitySelectedNavigationIndex);
 				LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(
@@ -199,12 +212,37 @@ public class CheckItemsActivity extends FragmentActivity {
 		});
 	}
 
-	protected void SetActiveListBroadcastReceivers() {
-		// Unregister old receiver
+	private void SendApplyCheckItemsTabPositionBroadCast() {
+		Intent applyCheckItemsTabPositionIntent = new Intent(mApplyCheckItemsTabPositionKey);
+		applyCheckItemsTabPositionIntent.putExtra("checkItemsTabPosition",
+				mCheckItemsActivitySelectedNavigationIndex);
+		LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(
+				applyCheckItemsTabPositionIntent);
+	}
+
+	private void SendRestartGroupsLoaderBroadCast() {
+		Intent restartGroupsLoaderIntent = new Intent(mRestartGroupsLoaderKey);
+		LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(restartGroupsLoaderIntent);
+	}
+
+	private void SendRestartItemsLoaderBroadCast() {
+		Intent restartItemsLoaderIntent = new Intent(mRestartItemsLoaderKey);
+		LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(restartItemsLoaderIntent);
+	}
+
+	private void SetActiveListBroadcastReceivers() {
+		// Unregister old receivers
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mItemsMovedReceiver);
-		// Register new receiver
-		String key = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
-		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(key));
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mRequestCheckItemsTabPositionReceiver);
+
+		// Register new receivers
+		String itemsMovedKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(itemsMovedKey));
+
+		String requestCheckItemsTabPositionReceiverKey = String.valueOf(mActiveListID)
+				+ CheckItemsFragment.REQUEST_CHECK_ITEMS_TAB_POSITION_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mRequestCheckItemsTabPositionReceiver,
+				new IntentFilter(requestCheckItemsTabPositionReceiverKey));
 	}
 
 	@Override
@@ -307,9 +345,15 @@ public class CheckItemsActivity extends FragmentActivity {
 				mAllListsCursor.moveToPosition(position);
 				mActiveListID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
 				mListSettings = new ListSettings(this, mActiveListID);
+
+				mApplyCheckItemsTabPositionKey = String.valueOf(mActiveListID)
+						+ CheckItemsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
+				mRestartGroupsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_GROUPS_LOADER_KEY;
+				mRestartItemsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_ITEMS_LOADER_KEY;
+
 				mActiveListPosition = position;
 			} catch (Exception e) {
-				MyLog.d("CheckItems_ACTIVITY", "Exception in getlistID: " + e);
+				MyLog.d("CheckItems_ACTIVITY", "Exception in SetActiveListID: " + e);
 			}
 		}
 	}
@@ -370,6 +414,7 @@ public class CheckItemsActivity extends FragmentActivity {
 
 	private void ClearAllCheckedItems() {
 		ItemsTable.UnCheckAllItemsInList(CheckItemsActivity.this, mActiveListID);
+		SendRestartItemsLoaderBroadCast();
 	}
 
 	private void MoveCheckedItems() {
@@ -474,6 +519,8 @@ public class CheckItemsActivity extends FragmentActivity {
 		}
 		// Unregister since the activity is about to be closed.
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mItemsMovedReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mRequestCheckItemsTabPositionReceiver);
+
 		super.onDestroy();
 	}
 

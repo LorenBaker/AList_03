@@ -811,6 +811,26 @@ public class ItemsTable {
 		return numberOfUpdatedRecords;
 	}
 
+	public static int ApplyGroupToCheckedItems(Context context, long listID, long groupID) {
+		int numberOfUpdatedRecords = -1;
+		if (listID > 1) {
+			try {
+				ContentResolver cr = context.getContentResolver();
+				Uri uri = CONTENT_URI;
+				String where = COL_LIST_ID + " = ? AND " + COL_CHECKED + " = ?";
+				String[] whereArgs = { String.valueOf(listID), String.valueOf(CHECKED_TRUE) };
+
+				ContentValues values = new ContentValues();
+				values.put(COL_GROUP_ID, groupID);
+				values.put(COL_CHECKED, CHECKED_FALSE);
+				numberOfUpdatedRecords = cr.update(uri, values, where, whereArgs);
+			} catch (Exception e) {
+				MyLog.e("Exception error in ApplyGroupToCheckedItems. ", e.toString());
+			}
+		}
+		return numberOfUpdatedRecords;
+	}
+
 	public static int CheckItemsUnused(Context context, long listID, long numberOfDays) {
 		int numberOfCheckedItems = -1;
 		if (listID > 1) {

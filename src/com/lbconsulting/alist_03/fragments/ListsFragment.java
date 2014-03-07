@@ -50,6 +50,7 @@ public class ListsFragment extends Fragment
 	private static final int ITEMS_LOADER_ID = 2;
 	private static final int STORES_LOADER_ID = 3;
 	//private static final int GROUPS_LOADER_ID = 4;
+	//private static final int LOCATIONS_LOADER_ID = 5;
 
 	private String[] loaderNames = { "Lists_Loader", "Items_Loader", "Stores_Loader", "Groups_Loader" };
 
