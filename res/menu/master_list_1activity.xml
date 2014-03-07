@@ -4,20 +4,18 @@
     <item
         android:id="@+id/action_clearAllSelectedItems"
         android:icon="@drawable/ic_action_accept"
-        android:orderInCategory="41"
         android:showAsAction="ifRoom"
         android:title="@string/action_clearAllSelectedItems"/>
     <item
         android:id="@+id/action_deleteAllItems"
         android:icon="@drawable/ic_action_remove"
-        android:orderInCategory="41"
         android:showAsAction="never"
         android:title="@string/action_deleteAllItems"/>
     <item
-        android:id="@+id/action_cullItems"
+        android:id="@+id/action_manageItems"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/action_cullItems"/>
+        android:title="@string/action_title_manage_items"/>
     <item
         android:id="@+id/action_about"
         android:orderInCategory="120"
