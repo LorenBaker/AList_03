@@ -174,6 +174,7 @@ public class ListsFragment extends Fragment
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				ItemsTable.ToggleStrikeOut(getActivity(), id);
+				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 			}
 		});
 
@@ -347,13 +348,13 @@ public class ListsFragment extends Fragment
 							sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
 							break;*/
 
-			case ListPreferencesFragment.SELECTED_AT_TOP:
-				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
-				break;
+			/*			case ListPreferencesFragment.SELECTED_AT_TOP:
+							sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
+							break;
 
-			case ListPreferencesFragment.SELECTED_AT_BOTTOM:
-				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
-				break;
+						case ListPreferencesFragment.SELECTED_AT_BOTTOM:
+							sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
+							break;*/
 
 			case ListPreferencesFragment.LAST_USED:
 				sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
@@ -364,11 +365,14 @@ public class ListsFragment extends Fragment
 				break;
 			}
 			try {
-				if (masterListSortOrder == ListPreferencesFragment.BY_GROUP) {
-					cursorLoader = ItemsTable.getAllSelectedItemsInListByGroup(getActivity(), mActiveListID, true);
+				if (listSettings.getShowGroupsInListsFragment()) {
+					cursorLoader = ItemsTable.getAllItemsInListWithGroups(getActivity(), mActiveListID, null);
+
+				} else if (listSettings.getShowStores()) {
+					cursorLoader = ItemsTable.getAllItemsInListWithLocations(getActivity(), mActiveListID);
+
 				} else {
-					cursorLoader = ItemsTable.getAllSelectedItemsInList(getActivity(), mActiveListID, true,
-							ItemsTable.SORT_ORDER_ITEM_NAME);
+					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, sortOrder);
 				}
 
 			} catch (SQLiteException e) {

@@ -16,9 +16,11 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import com.lbconsulting.alist_03.database.AListDatabaseHelper;
+import com.lbconsulting.alist_03.database.BridgeTable;
 import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
+import com.lbconsulting.alist_03.database.LocationsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -40,7 +42,14 @@ public class AListContentProvider extends ContentProvider {
 	private static final int STORES_MULTI_ROWS = 40;
 	private static final int STORES_SINGLE_ROW = 41;
 
-	private static final int ITEMS_FROM_SINGLE_LIST = 51;
+	private static final int LOCATIONS_MULTI_ROWS = 50;
+	private static final int LOCATIONS_SINGLE_ROW = 51;
+
+	private static final int BRIDGE_MULTI_ROWS = 60;
+	private static final int BRIDGE_SINGLE_ROW = 61;
+
+	private static final int ITEMS_WITH_GROUPS = 70;
+	private static final int ITEMS_WITH_LOCATIONS = 71;
 
 	public static final String AUTHORITY = "com.lbconsulting.alist_03.contentprovider";
 
@@ -58,8 +67,14 @@ public class AListContentProvider extends ContentProvider {
 		sURIMatcher.addURI(AUTHORITY, StoresTable.CONTENT_PATH, STORES_MULTI_ROWS);
 		sURIMatcher.addURI(AUTHORITY, StoresTable.CONTENT_PATH + "/#", STORES_SINGLE_ROW);
 
-		sURIMatcher.addURI(AUTHORITY, ItemsTable.CONTENT_PATH_ITEMS_BY_GROUP, ITEMS_FROM_SINGLE_LIST);
+		sURIMatcher.addURI(AUTHORITY, LocationsTable.CONTENT_PATH, LOCATIONS_MULTI_ROWS);
+		sURIMatcher.addURI(AUTHORITY, LocationsTable.CONTENT_PATH + "/#", LOCATIONS_SINGLE_ROW);
 
+		sURIMatcher.addURI(AUTHORITY, BridgeTable.CONTENT_PATH, BRIDGE_MULTI_ROWS);
+		sURIMatcher.addURI(AUTHORITY, BridgeTable.CONTENT_PATH + "/#", BRIDGE_SINGLE_ROW);
+
+		sURIMatcher.addURI(AUTHORITY, ItemsTable.CONTENT_PATH_ITEMS_WITH_GROUPS, ITEMS_WITH_GROUPS);
+		sURIMatcher.addURI(AUTHORITY, ItemsTable.CONTENT_PATH_ITEMS_WITH_LOCATIONS, ITEMS_WITH_LOCATIONS);
 	}
 
 	@Override
@@ -158,22 +173,37 @@ public class AListContentProvider extends ContentProvider {
 			deleteCount = db.delete(StoresTable.TABLE_STORES, selection, selectionArgs);
 			break;
 
-		/*		case LISTS_MULTI_ROWS:
-					if (selection == null) {
-						selection = "1";
-					}
-					// Perform the deletion
-					deleteCount = db.delete(ListsTable.TABLE_LISTS, selection, selectionArgs);
-					break;
+		case LOCATIONS_MULTI_ROWS:
+			if (selection == null) {
+				selection = "1";
+			}
+			// Perform the deletion
+			deleteCount = db.delete(LocationsTable.TABLE_LOCATIONS, selection, selectionArgs);
+			break;
 
-				case LISTS_SINGLE_ROW:
-					// Limit deletion to a single row
-					rowID = uri.getLastPathSegment();
-					selection = ListsTable.COL_ID + "=" + rowID
-							+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
-					// Perform the deletion
-					deleteCount = db.delete(ListsTable.TABLE_LISTS, selection, selectionArgs);
-					break;*/
+		case LOCATIONS_SINGLE_ROW:
+			rowID = uri.getLastPathSegment();
+			selection = LocationsTable.COL_LOCATION_ID + "=" + rowID
+					+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
+			// Perform the deletion
+			deleteCount = db.delete(LocationsTable.TABLE_LOCATIONS, selection, selectionArgs);
+			break;
+
+		case BRIDGE_MULTI_ROWS:
+			if (selection == null) {
+				selection = "1";
+			}
+			// Perform the deletion
+			deleteCount = db.delete(BridgeTable.TABLE_BRIDGE, selection, selectionArgs);
+			break;
+
+		case BRIDGE_SINGLE_ROW:
+			rowID = uri.getLastPathSegment();
+			selection = BridgeTable.COL_STORE_ID + "=" + rowID
+					+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
+			// Perform the deletion
+			deleteCount = db.delete(BridgeTable.TABLE_BRIDGE, selection, selectionArgs);
+			break;
 
 		default:
 			throw new IllegalArgumentException("Method delete: Unknown URI: " + uri);
@@ -208,10 +238,15 @@ public class AListContentProvider extends ContentProvider {
 		case STORES_SINGLE_ROW:
 			return StoresTable.CONTENT_ITEM_TYPE;
 
-			/*		case LISTS_MULTI_ROWS:
-						return ListsTable.CONTENT_TYPE;
-					case LISTS_SINGLE_ROW:
-						return ListsTable.CONTENT_ITEM_TYPE;*/
+		case LOCATIONS_MULTI_ROWS:
+			return LocationsTable.CONTENT_TYPE;
+		case LOCATIONS_SINGLE_ROW:
+			return LocationsTable.CONTENT_ITEM_TYPE;
+
+		case BRIDGE_MULTI_ROWS:
+			return BridgeTable.CONTENT_TYPE;
+		case BRIDGE_SINGLE_ROW:
+			return BridgeTable.CONTENT_ITEM_TYPE;
 
 		default:
 			throw new IllegalArgumentException("Method getType. Unknown URI: " + uri);
@@ -225,7 +260,6 @@ public class AListContentProvider extends ContentProvider {
 		SQLiteDatabase db = null;
 		long newRowId = 0;
 		String nullColumnHack = null;
-		//String[] sKeys = null;
 
 		// Open a WritableDatabase database to support the insert transaction
 		db = database.getWritableDatabase();
@@ -297,21 +331,37 @@ public class AListContentProvider extends ContentProvider {
 			throw new IllegalArgumentException(
 					"Method insert: Cannot insert a new row with a single row URI. Illegal URI: " + uri);
 
-			/*		case LISTS_MULTI_ROWS:
-						newRowId = db.insertOrThrow(ListsTable.TABLE_LISTS, nullColumnHack, values);
-						if (newRowId > -1) {
-							// Construct and return the URI of the newly inserted row.
-							Uri newRowUri = ContentUris.withAppendedId(ListsTable.CONTENT_URI, newRowId);
-							// Notify and observers of the change in the database.
-							getContext().getContentResolver().notifyChange(ListsTable.CONTENT_URI, null);
-							return newRowUri;
-						} else {
-							return null;
-						}
+		case LOCATIONS_MULTI_ROWS:
+			newRowId = db.insertOrThrow(LocationsTable.TABLE_LOCATIONS, nullColumnHack, values);
+			if (newRowId > 0) {
+				// Construct and return the URI of the newly inserted row.
+				Uri newRowUri = ContentUris.withAppendedId(LocationsTable.CONTENT_URI, newRowId);
+				// Notify and observers of the change in the database.
+				getContext().getContentResolver().notifyChange(LocationsTable.CONTENT_URI, null);
+				return newRowUri;
+			} else {
+				return null;
+			}
 
-					case LISTS_SINGLE_ROW:
-						throw new IllegalArgumentException(
-								"Method insert: Cannot insert a new row with a single row URI. Illegal URI: " + uri);*/
+		case LOCATIONS_SINGLE_ROW:
+			throw new IllegalArgumentException(
+					"Method insert: Cannot insert a new row with a single row URI. Illegal URI: " + uri);
+
+		case BRIDGE_MULTI_ROWS:
+			newRowId = db.insertOrThrow(BridgeTable.TABLE_BRIDGE, nullColumnHack, values);
+			if (newRowId > 0) {
+				// Construct and return the URI of the newly inserted row.
+				Uri newRowUri = ContentUris.withAppendedId(BridgeTable.CONTENT_URI, newRowId);
+				// Notify and observers of the change in the database.
+				getContext().getContentResolver().notifyChange(BridgeTable.CONTENT_URI, null);
+				return newRowUri;
+			} else {
+				return null;
+			}
+
+		case BRIDGE_SINGLE_ROW:
+			throw new IllegalArgumentException(
+					"Method insert: Cannot insert a new row with a single row URI. Illegal URI: " + uri);
 
 		default:
 			throw new IllegalArgumentException("Method insert: Unknown URI: " + uri);
@@ -371,24 +421,68 @@ public class AListContentProvider extends ContentProvider {
 			queryBuilder.appendWhere(StoresTable.COL_STORE_ID + "=" + uri.getLastPathSegment());
 			break;
 
-		case ITEMS_FROM_SINGLE_LIST:
+		case LOCATIONS_MULTI_ROWS:
+			queryBuilder.setTables(LocationsTable.TABLE_LOCATIONS);
+			checkLocationsColumnNames(projection);
+			break;
+
+		case LOCATIONS_SINGLE_ROW:
+			queryBuilder.setTables(LocationsTable.TABLE_LOCATIONS);
+			checkLocationsColumnNames(projection);
+			queryBuilder.appendWhere(LocationsTable.COL_LOCATION_ID + "=" + uri.getLastPathSegment());
+			break;
+
+		case BRIDGE_MULTI_ROWS:
+			queryBuilder.setTables(BridgeTable.TABLE_BRIDGE);
+			checkBridgeColumnNames(projection);
+			break;
+
+		case BRIDGE_SINGLE_ROW:
+			queryBuilder.setTables(BridgeTable.TABLE_BRIDGE);
+			checkBridgeColumnNames(projection);
+			queryBuilder.appendWhere(BridgeTable.COL_BRIDGE_ID + "=" + uri.getLastPathSegment());
+			break;
+
+		case ITEMS_WITH_GROUPS:
 
 			/*SELECT tblItems._id, itemName, groupID, groupName 
 			  FROM tblItems JOIN tblGroups ON tblItems.groupID = tblGroups._id
 			  WHERE tblItems.listID=3
 			  ORDER BY groupName ASC, itemName ASC*/
 
-			projection = ItemsTable.PROJECTION_ALL_WITH_GROUP_NAME;
-
-			String tables = ItemsTable.TABLE_ITEMS + " JOIN " + GroupsTable.TABLE_GROUPS
-					+ " ON "
+			String tables = ItemsTable.TABLE_ITEMS +
+					" JOIN " + GroupsTable.TABLE_GROUPS + " ON "
 					+ ItemsTable.TABLE_ITEMS + "." + ItemsTable.COL_GROUP_ID + " = "
 					+ GroupsTable.TABLE_GROUPS + "." + GroupsTable.COL_GROUP_ID;
 			queryBuilder.setTables(tables);
 
-			sortOrder = GroupsTable.SORT_ORDER_GROUP + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
+			break;
+
+		case ITEMS_WITH_LOCATIONS:
+			/*SELECT tblItems._id,tblItems.itemName, tblItems.itemNote, tblItems.groupID, tblBridge.locationID, tblLocations.locationName
+			FROM tblItems
+			JOIN tblBridge ON tblItems.groupID = tblBridge.groupID
+			JOIN tblLocations ON tblBridge.locationID = tblLocations._id
+			WHERE tblItems.listID=2 AND tblBridge.storeID =5
+			ORDER BY   tblLocations.locationName, tblItems.itemName*/
+
+			projection = ItemsTable.PROJECTION_ALL_WITH_LOCATION_NAME;
+
+			tables = ItemsTable.TABLE_ITEMS
+					+ " JOIN " + BridgeTable.TABLE_BRIDGE + " ON "
+					+ ItemsTable.TABLE_ITEMS + "." + ItemsTable.COL_GROUP_ID + " = "
+					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_GROUP_ID
+
+					+ " JOIN " + LocationsTable.TABLE_LOCATIONS + " ON "
+					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_LOCATION_ID + " = "
+					+ LocationsTable.TABLE_LOCATIONS + "." + LocationsTable.COL_LOCATION_ID;
+
+			queryBuilder.setTables(tables);
+
+			sortOrder = LocationsTable.SORT_ORDER_LOCATION + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
 
 			break;
+
 		default:
 			throw new IllegalArgumentException("Method query. Unknown URI: " + uri);
 		}
@@ -412,6 +506,7 @@ public class AListContentProvider extends ContentProvider {
 			}
 
 			if (null != cursor) {
+				// TO DO: verify that the proper update happens with the Joined table query.
 				cursor.setNotificationUri(getContext().getContentResolver(), uri);
 			}
 			return cursor;
@@ -501,19 +596,33 @@ public class AListContentProvider extends ContentProvider {
 			updateCount = db.update(StoresTable.TABLE_STORES, values, selection, selectionArgs);
 			break;
 
-		/*		case LISTS_MULTI_ROWS:
-					// Perform the update
-					updateCount = db.update(ListsTable.TABLE_LISTS, values, selection, selectionArgs);
-					break;
+		case LOCATIONS_MULTI_ROWS:
+			// Perform the update
+			updateCount = db.update(LocationsTable.TABLE_LOCATIONS, values, selection, selectionArgs);
+			break;
 
-				case LISTS_SINGLE_ROW:
-					// Limit deletion to a single row
-					rowID = uri.getLastPathSegment();
-					selection = ListsTable.COL_ID + "=" + rowID
-							+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
-					// Perform the update
-					updateCount = db.update(ListsTable.TABLE_LISTS, values, selection, selectionArgs);
-					break;*/
+		case LOCATIONS_SINGLE_ROW:
+			// Limit deletion to a single row
+			rowID = uri.getLastPathSegment();
+			selection = LocationsTable.COL_LOCATION_ID + "=" + rowID
+					+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
+			// Perform the update
+			updateCount = db.update(LocationsTable.TABLE_LOCATIONS, values, selection, selectionArgs);
+			break;
+
+		case BRIDGE_MULTI_ROWS:
+			// Perform the update
+			updateCount = db.update(BridgeTable.TABLE_BRIDGE, values, selection, selectionArgs);
+			break;
+
+		case BRIDGE_SINGLE_ROW:
+			// Limit deletion to a single row
+			rowID = uri.getLastPathSegment();
+			selection = BridgeTable.COL_BRIDGE_ID + "=" + rowID
+					+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
+			// Perform the update
+			updateCount = db.update(BridgeTable.TABLE_BRIDGE, values, selection, selectionArgs);
+			break;
 
 		default:
 			throw new IllegalArgumentException("Method update: Unknown URI: " + uri);
@@ -599,6 +708,34 @@ public class AListContentProvider extends ContentProvider {
 		if (projection != null) {
 			HashSet<String> requstedColumns = new HashSet<String>(Arrays.asList(projection));
 			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(StoresTable.PROJECTION_ALL));
+
+			// Check if all columns which are requested are available
+			if (!availableColumns.containsAll(requstedColumns)) {
+				throw new IllegalArgumentException(
+						"Method checkListsColumnNames: Unknown ListTitlesTable column name!");
+			}
+		}
+	}
+
+	private void checkLocationsColumnNames(String[] projection) {
+		// Check if the caller has requested a column that does not exist
+		if (projection != null) {
+			HashSet<String> requstedColumns = new HashSet<String>(Arrays.asList(projection));
+			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(LocationsTable.PROJECTION_ALL));
+
+			// Check if all columns which are requested are available
+			if (!availableColumns.containsAll(requstedColumns)) {
+				throw new IllegalArgumentException(
+						"Method checkListsColumnNames: Unknown ListTitlesTable column name!");
+			}
+		}
+	}
+
+	private void checkBridgeColumnNames(String[] projection) {
+		// Check if the caller has requested a column that does not exist
+		if (projection != null) {
+			HashSet<String> requstedColumns = new HashSet<String>(Arrays.asList(projection));
+			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(BridgeTable.PROJECTION_ALL));
 
 			// Check if all columns which are requested are available
 			if (!availableColumns.containsAll(requstedColumns)) {

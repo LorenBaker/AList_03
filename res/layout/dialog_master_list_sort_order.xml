@@ -19,12 +19,6 @@
             android:text="@string/sort_option_alphabetical" />
 
         <RadioButton
-            android:id="@+id/rbByGroup_master_list"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="@string/sort_option_by_group" />
-
-        <RadioButton
             android:id="@+id/rbSelectedItemsAtTop"
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -75,5 +69,11 @@
             android:text="@string/btn_apply_text"
             android:textSize="20sp" />
     </LinearLayout>
+
+    <RadioGro>
+    </RadioGro>
+
+    <RadioGroup>
+    </RadioGroup>
 
 </LinearLayout>

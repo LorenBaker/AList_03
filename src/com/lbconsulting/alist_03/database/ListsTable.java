@@ -142,9 +142,10 @@ public class ListsTable {
 	}
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-		MyLog.w(TABLE_LISTS, "Upgrading database from version " + oldVersion + " to version " + newVersion + ".");
-		database.execSQL("DROP TABLE IF EXISTS " + TABLE_LISTS);
-		onCreate(database);
+		MyLog.w(TABLE_LISTS, "Upgrading database from version " + oldVersion + " to version " + newVersion
+				+ ". NO CHANGES REQUIRED.");
+		/*database.execSQL("DROP TABLE IF EXISTS " + TABLE_LISTS);
+		onCreate(database);*/
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////

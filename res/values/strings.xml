@@ -49,7 +49,7 @@
     <string name="sort_option_manual">Manual</string>
     <string name="btnClearEditText_Text">CL</string>
     <string name="action_clearAllSelectedItems">Clear All Selected Items</string>
-    <string name="action_cullItems">Cull or Move Items</string>
+    <string name="action_ManageItems">Manage Items</string>
     <string name="action_deleteAllItems">Delete All Items</string>
     <string name="dialog_title_delete_all_items">Delete All Items</string>
     <string name="dialog_message_permanently_delete_all_items_in">"Permanently delete ALL items in "</string>
@@ -149,7 +149,7 @@
     <string name="dialog_title_edit_item">Edit Item</string>
     <string name="dialog_title_delete_all_checked_items">Delete All Checked Items</string>
     <string name="dialog_title_move_checked_items">Move Checked Items</string>
-    <string name="action_bar_title_cull_or_move_items">Cull or Move Items</string>
+    <string name="action_bar_title_manage_items">Manage Items</string>
     <string name="tvListNormalText">List Text - Normal</string>
     <string name="tvListStrikeOutText">List Text - Strikeout</string>
     <string name="tvMasterListNotSelectedText">Master Text - Not Selected</string>

@@ -42,7 +42,7 @@ public class CheckItemsFragment extends Fragment
 
 	private TextView mListTitle;
 	private ListView mItemsListView;
-	private Spinner mStoreSpinner;
+	private Spinner mGroupsSpinner;
 
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
@@ -120,15 +120,15 @@ public class CheckItemsFragment extends Fragment
 				mActiveListID = bundle.getLong("listID", 0);
 		}
 
-		View view = inflater.inflate(R.layout.frag_lists, container, false);
+		View view = inflater.inflate(R.layout.frag_check_items, container, false);
 
 		mListSettings = new ListSettings(getActivity(), mActiveListID);
 
 		mListTitle = (TextView) view.findViewById(R.id.tvListTitle);
 		mListTitle.setText(mListSettings.getListTitle());
 
-		mStoreSpinner = (Spinner) view.findViewById(R.id.spinStores);
-		mStoreSpinner.setVisibility(View.GONE);
+		mGroupsSpinner = (Spinner) view.findViewById(R.id.spinGroups);
+		mGroupsSpinner.setVisibility(View.GONE);
 
 		mCheckItemsCursorAdaptor = new CheckItemsCursorAdaptor(getActivity(), null, 0, mListSettings);
 		mItemsListView = (ListView) view.findViewById(R.id.itemsListView);
@@ -137,6 +137,7 @@ public class CheckItemsFragment extends Fragment
 		mCheckItemsFragmentCallbacks = this;
 
 		mItemsListView.setOnItemClickListener(new OnItemClickListener() {
+			// toggle check box
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				ItemsTable.ToggleCheckBox(getActivity(), id);
@@ -144,7 +145,7 @@ public class CheckItemsFragment extends Fragment
 		});
 
 		mItemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
-
+			// edit item dialog
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 				mActiveItemID = id;
@@ -269,10 +270,6 @@ public class CheckItemsFragment extends Fragment
 				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
 				break;
 
-			/*case ListPreferencesFragment.BY_GROUP:
-				sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
-				break;*/
-
 			case ListPreferencesFragment.SELECTED_AT_TOP:
 				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
 				break;
@@ -291,8 +288,12 @@ public class CheckItemsFragment extends Fragment
 			}
 
 			try {
-				if (masterListSortOrder == ListPreferencesFragment.BY_GROUP) {
-					cursorLoader = ItemsTable.getAllItemsInListByGroup(getActivity(), mActiveListID);
+				if (mListSettings.getShowGroupsInMasterListFragment()) {
+					cursorLoader = ItemsTable.getAllItemsInListWithGroups(getActivity(), mActiveListID, null);
+
+				} else if (mListSettings.getShowStores()) {
+					cursorLoader = ItemsTable.getAllItemsInListWithLocations(getActivity(), mActiveListID);
+
 				} else {
 					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
 				}

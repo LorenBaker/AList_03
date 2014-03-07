@@ -80,9 +80,10 @@ public class GroupsTable {
 	}
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-		MyLog.w(TABLE_GROUPS, "Upgrading database from version " + oldVersion + " to version " + newVersion + ".");
-		database.execSQL("DROP TABLE IF EXISTS " + TABLE_GROUPS);
-		onCreate(database);
+		MyLog.w(TABLE_GROUPS, "Upgrading database from version " + oldVersion + " to version " + newVersion
+				+ ". NO CHANGES REQUIRED.");
+		/*database.execSQL("DROP TABLE IF EXISTS " + TABLE_GROUPS);
+		onCreate(database);*/
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////

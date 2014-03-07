@@ -106,9 +106,10 @@ public class StoresTable {
 	}
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-		MyLog.w(TABLE_STORES, ": Upgrading database from version " + oldVersion + " to version " + newVersion + ".");
-		database.execSQL("DROP TABLE IF EXISTS " + TABLE_STORES);
-		onCreate(database);
+		/*		database.execSQL("DROP TABLE IF EXISTS " + TABLE_STORES);
+				onCreate(database);*/
+		MyLog.w(TABLE_STORES, ": Upgrading database from version " + oldVersion + " to version " + newVersion
+				+ ". NO CHANGES REQUIRED.");
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////

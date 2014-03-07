@@ -33,11 +33,11 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class ListPreferencesFragment extends Fragment {
 
 	public static final int ALPHABETICAL = 0;
-	public static final int BY_GROUP = 1;
-	public static final int MANUAL = 2;
-	public static final int SELECTED_AT_TOP = 3;
-	public static final int SELECTED_AT_BOTTOM = 4;
-	public static final int LAST_USED = 5;
+	//public static final int BY_GROUP = 1;
+	public static final int MANUAL = 1;
+	public static final int SELECTED_AT_TOP = 2;
+	public static final int SELECTED_AT_BOTTOM = 3;
+	public static final int LAST_USED = 4;
 
 	private long mActiveListID;
 	private ListSettings listSettings;
@@ -364,9 +364,9 @@ public class ListPreferencesFragment extends Fragment {
 			StringBuilder sb = new StringBuilder();
 			sb.append("List Sort Order (");
 			switch (newListSortOrder) {
-			case BY_GROUP:
-				sb.append("By Group)");
-				break;
+			/*			case BY_GROUP:
+							sb.append("By Group)");
+							break;*/
 
 			case MANUAL:
 				sb.append("Manual)");
@@ -385,9 +385,9 @@ public class ListPreferencesFragment extends Fragment {
 			StringBuilder sb = new StringBuilder();
 			sb.append("Master List Sort Order (");
 			switch (newMasterListSortOrder) {
-			case BY_GROUP:
-				sb.append("By Group)");
-				break;
+			/*			case BY_GROUP:
+							sb.append("By Group)");
+							break;*/
 
 			case SELECTED_AT_TOP:
 				sb.append("Selected at Top)");

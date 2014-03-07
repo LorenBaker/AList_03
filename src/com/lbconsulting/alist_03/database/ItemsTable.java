@@ -32,15 +32,26 @@ public class ItemsTable {
 	public static final String[] PROJECTION_ALL = { COL_ITEM_ID, COL_ITEM_NAME, COL_ITEM_NOTE, COL_LIST_ID,
 			COL_GROUP_ID, COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED };
 
-	public static final String[] PROJECTION_ALL_WITH_GROUP_NAME = { TABLE_ITEMS + "." + COL_ITEM_ID,
+	public static final String[] PROJECTION_ALL_WITH_GROUP_NAME = {
+			TABLE_ITEMS + "." + COL_ITEM_ID,
 			COL_ITEM_NAME, COL_ITEM_NOTE,
 			TABLE_ITEMS + "." + COL_LIST_ID,
 			TABLE_ITEMS + "." + COL_GROUP_ID,
 			COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED,
 			GroupsTable.COL_GROUP_NAME };
 
+	public static final String[] PROJECTION_ALL_WITH_LOCATION_NAME = {
+			TABLE_ITEMS + "." + COL_ITEM_ID,
+			COL_ITEM_NAME, COL_ITEM_NOTE,
+			TABLE_ITEMS + "." + COL_LIST_ID,
+			TABLE_ITEMS + "." + COL_GROUP_ID,
+			COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED,
+			//BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_GROUP_ID,
+			LocationsTable.TABLE_LOCATIONS + "." + LocationsTable.COL_LOCATION_NAME };
+
 	public static final String CONTENT_PATH = TABLE_ITEMS;
-	public static final String CONTENT_PATH_ITEMS_BY_GROUP = "itemsByGroup";
+	public static final String CONTENT_PATH_ITEMS_WITH_GROUPS = "itemsWithGroups";
+	public static final String CONTENT_PATH_ITEMS_WITH_LOCATIONS = "itemsWithLocations";
 
 	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + "vnd.lbconsulting."
 			+ TABLE_ITEMS;
@@ -48,8 +59,11 @@ public class ItemsTable {
 			+ TABLE_ITEMS;
 	public static final Uri CONTENT_URI = Uri.parse("content://" + AListContentProvider.AUTHORITY + "/" + CONTENT_PATH);
 
-	public static final Uri CONTENT_URI_ITEMS_BY_GROUP = Uri.parse("content://" + AListContentProvider.AUTHORITY + "/"
-			+ CONTENT_PATH_ITEMS_BY_GROUP);
+	public static final Uri CONTENT_URI_ITEMS_WITH_GROUPS = Uri.parse("content://" + AListContentProvider.AUTHORITY
+			+ "/" + CONTENT_PATH_ITEMS_WITH_GROUPS);
+
+	public static final Uri CONTENT_URI_ITEMS_WITH_LOCATIONS = Uri.parse("content://" + AListContentProvider.AUTHORITY
+			+ "/" + CONTENT_PATH_ITEMS_WITH_LOCATIONS);
 
 	public static final String SORT_ORDER_ITEM_NAME = COL_ITEM_NAME + " ASC";
 	public static final String SORT_ORDER_SELECTED_AT_TOP = COL_SELECTED + " DESC, " + SORT_ORDER_ITEM_NAME;
@@ -110,9 +124,9 @@ public class ItemsTable {
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
 		MyLog.w(TABLE_ITEMS, "Upgrading database from version " + oldVersion + " to version " + newVersion
-				+ ".");
-		database.execSQL("DROP TABLE IF EXISTS " + TABLE_ITEMS);
-		onCreate(database);
+				+ ". NO CHANGES REQUIRED.");
+		/*database.execSQL("DROP TABLE IF EXISTS " + TABLE_ITEMS);
+		onCreate(database);*/
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -250,38 +264,60 @@ public class ItemsTable {
 		return cursorLoader;
 	}
 
-	public static CursorLoader getAllItemsInListByGroup(Context context, long listID) {
-		CursorLoader cursorLoader = null;
-		if (listID > 1) {
-			Uri uri = CONTENT_URI_ITEMS_BY_GROUP;
-			String[] projection = null;
-			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ?";
-			String selectionArgs[] = new String[] { String.valueOf(listID) };
-			String sortOrder = null;
-			try {
-				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
-			} catch (Exception e) {
-				MyLog.e("Exception error  in ItemsTable: getAllItemsInListByGroup. ", e.toString());
-			}
-		}
-		return cursorLoader;
-	}
-
 	public static CursorLoader getAllItemsInList(Context context, long listID, String selection, String sortOrder) {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			Uri uri = CONTENT_URI;
 			String[] projection = PROJECTION_ALL;
 			if (selection != null) {
-				selection = selection + " AND " + COL_LIST_ID + " = ?";
+				selection = selection + " AND " + TABLE_ITEMS + "." + COL_LIST_ID + " = ?";
 			} else {
-				selection = COL_LIST_ID + " = ?";
+				selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ?";
 			}
 			String selectionArgs[] = new String[] { String.valueOf(listID) };
 			try {
 				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
 			} catch (Exception e) {
 				MyLog.e("Exception error  in ItemsTable: getAllItemsInList. ", e.toString());
+			}
+		}
+		return cursorLoader;
+	}
+
+	public static CursorLoader getAllItemsInListWithGroups(Context context, long listID, String selection) {
+		CursorLoader cursorLoader = null;
+		if (listID > 1) {
+			Uri uri = CONTENT_URI_ITEMS_WITH_GROUPS;
+			String[] projection = ItemsTable.PROJECTION_ALL_WITH_GROUP_NAME;
+
+			if (selection != null) {
+				selection = selection + " AND " + TABLE_ITEMS + "." + COL_LIST_ID + " = ?";
+			} else {
+				selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ?";
+			}
+			String selectionArgs[] = new String[] { String.valueOf(listID) };
+			String sortOrder = GroupsTable.SORT_ORDER_GROUP + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
+			try {
+				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllItemsInListWithGroups. ", e.toString());
+			}
+		}
+		return cursorLoader;
+	}
+
+	public static CursorLoader getAllItemsInListWithLocations(Context context, long listID) {
+		CursorLoader cursorLoader = null;
+		if (listID > 1) {
+			Uri uri = CONTENT_URI_ITEMS_WITH_LOCATIONS;
+			String[] projection = ItemsTable.PROJECTION_ALL_WITH_LOCATION_NAME;
+			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID) };
+			String sortOrder = LocationsTable.SORT_ORDER_LOCATION + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
+			try {
+				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllItemsInListWithLocations. ", e.toString());
 			}
 		}
 		return cursorLoader;
@@ -324,7 +360,7 @@ public class ItemsTable {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			int selectedValue = AListUtilities.boolToInt(selected);
-			Uri uri = CONTENT_URI_ITEMS_BY_GROUP;
+			Uri uri = CONTENT_URI_ITEMS_WITH_GROUPS;
 			String[] projection = null;
 			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
 					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";

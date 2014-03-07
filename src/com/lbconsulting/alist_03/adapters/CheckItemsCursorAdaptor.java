@@ -27,10 +27,26 @@ public class CheckItemsCursorAdaptor extends CursorAdapter {
 		MyLog.i("CheckItemsCursorAdaptor", "CheckItemsCursorAdaptor constructor.");
 	}
 
-	private void ShowSeperator(TextView tv) {
-		// TODO logic for showing the separator
-		//tv.setVisibility(View.GONE);
-		tv.setVisibility(View.VISIBLE);
+	private boolean ShowSeparator(TextView tv, Cursor listCursor) {
+		boolean result = false;
+		long currentGroupID = listCursor.getLong(listCursor.getColumnIndexOrThrow(ItemsTable.COL_GROUP_ID));
+		long previousGroupID = -1;
+		if (listCursor.moveToPrevious()) {
+			previousGroupID = listCursor.getLong(listCursor.getColumnIndexOrThrow(ItemsTable.COL_GROUP_ID));
+			listCursor.moveToNext();
+			if (currentGroupID == previousGroupID) {
+				tv.setVisibility(View.GONE);
+				result = false;
+			} else {
+				tv.setVisibility(View.VISIBLE);
+				result = true;
+			}
+		} else {
+			tv.setVisibility(View.VISIBLE);
+			listCursor.moveToFirst();
+			result = true;
+		}
+		return result;
 	}
 
 	@Override
@@ -39,7 +55,14 @@ public class CheckItemsCursorAdaptor extends CursorAdapter {
 			TextView tvListItemSeparator = (TextView) view.findViewById(R.id.tvListItemSeparator);
 			if (tvListItemSeparator != null) {
 				if (mListSettings.getShowGroupsInMasterListFragment()) {
-					ShowSeperator(tvListItemSeparator);
+					if (ShowSeparator(tvListItemSeparator, cursor)) {
+						try {
+							tvListItemSeparator.setText(cursor.getString(cursor
+									.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME)));
+						} catch (IllegalArgumentException e) {
+							MyLog.e("IllegalArgumentException error in ItemsCursorAdaptor:bindView ", e.toString());
+						}
+					}
 				} else {
 					tvListItemSeparator.setVisibility(View.GONE);
 				}

@@ -1,5 +1,8 @@
 package com.lbconsulting.alist_03;
 
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
+import android.app.ActionBar.TabListener;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -20,6 +23,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.CheckItemsPagerAdapter;
@@ -93,7 +97,53 @@ public class CheckItemsActivity extends FragmentActivity {
 		String key = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(key));
 
-		getActionBar().setTitle(R.string.action_bar_title_cull_or_move_items);
+		final ActionBar actionBar = getActionBar();
+		actionBar.setTitle(R.string.action_bar_title_manage_items);
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+		// add a tabs to the action bar.
+		actionBar.addTab(actionBar.newTab()
+				.setText(R.string.actionBar_tab_color_presets)
+				.setTabListener(new TabListener() {
+
+					@Override
+					public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+						// Do nothing
+					}
+
+					@Override
+					public void onTabSelected(Tab tab, FragmentTransaction ft) {
+						mPresetsScrollView.setVisibility(View.VISIBLE);
+						mPickerScrollView.setVisibility(View.GONE);
+					}
+
+					@Override
+					public void onTabReselected(Tab tab, FragmentTransaction ft) {
+						// Do nothing
+					}
+				})
+				);
+		actionBar.addTab(actionBar.newTab()
+				.setText(R.string.actionBar_tab_color_picker)
+				.setTabListener(new TabListener() {
+
+					@Override
+					public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+						// Do nothing
+					}
+
+					@Override
+					public void onTabSelected(Tab tab, FragmentTransaction ft) {
+						mPresetsScrollView.setVisibility(View.GONE);
+						mPickerScrollView.setVisibility(View.VISIBLE);
+					}
+
+					@Override
+					public void onTabReselected(Tab tab, FragmentTransaction ft) {
+						// Do nothing
+					}
+				})
+				);
 
 		mAllListsCursor = ListsTable.getAllLists(this);
 		mListSettings = new ListSettings(this, mActiveListID);

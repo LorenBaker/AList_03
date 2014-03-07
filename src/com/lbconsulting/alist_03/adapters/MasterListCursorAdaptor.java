@@ -27,7 +27,6 @@ public class MasterListCursorAdaptor extends CursorAdapter {
 	}
 
 	private boolean ShowSeparator(TextView tv, Cursor listCursor) {
-		// TODO code show separator logic
 		boolean result = false;
 		long currentGroupID = listCursor.getLong(listCursor.getColumnIndexOrThrow(ItemsTable.COL_GROUP_ID));
 		long previousGroupID = -1;

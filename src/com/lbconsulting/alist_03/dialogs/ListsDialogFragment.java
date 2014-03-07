@@ -202,12 +202,12 @@ public class ListsDialogFragment extends DialogFragment {
 						rb.setChecked(true);
 					}
 					break;
-				case ListPreferencesFragment.BY_GROUP:
-					rb = (RadioButton) view.findViewById(R.id.rbByGroup_list);
-					if (rb != null) {
-						rb.setChecked(true);
-					}
-					break;
+				/*				case ListPreferencesFragment.BY_GROUP:
+									rb = (RadioButton) view.findViewById(R.id.rbByGroup_list);
+									if (rb != null) {
+										rb.setChecked(true);
+									}
+									break;*/
 				case ListPreferencesFragment.MANUAL:
 					rb = (RadioButton) view.findViewById(R.id.rbManual);
 					if (rb != null) {
@@ -225,9 +225,10 @@ public class ListsDialogFragment extends DialogFragment {
 						case R.id.rbAlphabetical_list:
 							mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 							break;
-						case R.id.rbByGroup_list:
-							mSortOrderResult = ListPreferencesFragment.BY_GROUP;
-							break;
+						/*						case R.id.rbByGroup_list:
+													mSortOrderResult = ListPreferencesFragment.BY_GROUP;
+													break;	*/
+
 						case R.id.rbManual:
 							mSortOrderResult = ListPreferencesFragment.MANUAL;
 							break;
@@ -252,12 +253,12 @@ public class ListsDialogFragment extends DialogFragment {
 						rb.setChecked(true);
 					}
 					break;
-				case ListPreferencesFragment.BY_GROUP:
-					rb = (RadioButton) view.findViewById(R.id.rbByGroup_master_list);
-					if (rb != null) {
-						rb.setChecked(true);
-					}
-					break;
+				/*				case ListPreferencesFragment.BY_GROUP:
+									rb = (RadioButton) view.findViewById(R.id.rbByGroup_master_list);
+									if (rb != null) {
+										rb.setChecked(true);
+									}
+									break;*/
 				case ListPreferencesFragment.SELECTED_AT_TOP:
 					rb = (RadioButton) view.findViewById(R.id.rbSelectedItemsAtTop);
 					if (rb != null) {
@@ -287,9 +288,9 @@ public class ListsDialogFragment extends DialogFragment {
 						case R.id.rbAlphabetical_master_list:
 							mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 							break;
-						case R.id.rbByGroup_master_list:
-							mSortOrderResult = ListPreferencesFragment.BY_GROUP;
-							break;
+						/*						case R.id.rbByGroup_master_list:
+													mSortOrderResult = ListPreferencesFragment.BY_GROUP;
+													break;*/
 						case R.id.rbSelectedItemsAtTop:
 							mSortOrderResult = ListPreferencesFragment.SELECTED_AT_TOP;
 							break;
@@ -351,18 +352,18 @@ public class ListsDialogFragment extends DialogFragment {
 		case R.id.rbAlphabetical_list:
 			mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 			break;
-		case R.id.rbByGroup_list:
-			mSortOrderResult = ListPreferencesFragment.BY_GROUP;
-			break;
+		/*		case R.id.rbByGroup_list:
+					mSortOrderResult = ListPreferencesFragment.BY_GROUP;
+					break;*/
 		case R.id.rbManual:
 			mSortOrderResult = ListPreferencesFragment.MANUAL;
 			break;
 		case R.id.rbAlphabetical_master_list:
 			mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 			break;
-		case R.id.rbByGroup_master_list:
-			mSortOrderResult = ListPreferencesFragment.BY_GROUP;
-			break;
+		/*		case R.id.rbByGroup_master_list:
+					mSortOrderResult = ListPreferencesFragment.BY_GROUP;
+					break;*/
 		case R.id.rbSelectedItemsAtTop:
 			mSortOrderResult = ListPreferencesFragment.SELECTED_AT_TOP;
 			break;

@@ -426,10 +426,10 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 			if (!itemNameText.isEmpty()) {
 				selection = ItemsTable.COL_ITEM_NAME + " Like '%" + itemNameText + "%'";
 			}
-
 			try {
-				if (masterListSortOrder == ListPreferencesFragment.BY_GROUP) {
-					cursorLoader = ItemsTable.getAllItemsInListByGroup(getActivity(), mActiveListID);
+				if (listSettings.getShowGroupsInMasterListFragment()) {
+					cursorLoader = ItemsTable.getAllItemsInListWithGroups(getActivity(), mActiveListID, selection);
+
 				} else {
 					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
 				}

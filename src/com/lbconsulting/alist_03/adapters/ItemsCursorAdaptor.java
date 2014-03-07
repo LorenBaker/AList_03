@@ -14,6 +14,7 @@ import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.ItemsTable;
+import com.lbconsulting.alist_03.database.LocationsTable;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ItemsCursorAdaptor extends CursorAdapter {
@@ -51,6 +52,7 @@ public class ItemsCursorAdaptor extends CursorAdapter {
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
 		if (cursor != null) {
+
 			TextView tvListItemSeparator = (TextView) view.findViewById(R.id.tvListItemSeparator);
 			if (tvListItemSeparator != null) {
 				if (mListSettings.getShowGroupsInListsFragment()) {
@@ -59,7 +61,18 @@ public class ItemsCursorAdaptor extends CursorAdapter {
 							tvListItemSeparator.setText(cursor.getString(cursor
 									.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME)));
 						} catch (IllegalArgumentException e) {
-							MyLog.e("IllegalArgumentException error in ItemsCursorAdaptor:bindView ", e.toString());
+							MyLog.e("IllegalArgumentException error in ItemsCursorAdaptor:bindView: getShowGroupsInListsFragment: list:"
+									+ mListSettings.getListTitle(), e.toString());
+						}
+					}
+				} else if (mListSettings.getShowStores()) {
+					if (ShowSeparator(tvListItemSeparator, cursor)) {
+						try {
+							tvListItemSeparator.setText(cursor.getString(cursor
+									.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_NAME)));
+						} catch (IllegalArgumentException e) {
+							MyLog.e("IllegalArgumentException error in ItemsCursorAdaptor:bindView: getShowStores: list:"
+									+ mListSettings.getListTitle(), e.toString());
 						}
 					}
 				} else {
