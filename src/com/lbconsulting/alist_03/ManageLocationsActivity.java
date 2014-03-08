@@ -1,189 +1,74 @@
 package com.lbconsulting.alist_03;
 
-import android.app.ActionBar;
-import android.app.ActionBar.Tab;
-import android.app.ActionBar.TabListener;
-import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.TextView;
 
-import com.lbconsulting.alist_03.adapters.ManageLocationsPagerAdapter;
-import com.lbconsulting.alist_03.classes.ListSettings;
-import com.lbconsulting.alist_03.database.ItemsTable;
-import com.lbconsulting.alist_03.database.ListsTable;
-import com.lbconsulting.alist_03.dialogs.MoveCheckedItemsDialogFragment;
-import com.lbconsulting.alist_03.fragments.ManageLocationsFragment;
+import com.lbconsulting.alist_03.adapters.ManageLocationsPagerAdaptor;
+import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ManageLocationsActivity extends FragmentActivity {
-	private ManageLocationsPagerAdapter mManageLocationsPagerAdapter;
-	private ViewPager mPager;
 
 	private long mActiveListID = -1;
-	//private long mActiveItemID = -1;
-	private int mActiveListPosition = -1;
-	private ListSettings mListSettings;
-	private Cursor mAllListsCursor;
-	private BroadcastReceiver mItemsMovedReceiver;
-	private long mSelectedListID = -1;
+	private long mActiveStoreID = -1;
+	private int mActiveStorePosition = 0;
+	private boolean mTwoFragmentLayout;
+	//private StoresPagerAdaptor mStoresPagerAdapter;
+	private ManageLocationsPagerAdaptor mManageLocationsPagerAdaptor;
+	private ViewPager mPager;
+	private Cursor mAllStoresCursor;
 
-	private int mManageLocationsActivitySelectedNavigationIndex = 0;
-	String mApplyManageLocationsTabPositionKey = "";
-
-	private static boolean isTAB_MoveORCullItemsSelected = true;
-	private Menu mManageLocationsMenu;
-	private BroadcastReceiver mRequestManageLocationsTabPositionReceiver;
-
-	String mRestartGroupsLoaderKey = "";
-	String mRestartItemsLoaderKey = "";
+	/*private BroadcastReceiver mListTitleChanged;
+	public static final String LIST_TITLE_CHANGE_BROADCAST_KEY = "listTitleChanged";*/
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		MyLog.i("ManageLocations_ACTIVITY", "onCreate");
 		super.onCreate(savedInstanceState);
-
-		setContentView(R.layout.activity_check_items_pager);
+		Intent intent = getIntent();
+		String activeListTitle = intent.getStringExtra("listTitle");
+		int titleBackgroundColor = intent.getIntExtra("titleBackgroundColor", 0);
+		int titleTextColor = intent.getIntExtra("titleTextColor", 0);
 
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
-		//mActiveItemID = storedStates.getLong("ActiveItemID", -1);
-		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
 
-		mApplyManageLocationsTabPositionKey = String.valueOf(mActiveListID)
-				+ ManageLocationsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
+		setContentView(R.layout.activity_manage_locations_pager);
 
-		mRestartGroupsLoaderKey = String.valueOf(mActiveListID) + ManageLocationsFragment.RESART_GROUPS_LOADER_KEY;
-		mRestartItemsLoaderKey = String.valueOf(mActiveListID) + ManageLocationsFragment.RESART_ITEMS_LOADER_KEY;
+		TextView tvListTitle = (TextView) findViewById(R.id.tvListTitle);
+		if (tvListTitle != null) {
+			tvListTitle.setText(activeListTitle);
+			tvListTitle.setBackgroundColor(titleBackgroundColor);
+			tvListTitle.setTextColor(titleTextColor);
+		}
 
-		mItemsMovedReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				if (intent.hasExtra("selectedListID")) {
-					// the new list ID has been selected ...
-					mSelectedListID = intent.getLongExtra("selectedListID", -1);
-					int numberOfItemsMoved = ItemsTable.MoveAllCheckedItemsInList(ManageLocationsActivity.this,
-							mActiveListID, mSelectedListID);
+		View frag_stores_placeholder = this.findViewById(R.id.frag_stores_placeholder);
+		mTwoFragmentLayout = frag_stores_placeholder != null && frag_stores_placeholder.getVisibility() == View.VISIBLE;
 
-					AlertDialog.Builder builder = new AlertDialog.Builder(ManageLocationsActivity.this);
-					// set title
-					Resources res = getResources();
-					String numberOfCheckedItemsMoved = res.getQuantityString(R.plurals.numberOfCheckedItems,
-							numberOfItemsMoved, numberOfItemsMoved);
-					StringBuilder sb = new StringBuilder();
-					sb.append("Successfully moved  ");
-					sb.append(numberOfCheckedItemsMoved);
-					sb.append(".");
-					builder.setTitle(sb.toString());
-					builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
+		mPager = (ViewPager) findViewById(R.id.manageLocationsPager);
+		SetManageLocationsPagerAdaptor();
 
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							// close the dialog box and do nothing
-							dialog.cancel();
-						}
-					});
+		// TODO save ActiveStoreID & ActiveStorePostion in the database
+		// for now ... just start at position 0
+		//*mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
+		//mActiveStorePosition = storedStates.getInt("ActiveStorePosition", 0);*/
+		if (mAllStoresCursor != null && mAllStoresCursor.getCount() > 0) {
+			mActiveStorePosition = 0;
+			SetActiveStoreID(mActiveStorePosition);
+		} else {
+			// there are no stores to show
+			// TODO launch create new store dialog
+		}
 
-					// create alert dialog
-					AlertDialog alertDialog = builder.create();
-					// show it
-					alertDialog.show();
-
-				}
-			}
-		};
-
-		final ActionBar actionBar = getActionBar();
-		actionBar.setTitle(R.string.action_bar_title_manage_items);
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
-		// add a tabs to the action bar.
-		actionBar.addTab(actionBar.newTab()
-				//.setText(R.string.actionBar_tab_color_presets)
-				.setText(R.string.actionBar_tab_cull_or_move_items)
-				.setTabListener(new TabListener() {
-
-					@Override
-					public void onTabReselected(Tab tab, android.app.FragmentTransaction ft) {
-						// Do nothing
-					}
-
-					@Override
-					public void onTabSelected(Tab tab, android.app.FragmentTransaction ft) {
-						mManageLocationsActivitySelectedNavigationIndex = tab.getPosition();
-						SendApplyManageLocationsTabPositionBroadCast();
-						onPrepareOptionsMenu(mManageLocationsMenu);
-					}
-
-					@Override
-					public void onTabUnselected(Tab tab, android.app.FragmentTransaction ft) {
-						// Do nothing					
-					}
-				})
-				);
-		actionBar.addTab(actionBar.newTab()
-				.setText(R.string.actionBar_tab_set_groups)
-				.setTabListener(new TabListener() {
-
-					@Override
-					public void onTabReselected(Tab tab, android.app.FragmentTransaction ft) {
-						// Do nothing
-					}
-
-					@Override
-					public void onTabSelected(Tab tab, android.app.FragmentTransaction ft) {
-						mManageLocationsActivitySelectedNavigationIndex = tab.getPosition();
-						SendApplyManageLocationsTabPositionBroadCast();
-						onPrepareOptionsMenu(mManageLocationsMenu);
-					}
-
-					@Override
-					public void onTabUnselected(Tab tab, android.app.FragmentTransaction ft) {
-						// Do nothing
-					}
-
-				})
-				);
-
-		mRequestManageLocationsTabPositionReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				SendApplyManageLocationsTabPositionBroadCast();
-			}
-		};
-
-		// Register local broadcast receivers.
-		String itemsMovedKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
-		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(itemsMovedKey));
-
-		String requestManageLocationsTabPositionReceiverKey = String.valueOf(mActiveListID)
-				+ ManageLocationsFragment.REQUEST_CHECK_ITEMS_TAB_POSITION_BROADCAST_KEY;
-		LocalBroadcastManager.getInstance(this).registerReceiver(mRequestManageLocationsTabPositionReceiver,
-				new IntentFilter(requestManageLocationsTabPositionReceiverKey));
-
-		mAllListsCursor = ListsTable.getAllLists(this);
-		mListSettings = new ListSettings(this, mActiveListID);
-
-		mManageLocationsPagerAdapter = new ManageLocationsPagerAdapter(getSupportFragmentManager(), this);
-		mPager = (ViewPager) findViewById(R.id.checkItemsPager);
-		mPager.setAdapter(mManageLocationsPagerAdapter);
 		mPager.setOnPageChangeListener(new OnPageChangeListener() {
 
 			@Override
@@ -196,53 +81,49 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 			@Override
 			public void onPageSelected(int position) {
-				// A list page has been selected
-				SetActiveListID(position);
-				SetActiveListBroadcastReceivers();
+				SetActiveStoreID(position);
+				MyLog.d("ManageLocations_ACTIVITY", "onPageSelected() - position = " + position + " ; storeID = "
+						+ mActiveStoreID);
 
-				Intent applyManageLocationsTabPositionIntent = new Intent(mApplyManageLocationsTabPositionKey);
-				applyManageLocationsTabPositionIntent.putExtra("checkItemsTabPosition",
-						mManageLocationsActivitySelectedNavigationIndex);
-				LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(
-						applyManageLocationsTabPositionIntent);
-
-				MyLog.d("ManageLocations_ACTIVITY", "onPageSelected() - position = " + position + " ; listID = "
-						+ mActiveListID);
+				if (mTwoFragmentLayout) {
+					LoadStoresFragment();
+				}
 			}
 		});
+
+		if (mTwoFragmentLayout) {
+			LoadStoresFragment();
+		}
 	}
 
-	private void SendApplyManageLocationsTabPositionBroadCast() {
-		Intent applyManageLocationsTabPositionIntent = new Intent(mApplyManageLocationsTabPositionKey);
-		applyManageLocationsTabPositionIntent.putExtra("checkItemsTabPosition",
-				mManageLocationsActivitySelectedNavigationIndex);
-		LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(
-				applyManageLocationsTabPositionIntent);
+	/*	private void SetStoresPagerAdaptor() {
+			mAllStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
+			mStoresPagerAdapter = new StoresPagerAdaptor(getSupportFragmentManager(), this, mActiveListID);
+			mPager.setAdapter(mStoresPagerAdapter);
+		}*/
+	private void SetManageLocationsPagerAdaptor() {
+		mAllStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
+		mManageLocationsPagerAdaptor = new ManageLocationsPagerAdaptor(getSupportFragmentManager(), this, mActiveListID);
+		mPager.setAdapter(mManageLocationsPagerAdaptor);
 	}
 
-	private void SendRestartGroupsLoaderBroadCast() {
-		Intent restartGroupsLoaderIntent = new Intent(mRestartGroupsLoaderKey);
-		LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(restartGroupsLoaderIntent);
+	private void LoadStoresFragment() {
+		// TODO code LoadStoresFragment
+
 	}
 
-	private void SendRestartItemsLoaderBroadCast() {
-		Intent restartItemsLoaderIntent = new Intent(mRestartItemsLoaderKey);
-		LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(restartItemsLoaderIntent);
-	}
-
-	private void SetActiveListBroadcastReceivers() {
-		// Unregister old receivers
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mItemsMovedReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mRequestManageLocationsTabPositionReceiver);
-
-		// Register new receivers
-		String itemsMovedKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
-		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(itemsMovedKey));
-
-		String requestManageLocationsTabPositionReceiverKey = String.valueOf(mActiveListID)
-				+ ManageLocationsFragment.REQUEST_CHECK_ITEMS_TAB_POSITION_BROADCAST_KEY;
-		LocalBroadcastManager.getInstance(this).registerReceiver(mRequestManageLocationsTabPositionReceiver,
-				new IntentFilter(requestManageLocationsTabPositionReceiverKey));
+	protected void SetActiveStoreID(int position) {
+		if (mAllStoresCursor != null) {
+			long storeID = -1;
+			try {
+				mAllStoresCursor.moveToPosition(position);
+				storeID = mAllStoresCursor.getLong(mAllStoresCursor.getColumnIndexOrThrow(StoresTable.COL_STORE_ID));
+			} catch (Exception e) {
+				MyLog.d("ManageLocations_ACTIVITY", "Exception in SetActiveStoreID: " + e);
+			}
+			mActiveStoreID = storeID;
+			mActiveStorePosition = position;
+		}
 	}
 
 	@Override
@@ -262,28 +143,24 @@ public class ManageLocationsActivity extends FragmentActivity {
 		MyLog.i("ManageLocations_ACTIVITY", "onResume");
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
-		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
-		mManageLocationsActivitySelectedNavigationIndex = storedStates
-				.getInt("ManageLocationsActivitySelectedNavigationIndex", 0);
-
-		if (mActiveListPosition > -1) {
-			mPager.setCurrentItem(mActiveListPosition);
+		if (mAllStoresCursor != null && mAllStoresCursor.getCount() > 0) {
+			mActiveStorePosition = 0;
+			SetActiveStoreID(mActiveStorePosition);
+		} else {
+			// there are no stores to show
+			// TODO launch create new store dialog
 		}
 
-		getActionBar().setSelectedNavigationItem(mManageLocationsActivitySelectedNavigationIndex);
 		super.onResume();
 	}
 
 	@Override
 	protected void onPause() {
 		MyLog.i("ManageLocations_ACTIVITY", "onPause");
-		SharedPreferences preferences = getSharedPreferences("AList", MODE_PRIVATE);
-		SharedPreferences.Editor applicationStates = preferences.edit();
-		applicationStates.putLong("ActiveListID", mActiveListID);
-		applicationStates.putInt("ActiveListPosition", mActiveListPosition);
-		applicationStates.putInt("ManageLocationsActivitySelectedNavigationIndex", getActionBar()
-				.getSelectedNavigationIndex());
-		applicationStates.commit();
+		/*		SharedPreferences preferences = getSharedPreferences("AList", MODE_PRIVATE);
+				SharedPreferences.Editor applicationStates = preferences.edit();
+				
+				applicationStates.commit();*/
 		super.onPause();
 	}
 
@@ -295,252 +172,43 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.check_items_1activity, menu);
-		mManageLocationsMenu = menu;
-		return true;
+		MyLog.i("ManageLocations_ACTIVITY", "onCreateOptionsMenu");
+		// TODO create manage_locations_1activity menu
+		//getMenuInflater().inflate(R.menu.manage_locations_1activity, menu);
+		return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-		// handle item selection
-		switch (item.getItemId()) {
-		case R.id.action_deleteCheckedItems:
-			DeleteCheckedItems();
-			return true;
+		return super.onMenuItemSelected(featureId, item);
+		// TODO manage_locations_1activity menu
+		/*		switch (item.getItemId()) {
 
-		case R.id.action_clearAllCheckedItems:
-			ClearAllCheckedItems();
-			return true;
+				case R.id.action_newStore:
+					Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+					return true;
 
-		case R.id.action_moveCheckedItmes:
-			MoveCheckedItems();
-			//Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
-			return true;
+				case R.id.action_showStoreLocation:
+					Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+					return true;
 
-		case R.id.action_checkUnused90:
-			CheckUnused(90);
-			return true;
+				case R.id.action_editStoreName:
+					Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+					return true;
 
-		case R.id.action_checkUnused180:
-			CheckUnused(180);
-			return true;
+				case R.id.action_manage_locations:
 
-		case R.id.action_checkUnused365:
-			CheckUnused(365);
-			return true;
-
-		case R.id.action_sortOrder:
-			//ChangeSortOrder();
-			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
-			return true;
-
-		default:
-			return super.onMenuItemSelected(featureId, item);
-		}
-	}
-
-	private void SetActiveListID(int position) {
-		if (mAllListsCursor != null) {
-			try {
-				mAllListsCursor.moveToPosition(position);
-				mActiveListID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
-				mListSettings = new ListSettings(this, mActiveListID);
-
-				mApplyManageLocationsTabPositionKey = String.valueOf(mActiveListID)
-						+ ManageLocationsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
-				mRestartGroupsLoaderKey = String.valueOf(mActiveListID)
-						+ ManageLocationsFragment.RESART_GROUPS_LOADER_KEY;
-				mRestartItemsLoaderKey = String.valueOf(mActiveListID)
-						+ ManageLocationsFragment.RESART_ITEMS_LOADER_KEY;
-
-				mActiveListPosition = position;
-			} catch (Exception e) {
-				MyLog.d("ManageLocations_ACTIVITY", "Exception in SetActiveListID: " + e);
-			}
-		}
-	}
-
-	private void DeleteCheckedItems() {
-		int numberOfCheckedItems = ItemsTable.getNumberOfCheckedItmes(this, mActiveListID);
-
-		if (numberOfCheckedItems > 0) {
-			Resources res = getResources();
-			String numberOfCheckedItemsFound = res.getQuantityString(R.plurals.numberOfCheckedItems,
-					numberOfCheckedItems, numberOfCheckedItems);
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			// set title
-			builder.setTitle(R.string.dialog_title_delete_all_checked_items);
-
-			String msg = "Permanently delete " + numberOfCheckedItemsFound + "?";
-			builder
-					.setMessage(msg)
-					.setCancelable(false)
-					.setPositiveButton(R.string.btn_yes_text, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							// delete all checked items
-							ItemsTable.DeleteAllCheckedItemsInList(ManageLocationsActivity.this, mActiveListID);
-						}
-					})
-					.setNegativeButton(R.string.btn_no_text, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							// close the dialog box and do nothing
-							dialog.cancel();
-						}
-					});
-
-			// create alert dialog
-			AlertDialog alertDialog = builder.create();
-			// show it
-			alertDialog.show();
-		} else {
-			// number of checked items == 0
-			AlertDialog.Builder builder = new AlertDialog.Builder(ManageLocationsActivity.this);
-			// set title and message
-			builder.setTitle("Unable to delete items.");
-			builder.setMessage("No checked items available!");
-			builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
-
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					// close the dialog box and do nothing
-					dialog.cancel();
-				}
-			});
-
-			// create alert dialog
-			AlertDialog alertDialog = builder.create();
-			// show it
-			alertDialog.show();
-		}
-	}
-
-	private void ClearAllCheckedItems() {
-		ItemsTable.UnCheckAllItemsInList(ManageLocationsActivity.this, mActiveListID);
-		SendRestartItemsLoaderBroadCast();
-	}
-
-	private void MoveCheckedItems() {
-		int numberOfLists = ListsTable.getNumberOfLists(this);
-		if (numberOfLists > 1) {
-			FragmentManager fm = getSupportFragmentManager();
-			Fragment prev = fm.findFragmentByTag("dialog_move_checked_items");
-			if (prev != null) {
-				FragmentTransaction ft = fm.beginTransaction();
-				ft.remove(prev);
-				ft.commit();
-			}
-			int numberOfCheckedItems = ItemsTable.getNumberOfCheckedItmes(this, mActiveListID);
-			if (numberOfCheckedItems > 0) {
-				MoveCheckedItemsDialogFragment moveCheckedItemsDialog = MoveCheckedItemsDialogFragment.newInstance(
-						mActiveListID, numberOfCheckedItems);
-				moveCheckedItemsDialog.show(fm, "dialog_move_checked_items");
-			} else {
-				AlertDialog.Builder builder = new AlertDialog.Builder(ManageLocationsActivity.this);
-				// set title and message
-				builder.setTitle("Unable to move items.");
-				builder.setMessage("No checked items available!");
-				builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
-
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						// close the dialog box and do nothing
-						dialog.cancel();
-					}
-				});
-
-				// create alert dialog
-				AlertDialog alertDialog = builder.create();
-				// show it
-				alertDialog.show();
-			}
-		} else {
-			AlertDialog.Builder builder = new AlertDialog.Builder(ManageLocationsActivity.this);
-			// set title and message
-			builder.setTitle("Unable to move items.");
-			builder.setMessage("No target list available. There must be more than one list in the database before you can move items.");
-			builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
-
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					// close the dialog box and do nothing
-					dialog.cancel();
-				}
-			});
-
-			// create alert dialog
-			AlertDialog alertDialog = builder.create();
-			// show it
-			alertDialog.show();
-		}
-	}
-
-	private void CheckUnused(long numberOfDays) {
-		//ItemsTable.ManageLocationsUnused(this, mActiveListID, numberOfDays);
-	}
-
-	private void ResetManualSortOrderToIDs() {
-		// TODO Auto-generated method stub
-		int numberOfItmesProcessed = 0;
-		Cursor cursor = ItemsTable.getAllItems(this);
-		if (cursor != null) {
-			long itemID = -1;
-			cursor.moveToPosition(-1);
-			while (cursor.moveToNext()) {
-				itemID = cursor.getLong(cursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_ID));
-				ContentValues values = new ContentValues();
-				values.put(ItemsTable.COL_MANUAL_SORT_ORDER, itemID);
-				numberOfItmesProcessed += ItemsTable.UpdateItemFieldValues(this, itemID, values);
-			}
-			cursor.close();
-
-			AlertDialog.Builder builder = new AlertDialog.Builder(ManageLocationsActivity.this);
-			// set title and message
-			builder.setTitle(numberOfItmesProcessed + " items updated.");
-			builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
-
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					// close the dialog box and do nothing
-					dialog.cancel();
-				}
-			});
-
-			// create alert dialog
-			AlertDialog alertDialog = builder.create();
-			// show it
-			alertDialog.show();
-		}
-
+					Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+					return true;
+				default:
+					return super.onMenuItemSelected(featureId, item);
+				}*/
 	}
 
 	@Override
 	protected void onDestroy() {
 		MyLog.i("ManageLocations_ACTIVITY", "onDestroy");
-		if (mAllListsCursor != null) {
-			mAllListsCursor.close();
-		}
-		// Unregister since the activity is about to be closed.
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mItemsMovedReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mRequestManageLocationsTabPositionReceiver);
-
 		super.onDestroy();
 	}
 
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		isTAB_MoveORCullItemsSelected = mManageLocationsActivitySelectedNavigationIndex == 0;
-		if (menu != null) {
-			MenuItem action_deleteCheckedItems = menu.findItem(R.id.action_deleteCheckedItems);
-			MenuItem action_moveCheckedItmes = menu.findItem(R.id.action_moveCheckedItmes);
-			MenuItem action_checkUnused90 = menu.findItem(R.id.action_checkUnused90);
-			MenuItem action_checkUnused180 = menu.findItem(R.id.action_checkUnused180);
-			MenuItem action_checkUnused365 = menu.findItem(R.id.action_checkUnused365);
-
-			action_deleteCheckedItems.setVisible(isTAB_MoveORCullItemsSelected);
-			action_moveCheckedItmes.setVisible(isTAB_MoveORCullItemsSelected);
-			action_checkUnused90.setVisible(isTAB_MoveORCullItemsSelected);
-			action_checkUnused180.setVisible(isTAB_MoveORCullItemsSelected);
-			action_checkUnused365.setVisible(isTAB_MoveORCullItemsSelected);
-		}
-		return true;
-	}
 }

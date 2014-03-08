@@ -805,7 +805,7 @@ public class ItemsTable {
 				values.put(COL_CHECKED, checkedValue);
 				numberOfUpdatedRecords = cr.update(uri, values, where, whereArgs);
 			} catch (Exception e) {
-				MyLog.e("Exception error in CheckItem. ", e.toString());
+				MyLog.e("Exception error in ItemsTable: CheckItem. ", e.toString());
 			}
 		}
 		return numberOfUpdatedRecords;

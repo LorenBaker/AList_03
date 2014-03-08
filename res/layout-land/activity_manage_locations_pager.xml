@@ -6,13 +6,13 @@
     android:orientation="horizontal" >
 
     <android.support.v4.view.ViewPager
-        android:id="@+id/storesPager"
+        android:id="@+id/manageLocationsPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1" />
 
     <LinearLayout
-        android:id="@+id/frag_locations_placeholder"
+        android:id="@+id/frag_stores_placeholder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"

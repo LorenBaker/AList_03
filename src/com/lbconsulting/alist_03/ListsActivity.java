@@ -211,8 +211,16 @@ public class ListsActivity extends FragmentActivity {
 		startActivity(masterListActivityIntent);
 	}
 
-	private void StartStoresActivity() {
-		Intent intent = new Intent(this, StoresActivity.class);
+	/*	private void StartStoresActivity() {
+			Intent intent = new Intent(this, StoresActivity.class);
+			intent.putExtra("listTitle", mListSettings.getListTitle());
+			intent.putExtra("titleBackgroundColor", mListSettings.getTitleBackgroundColor());
+			intent.putExtra("titleTextColor", mListSettings.getTitleTextColor());
+			startActivity(intent);
+		}*/
+
+	private void StartManageLocationsActivity() {
+		Intent intent = new Intent(this, ManageLocationsActivity.class);
 		intent.putExtra("listTitle", mListSettings.getListTitle());
 		intent.putExtra("titleBackgroundColor", mListSettings.getTitleBackgroundColor());
 		intent.putExtra("titleTextColor", mListSettings.getTitleTextColor());
@@ -376,8 +384,8 @@ public class ListsActivity extends FragmentActivity {
 			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
-		case R.id.action_stores:
-			StartStoresActivity();
+		case R.id.action_manageLocations:
+			StartManageLocationsActivity();
 			return true;
 
 		case R.id.action_Preferences:

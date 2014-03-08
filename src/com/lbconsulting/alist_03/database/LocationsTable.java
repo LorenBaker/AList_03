@@ -8,6 +8,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.v4.content.CursorLoader;
 
 import com.lbconsulting.alist_03.database.contentprovider.AListContentProvider;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
@@ -152,6 +153,21 @@ public class LocationsTable {
 			cursor.close();
 		}
 		return locationName;
+	}
+
+	public static CursorLoader getAllLocationssInListIncludeDefault(Context context, String sortOrder) {
+		CursorLoader cursorLoader = null;
+
+		Uri uri = CONTENT_URI;
+		String[] projection = PROJECTION_ALL;
+		String selection = null;
+		String selectionArgs[] = null;
+		try {
+			cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+		} catch (Exception e) {
+			MyLog.e("Exception error in GroupsTable: getAllGroupsInList. ", e.toString());
+		}
+		return cursorLoader;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////

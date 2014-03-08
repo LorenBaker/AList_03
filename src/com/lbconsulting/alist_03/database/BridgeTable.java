@@ -75,13 +75,14 @@ public class BridgeTable {
 	 * @param itemName
 	 * @return Returns the new item's ID.
 	 */
-	public static long CreateNewBridgeRow(Context context, long listID, long storeID) {
+	public static long CreateNewBridgeRow(Context context, long listID, long storeID, long groupID) {
 		long newBridgeRowID = -1;
 		ContentResolver cr = context.getContentResolver();
 		Uri uri = CONTENT_URI;
 		ContentValues values = new ContentValues();
 		values.put(COL_LIST_ID, listID);
 		values.put(COL_STORE_ID, storeID);
+		values.put(COL_GROUP_ID, groupID);
 		try {
 			Uri newBridgeRowUri = cr.insert(uri, values);
 			if (newBridgeRowUri != null) {
@@ -96,6 +97,37 @@ public class BridgeTable {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Read Methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	public static long getBridgeTableRowID(Context context, long listID, long storeID, long groupID) {
+		long bridgeTableRowID = -1;
+		Cursor cursor = null;
+		Uri uri = CONTENT_URI;
+		String[] projection = PROJECTION_ALL;
+		String selection = COL_LIST_ID + " = ? AND " + COL_STORE_ID + " = ? AND " + COL_GROUP_ID + " = ?";
+		String selectionArgs[] = new String[]
+		{ String.valueOf(listID), String.valueOf(storeID), String.valueOf(groupID) };
+		String sortOrder = null;
+		ContentResolver cr = context.getContentResolver();
+		try {
+			cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+		} catch (Exception e) {
+			MyLog.e("Exception error in ItemsTable: getItem. ", e.toString());
+		}
+
+		if (cursor == null || cursor.getCount() == 0) {
+			// bridgeTableRow does not exist... so create one		
+			bridgeTableRowID = CreateNewBridgeRow(context, listID, storeID, groupID);
+		} else {
+			// bridgeTable row exists ... so return its ID
+			cursor.moveToFirst();
+			bridgeTableRowID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_BRIDGE_ID));
+		}
+
+		if (cursor != null) {
+			cursor.close();
+		}
+		return bridgeTableRowID;
+	}
+
 	public static Cursor getBridgeTableRow(Context context, long bridgeRowID) {
 		Cursor cursor = null;
 		if (bridgeRowID > 0) {
@@ -126,6 +158,15 @@ public class BridgeTable {
 		String[] selectionArgs = null;
 		numberOfUpdatedRecords = cr.update(itemUri, newFieldValues, selection, selectionArgs);
 		return numberOfUpdatedRecords;
+	}
+
+	public static void SetRow(Context context, long listID, long storeID, long groupID, long locationID) {
+		long bridgeTableRowID = getBridgeTableRowID(context, listID, storeID, groupID);
+		if (bridgeTableRowID > 0) {
+			ContentValues values = new ContentValues();
+			values.put(COL_LOCATION_ID, locationID);
+			UpdateItemFieldValues(context, bridgeTableRowID, values);
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////

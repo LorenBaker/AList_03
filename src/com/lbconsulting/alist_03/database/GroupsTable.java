@@ -21,8 +21,9 @@ public class GroupsTable {
 	public static final String COL_GROUP_ID = "_id";
 	public static final String COL_GROUP_NAME = "groupName";
 	public static final String COL_LIST_ID = "listID";
+	public static final String COL_CHECKED = "groupChecked";
 
-	public static final String[] PROJECTION_ALL = { COL_GROUP_ID, COL_GROUP_NAME, COL_LIST_ID };
+	public static final String[] PROJECTION_ALL = { COL_GROUP_ID, COL_GROUP_NAME, COL_LIST_ID, COL_CHECKED };
 
 	public static final String CONTENT_PATH = TABLE_GROUPS;
 	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + "vnd.lbconsulting."
@@ -40,7 +41,8 @@ public class GroupsTable {
 			+ COL_GROUP_ID + " integer primary key autoincrement, "
 			+ COL_GROUP_NAME + " text collate nocase, "
 			+ COL_LIST_ID + " integer not null references "
-			+ ListsTable.TABLE_LISTS + " (" + ListsTable.COL_LIST_ID + ") default 1 "
+			+ ListsTable.TABLE_LISTS + " (" + ListsTable.COL_LIST_ID + ") default 1, "
+			+ COL_CHECKED + " integer default 0 "
 			+ ");";
 
 	private static String defalutGroupValue = "[No Group]";
@@ -81,9 +83,11 @@ public class GroupsTable {
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
 		MyLog.w(TABLE_GROUPS, "Upgrading database from version " + oldVersion + " to version " + newVersion
-				+ ". NO CHANGES REQUIRED.");
-		/*database.execSQL("DROP TABLE IF EXISTS " + TABLE_GROUPS);
-		onCreate(database);*/
+				+ ". Adding groupChecked column.");
+
+		// ALTER TABLE tblGroups ADD COLUMN groupChecked integer default 0
+		database.execSQL("ALTER TABLE " + TABLE_GROUPS + " ADD COLUMN " + COL_CHECKED + " integer default 0");
+
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +172,7 @@ public class GroupsTable {
 		return cursor;
 	}
 
-	public static CursorLoader getAllGroupsInList(Context context, long listID, String sortOrder) {
+	public static CursorLoader getAllGroupsInListIncludeDefault(Context context, long listID, String sortOrder) {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			Uri uri = CONTENT_URI;
@@ -182,6 +186,40 @@ public class GroupsTable {
 			}
 		}
 		return cursorLoader;
+	}
+
+	public static CursorLoader getAllGroupsInList(Context context, long listID, String sortOrder) {
+		CursorLoader cursorLoader = null;
+		if (listID > 1) {
+			Uri uri = CONTENT_URI;
+			String[] projection = PROJECTION_ALL;
+			String selection = COL_LIST_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID) };
+			try {
+				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error in GroupsTable: getAllGroupsInList. ", e.toString());
+			}
+		}
+		return cursorLoader;
+	}
+
+	public static Cursor getAllCheckedGroups(Context context, long listID) {
+		Cursor cursor = null;
+		if (listID > 1) {
+			Uri uri = CONTENT_URI;
+			String[] projection = PROJECTION_ALL;
+			String selection = COL_LIST_ID + " = ? AND " + COL_CHECKED + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(1) };
+			String sortOrder = null;
+			ContentResolver cr = context.getContentResolver();
+			try {
+				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error in GroupsTable: getAllCheckedGroups. ", e.toString());
+			}
+		}
+		return cursor;
 	}
 
 	public static String getGroupName(Context context, long groupID) {
@@ -217,6 +255,54 @@ public class GroupsTable {
 		return numberOfUpdatedRecords;
 	}
 
+	private static int UnCheckAllCheckedGroups(Context context, long listID) {
+		int numberOfUpdatedRecords = -1;
+		// cannot update the default group with ID=1
+		if (listID > 1) {
+			Uri uri = CONTENT_URI;
+			String selection = COL_LIST_ID + " = ? AND " + COL_CHECKED + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(1) };
+			ContentResolver cr = context.getContentResolver();
+
+			ContentValues values = new ContentValues();
+			values.put(COL_CHECKED, 0);
+			numberOfUpdatedRecords = cr.update(uri, values, selection, selectionArgs);
+		}
+		return numberOfUpdatedRecords;
+	}
+
+	public static void ToggleCheckBox(Context context, long groupID) {
+		Cursor cursor = getGroup(context, groupID);
+		if (cursor != null) {
+			cursor.moveToFirst();
+			int columnIndex = cursor.getColumnIndexOrThrow(COL_CHECKED);
+			int checkIntValue = cursor.getInt(columnIndex);
+			boolean checkValue = AListUtilities.intToBoolean(checkIntValue);
+			cursor.close();
+			CheckItem(context, groupID, !checkValue);
+		}
+	}
+
+	public static int CheckItem(Context context, long groupID, boolean checked) {
+		int numberOfUpdatedRecords = -1;
+		if (groupID > 0) {
+			try {
+				ContentResolver cr = context.getContentResolver();
+				Uri uri = CONTENT_URI;
+				String where = COL_GROUP_ID + " = ?";
+				String[] whereArgs = { String.valueOf(groupID) };
+
+				ContentValues values = new ContentValues();
+				int checkedValue = AListUtilities.boolToInt(checked);
+				values.put(COL_CHECKED, checkedValue);
+				numberOfUpdatedRecords = cr.update(uri, values, where, whereArgs);
+			} catch (Exception e) {
+				MyLog.e("Exception error in GroupsTable: CheckItem. ", e.toString());
+			}
+		}
+		return numberOfUpdatedRecords;
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Delete Methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -243,6 +329,29 @@ public class GroupsTable {
 			numberOfDeletedRecords = cr.delete(uri, where, selectionArgs);
 		}
 		return numberOfDeletedRecords;
+	}
+
+	public static int ApplyLocationToCheckedGroups(Context context,
+			long listID, long storeID, long locationID) {
+		int numberOfCheckedGroups = -1;
+
+		// get all of the checked groups
+		Cursor allCheckedGroupsCursor = getAllCheckedGroups(context, listID);
+		if (allCheckedGroupsCursor != null) {
+			if (allCheckedGroupsCursor.getCount() > 0) {
+				allCheckedGroupsCursor.moveToPosition(-1);
+				long groupID = -1;
+				while (allCheckedGroupsCursor.moveToNext()) {
+					groupID = allCheckedGroupsCursor
+							.getLong(allCheckedGroupsCursor.getColumnIndexOrThrow(COL_GROUP_ID));
+					BridgeTable.SetRow(context, listID, storeID, groupID, locationID);
+				}
+			}
+			allCheckedGroupsCursor.close();
+			// un-check all checked groups
+			numberOfCheckedGroups = UnCheckAllCheckedGroups(context, listID);
+		}
+		return numberOfCheckedGroups;
 	}
 
 }

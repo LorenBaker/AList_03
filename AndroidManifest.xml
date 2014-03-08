@@ -68,7 +68,7 @@
             android:parentActivityName="com.lbconsulting.alist_03.ListsActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.lbconsulting.alist_03.ListsActivity" />
+                android:value="com.lbconsulting.alist_03.ManageLocationsActivity" />
         </activity>
         <activity
             android:name="com.lbconsulting.alist_03.ManageLocationsActivity"
@@ -76,7 +76,7 @@
             android:parentActivityName="com.lbconsulting.alist_03.ListsActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.lbconsulting.alist_03.StoresActivity" />
+                android:value="com.lbconsulting.alist_03.ListsActivity" />
         </activity>
 
         <provider

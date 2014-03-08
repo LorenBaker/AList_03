@@ -9,7 +9,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class AListDatabaseHelper extends SQLiteOpenHelper {
 
 	private static final String DATABASE_NAME = "AList.db";
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 3;
 
 	public AListDatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);

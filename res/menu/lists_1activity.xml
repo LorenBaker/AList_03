@@ -49,10 +49,10 @@
         android:showAsAction="never"
         android:title="@string/action_deleteList"/>
     <item
-        android:id="@+id/action_stores"
+        android:id="@+id/action_manageLocations"
         android:orderInCategory="90"
         android:showAsAction="never"
-        android:title="@string/stores"/>
+        android:title="@string/action_manageLocations_text"/>
     <item
         android:id="@+id/action_Preferences"
         android:orderInCategory="110"

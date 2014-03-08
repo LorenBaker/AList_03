@@ -412,7 +412,7 @@ public class CheckItemsFragment extends Fragment
 
 		case GROUPS_LOADER_ID:
 			try {
-				cursorLoader = GroupsTable.getAllGroupsInList(getActivity(), mActiveListID,
+				cursorLoader = GroupsTable.getAllGroupsInListIncludeDefault(getActivity(), mActiveListID,
 						GroupsTable.SORT_ORDER_GROUP);
 			} catch (SQLiteException e) {
 				MyLog.e("CheckItemsFragment: onCreateLoader SQLiteException: ", e.toString());
