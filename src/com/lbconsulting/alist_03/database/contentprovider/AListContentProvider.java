@@ -444,6 +444,8 @@ public class AListContentProvider extends ContentProvider {
 			break;
 
 		case ITEMS_WITH_GROUPS:
+			// TODO #*#*#*#*#*#*#*# cursor.setNotificationUri(getContext().getContentResolver(), uri); #*#*#*#*#*#*#*#
+			// does not seem to work with this JOIN query.  Works fine with other single table queries.
 
 			/*SELECT tblItems._id, itemName, groupID, groupName 
 			  FROM tblItems JOIN tblGroups ON tblItems.groupID = tblGroups._id

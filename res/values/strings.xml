@@ -82,5 +82,6 @@
     <string name="txtMasterListItem_Text">Item Name</string>
     <string name="actionBar_tab_cull_or_move_items">Cull or Move Items</string>
     <string name="actionBar_tab_set_groups">Set Groups</string>
+    <string name="tvStoreName_store_name_text">Store Name</string>
 
 </resources>

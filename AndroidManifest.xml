@@ -47,14 +47,6 @@
                 android:value="com.lbconsulting.alist_03.MasterListActivity" />
         </activity>
         <activity
-            android:name="com.lbconsulting.alist_03.GroupsActivity"
-            android:label="@string/app_name"
-            android:parentActivityName="com.lbconsulting.alist_03.StoresActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.lbconsulting.alist_03.StoresActivity" />
-        </activity>
-        <activity
             android:name="com.lbconsulting.alist_03.ListPreferencesActivity"
             android:label="@string/app_name"
             android:parentActivityName="com.lbconsulting.alist_03.ListsActivity" >
@@ -77,6 +69,14 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.lbconsulting.alist_03.ListsActivity" />
+        </activity>
+        <activity
+            android:name="com.lbconsulting.alist_03.ManageLocationsActivity"
+            android:label="@string/app_name"
+            android:parentActivityName="com.lbconsulting.alist_03.ListsActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.lbconsulting.alist_03.StoresActivity" />
         </activity>
 
         <provider

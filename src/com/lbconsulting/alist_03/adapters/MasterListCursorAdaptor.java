@@ -110,29 +110,6 @@ public class MasterListCursorAdaptor extends CursorAdapter {
 					tvItemNote.setVisibility(View.GONE);
 				}
 			}
-
-			TextView tvItemGroup = (TextView) view.findViewById(R.id.tvItemGroup);
-			if (tvItemGroup != null) {
-				if (mListSettings.getShowGroupsInMasterListFragment()) {
-					//long groupID = cursor.getLong(cursor.getColumnIndexOrThrow(ItemsTable.COL_GROUP_ID));
-					//tvItemGroup.setText(GroupsTable.getGroupName(mAdaptorContext, groupID));
-					tvItemGroup.setText(cursor.getString(cursor.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME)));
-
-					if (isSelected > 0) {
-						// item has been Selected
-						tvItemGroup.setTypeface(null, Typeface.ITALIC);
-						tvItemGroup.setTextColor(this.mListSettings.getMasterListItemSelectedTextColor());
-					} else {
-						// item is NOT selected
-						tvItemGroup.setTypeface(null, Typeface.NORMAL);
-						tvItemGroup.setTextColor(this.mListSettings.getMasterListItemNormalTextColor());
-					}
-					tvItemGroup.setVisibility(View.VISIBLE);
-				} else {
-					// no note exists ... 
-					tvItemGroup.setVisibility(View.GONE);
-				}
-			}
 		}
 	}
 

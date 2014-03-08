@@ -1,8 +1,10 @@
 package com.lbconsulting.alist_03;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -31,6 +33,7 @@ import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.dialogs.ListsDialogFragment;
 import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
+import com.lbconsulting.alist_03.fragments.ListsFragment;
 import com.lbconsulting.alist_03.fragments.MasterListFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
@@ -51,6 +54,9 @@ public class ListsActivity extends FragmentActivity {
 
 	private Cursor mAllListsCursor;
 	private BroadcastReceiver mListTitleChanged;
+
+	String mRestartStoresLoaderKey = "";
+	String mRestartItemsLoaderKey = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +103,9 @@ public class ListsActivity extends FragmentActivity {
 		mAllListsCursor = ListsTable.getAllLists(this);
 		mListSettings = new ListSettings(this, mActiveListID);
 
+		mRestartStoresLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_STORES_LOADER_KEY;
+		mRestartItemsLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_ITEMS_LOADER_KEY;
+
 		mListsPagerAdapter = new ListsPagerAdapter(getSupportFragmentManager(), this);
 		mPager = (ViewPager) findViewById(R.id.listsPager);
 		mPager.setAdapter(mListsPagerAdapter);
@@ -134,6 +143,10 @@ public class ListsActivity extends FragmentActivity {
 				mAllListsCursor.moveToPosition(position);
 				mActiveListID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
 				mListSettings = new ListSettings(this, mActiveListID);
+
+				mRestartStoresLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_STORES_LOADER_KEY;
+				mRestartItemsLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_ITEMS_LOADER_KEY;
+
 				mActiveListPosition = position;
 			} catch (Exception e) {
 				MyLog.d("Lists_ACTIVITY", "Exception in getlistID: " + e);
@@ -323,6 +336,7 @@ public class ListsActivity extends FragmentActivity {
 		case R.id.action_removeStruckOffItems:
 			ItemsTable.UnStrikeAndDeselectAllStruckOutItems(this, mActiveListID,
 					mListSettings.getDeleteNoteUponDeselectingItem());
+			SendRestartItemsLoaderBroadCast();
 			return true;
 
 		case R.id.action_addItem:
@@ -377,6 +391,16 @@ public class ListsActivity extends FragmentActivity {
 
 	}
 
+	private void SendRestartStoresLoaderBroadCast() {
+		Intent restartStoresLoaderIntent = new Intent(mRestartStoresLoaderKey);
+		LocalBroadcastManager.getInstance(this).sendBroadcast(restartStoresLoaderIntent);
+	}
+
+	private void SendRestartItemsLoaderBroadCast() {
+		Intent restartItemsLoaderIntent = new Intent(mRestartItemsLoaderKey);
+		LocalBroadcastManager.getInstance(this).sendBroadcast(restartItemsLoaderIntent);
+	}
+
 	private void CreateToDoList() {
 		// create new list
 		long todosListID = ListsTable.CreateNewList(this, "To Do");
@@ -404,20 +428,32 @@ public class ListsActivity extends FragmentActivity {
 
 	private void CreateGroceriesList() {
 		// create new list
+		ProgressDialog progress = new ProgressDialog(this);
+		progress.setTitle("Loading");
+		progress.setMessage("Please wait while groceries list is loading...");
+		progress.show();
 		long groceriesListID = ListsTable.CreateNewList(this, "Groceries");
 
 		if (groceriesListID > 1) {
 
+			Hashtable<String, Long> groceryGroupsHashTable = new Hashtable<String, Long>();
+
 			// create grocery groups
 			String[] groceryGroups = this.getResources().getStringArray(R.array.grocery_groups);
 			for (int i = 0; i < groceryGroups.length; i++) {
-				GroupsTable.CreateNewGroup(this, groceriesListID, groceryGroups[i]);
+				long groupID = GroupsTable.CreateNewGroup(this, groceriesListID, groceryGroups[i]);
+				groceryGroupsHashTable.put(groceryGroups[i], groupID);
 			}
 
 			// create grocery items
+			// NOTE: this only works if R.array.grocery_items and R.array.grocery_items_groups
+			// are in the proper order!!!!!!
 			String[] groceryItems = this.getResources().getStringArray(R.array.grocery_items);
+			String[] groceryItemGroups = this.getResources().getStringArray(R.array.grocery_items_groups);
+
 			for (int i = 0; i < groceryItems.length; i++) {
-				ItemsTable.CreateNewItem(this, groceriesListID, groceryItems[i]);
+				long groupID = groceryGroupsHashTable.get(groceryItemGroups[i]);
+				ItemsTable.CreateNewItem(this, groceriesListID, groceryItems[i], groupID);
 			}
 
 			// create grocery stores
@@ -430,6 +466,7 @@ public class ListsActivity extends FragmentActivity {
 			ReStartListsActivity();
 
 		}
+		progress.dismiss();
 	}
 
 	private void DeleteList() {

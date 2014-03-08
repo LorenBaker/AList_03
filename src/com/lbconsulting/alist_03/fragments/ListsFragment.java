@@ -1,7 +1,11 @@
 package com.lbconsulting.alist_03.fragments;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
@@ -11,6 +15,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,7 +57,7 @@ public class ListsFragment extends Fragment
 	//private static final int GROUPS_LOADER_ID = 4;
 	//private static final int LOCATIONS_LOADER_ID = 5;
 
-	private String[] loaderNames = { "Lists_Loader", "Items_Loader", "Stores_Loader", "Groups_Loader" };
+	//private String[] loaderNames = { "Lists_Loader", "Items_Loader", "Stores_Loader", "Groups_Loader" };
 
 	private long mActiveListID = -9999;
 	private long mActiveItemID = -9999;
@@ -64,6 +69,12 @@ public class ListsFragment extends Fragment
 	private ListView mItemsListView;
 	private Spinner mStoreSpinner;
 
+	public static final String RESART_STORES_LOADER_KEY = "RestartStoresLoaderKey";
+	private BroadcastReceiver mRestartStoresLoaderReceiver;
+
+	public static final String RESART_ITEMS_LOADER_KEY = "RestartItemsLoaderKey";
+	private BroadcastReceiver mRestartItemsLoaderReceiver;
+
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
 	private LoaderManager.LoaderCallbacks<Cursor> mListsFragmentCallbacks;
@@ -73,14 +84,14 @@ public class ListsFragment extends Fragment
 
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
 
-	private boolean checkListID(String method) {
-		if (mActiveListID < 2) {
-			MyLog.e("ListsFragment", method + "; listID = " + mActiveListID + " is less than 2!!!!");
-		} else {
-			MyLog.i("ListsFragment", method + "; listID = " + mActiveListID);
-		}
-		return (mActiveListID > 1);
-	}
+	/*	private boolean checkListID(String method) {
+			if (mActiveListID < 2) {
+				MyLog.e("ListsFragment", method + "; listID = " + mActiveListID + " is less than 2!!!!");
+			} else {
+				MyLog.i("ListsFragment", method + "; listID = " + mActiveListID);
+			}
+			return (mActiveListID > 1);
+		}*/
 
 	public ListsFragment() {
 		// Empty constructor
@@ -113,18 +124,19 @@ public class ListsFragment extends Fragment
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		checkListID("onAttach");
+		MyLog.i("ListsFragment", "onAttach");
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		checkListID("onCreate");
+		MyLog.i("ListsFragment", "onCreate");
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
+		MyLog.i("ListsFragment", "onSaveInstanceState");
 		// Store our listID
 		outState.putLong("listID", this.mActiveListID);
 		super.onSaveInstanceState(outState);
@@ -137,7 +149,7 @@ public class ListsFragment extends Fragment
 		// - other of those Fragments in the view hierarchy of the Activity - notably the ones before and after this Fragment.  So, to properly initialize this Fragment we need to treat
 		// - it as the holder for the views based on the passed in container.  So we inflate this into a view and use findViewById on that smaller hierarchy to properly set the Spinner and ListView.
 
-		checkListID("onCreateView");
+		MyLog.i("ListsFragment", "onCreateView");
 
 		if (savedInstanceState != null && savedInstanceState.containsKey("listID")) {
 			mActiveListID = savedInstanceState.getLong("listID", 0);
@@ -175,6 +187,14 @@ public class ListsFragment extends Fragment
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				ItemsTable.ToggleStrikeOut(getActivity(), id);
+				// TODO restartLoader(ITEMS_LOADER_ID does not work correctly with 
+				// the Groups Join table query.
+				// Also ... I don't think that I should have to call the restart. 
+				// Refreshing the data should be triggered by the content provider.
+				// Also ... the issue may be associated with the pager
+				// because under the "MasterListFragment" i don't user a pager
+				// and the restartLoader works fine with the same Groups Join table query!!
+				// Also ... The refresh works correctly when there is a single table query!
 				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 			}
 		});
@@ -217,6 +237,10 @@ public class ListsFragment extends Fragment
 			}
 		});
 
+		mLoaderManager = getLoaderManager();
+		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+		mLoaderManager.initLoader(STORES_LOADER_ID, null, mListsFragmentCallbacks);
+
 		return view;
 	}
 
@@ -229,10 +253,35 @@ public class ListsFragment extends Fragment
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		checkListID("onActivityCreated");
-		mLoaderManager = getLoaderManager();
+		MyLog.i("ListsFragment", "onActivityCreated");
+
+		mRestartStoresLoaderReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				mLoaderManager.restartLoader(STORES_LOADER_ID, null, mListsFragmentCallbacks);
+			}
+		};
+
+		mRestartItemsLoaderReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+			}
+		};
+
+		// Register local broadcast receivers.
+
+		String restartGroupsLoaderKey = String.valueOf(mActiveListID) + RESART_STORES_LOADER_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartStoresLoaderReceiver,
+				new IntentFilter(restartGroupsLoaderKey));
+
+		String restartItemsLoaderReceiver = String.valueOf(mActiveListID) + RESART_ITEMS_LOADER_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartItemsLoaderReceiver,
+				new IntentFilter(restartItemsLoaderReceiver));
+
+		/*mLoaderManager = getLoaderManager();
 		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
-		mLoaderManager.initLoader(STORES_LOADER_ID, null, mListsFragmentCallbacks);
+		mLoaderManager.initLoader(STORES_LOADER_ID, null, mListsFragmentCallbacks);*/
 		super.onActivityCreated(savedInstanceState);
 	}
 
@@ -243,7 +292,7 @@ public class ListsFragment extends Fragment
 	@Override
 	public void onStart() {
 		super.onStart();
-		checkListID("onStart");
+		MyLog.i("ListsFragment", "onStart");
 	}
 
 	@Override
@@ -260,8 +309,6 @@ public class ListsFragment extends Fragment
 		listSettings = new ListSettings(getActivity(), mActiveListID);
 		setViewColors();
 
-		checkListID("onResume");
-
 		// Set onResume flags
 		flag_FirstTimeLoadingItemDataSinceOnResume = true;
 	}
@@ -271,8 +318,6 @@ public class ListsFragment extends Fragment
 		super.onPause();
 
 		MyLog.i("ListsFragment", "onPause()");
-
-		checkListID("onPause");
 
 		// save ItemsListView position
 		View v = mItemsListView.getChildAt(0);
@@ -286,31 +331,35 @@ public class ListsFragment extends Fragment
 	@Override
 	public void onStop() {
 		super.onStop();
-		checkListID("onStop");
+		MyLog.i("ListsFragment", "onStop");
 	}
 
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-		checkListID("onDestroyView");
+		MyLog.i("ListsFragment", "onDestroyView");
 	}
 
 	@Override
 	public void onDestroy() {
+		MyLog.i("ListsFragment", "onDestroy");
+		// Unregister local broadcast receivers
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartStoresLoaderReceiver);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartItemsLoaderReceiver);
 		super.onDestroy();
-		checkListID("onDestroy");
+
 	}
 
 	@Override
 	public void onDetach() {
 		super.onDetach();
-		checkListID("onDetach");
+		MyLog.i("ListsFragment", "onDetach");
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		checkListID("onViewCreated");
+		MyLog.i("ListsFragment", "onViewCreated");
 	}
 
 	/*	public void UnStrikeAndDeselectAllStruckOutItems() {
@@ -329,8 +378,7 @@ public class ListsFragment extends Fragment
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String loaderName = loaderNames[id - 1];
-		checkListID("onCreateLoader; " + loaderName);
+		MyLog.i("ListsFragment", "onCreateLoader. LoaderId = " + id + "; listID = " + mActiveListID);
 
 		CursorLoader cursorLoader = null;
 
@@ -367,13 +415,15 @@ public class ListsFragment extends Fragment
 			}
 			try {
 				if (listSettings.getShowGroupsInListsFragment()) {
-					cursorLoader = ItemsTable.getAllItemsInListWithGroups(getActivity(), mActiveListID, null);
+					cursorLoader = ItemsTable
+							.getAllSelectedItemsInListWithGroups(getActivity(), mActiveListID, true);
 
 				} else if (listSettings.getShowStores()) {
-					cursorLoader = ItemsTable.getAllItemsInListWithLocations(getActivity(), mActiveListID);
+					cursorLoader = ItemsTable
+							.getAllSelectedItemsInListWithLocations(getActivity(), mActiveListID, true);
 
 				} else {
-					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, sortOrder);
+					cursorLoader = ItemsTable.getAllSelectedItemsInList(getActivity(), mActiveListID, true, sortOrder);
 				}
 
 			} catch (SQLiteException e) {
@@ -410,13 +460,8 @@ public class ListsFragment extends Fragment
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor newCursor) {
-
-		// Log out the loader information for comparison
-		MyLog.i("ListsFragment", "onLoadFinished; loader: " + loader.toString());
-
 		int id = loader.getId();
-		String loaderName = loaderNames[id - 1];
-		checkListID("onLoadFinished; " + loaderName);
+		MyLog.i("ListsFragment", "onLoadFinished. LoaderID = " + id + "; listID = " + mActiveListID);
 
 		// The asynchronous load is complete and the newCursor is now available for use. 
 		switch (loader.getId()) {
@@ -445,8 +490,7 @@ public class ListsFragment extends Fragment
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
 		int id = loader.getId();
-		String loaderName = loaderNames[id - 1];
-		checkListID("onLoaderReset; " + loaderName);
+		MyLog.i("ListsFragment", "onLoaderReset. LoaderID = " + id + "; listID = " + mActiveListID);
 
 		switch (loader.getId()) {
 		case ITEMS_LOADER_ID:

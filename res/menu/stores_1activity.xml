@@ -20,9 +20,9 @@
         android:showAsAction="never"
         android:title="@string/action_editStoreName"/>
     <item
-        android:id="@+id/action_groups"
+        android:id="@+id/action_manage_locations"
         android:orderInCategory="40"
         android:showAsAction="never"
-        android:title="@string/action_groups"/>
+        android:title="Manage Locations"/>
 
 </menu>

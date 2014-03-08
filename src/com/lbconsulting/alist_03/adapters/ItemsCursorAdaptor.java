@@ -80,7 +80,9 @@ public class ItemsCursorAdaptor extends CursorAdapter {
 				}
 			}
 
-			int isStruckOut = cursor.getInt(cursor.getColumnIndex(ItemsTable.COL_STRUCK_OUT));
+			int isStruckOut = cursor.getInt(cursor.getColumnIndexOrThrow(ItemsTable.COL_STRUCK_OUT));
+
+			//int isStruckOut = cursor.getInt(cursor.getColumnIndex(ItemsTable.COL_STRUCK_OUT));
 			TextView tvListItemName = (TextView) view.findViewById(R.id.tvListItemName);
 			if (tvListItemName != null) {
 				tvListItemName.setText(cursor.getString(cursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_NAME)));

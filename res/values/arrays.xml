@@ -58,6 +58,63 @@
         <item>Wine</item>
         <item>Yogurt</item>
     </string-array>
+    <string-array name="grocery_items_groups">
+        <item>Produce</item>
+        <item>Produce</item>
+        <item>Baby Products</item>
+        <item>Meat-Seafood</item>
+        <item>Beans (canned)</item>
+        <item>Condiments</item>
+        <item>Produce</item>
+        <item>Beer</item>
+        <item>Condiments</item>
+        <item>Deli</item>
+        <item>Produce</item>
+        <item>Breads</item>
+        <item>Produce</item>
+        <item>Breads</item>
+        <item>Dairy</item>
+        <item>Produce</item>
+        <item>Cereals</item>
+        <item>Dairy</item>
+        <item>Meat-Seafood</item>
+        <item>Soups</item>
+        <item>Vegetables (canned)</item>
+        <item>Produce</item>
+        <item>Vegetables (frozen)</item>
+        <item>Dairy</item>
+        <item>Dairy</item>
+        <item>Beverages</item>
+        <item>Dairy</item>
+        <item>Baking Products</item>
+        <item>Baking Products</item>
+        <item>Produce</item>
+        <item>Meat-Seafood</item>
+        <item>Deli</item>
+        <item>Paper Products</item>
+        <item>Produce</item>
+        <item>Produce</item>
+        <item>Pasta/Pasta Sauce</item>
+        <item>Dairy</item>
+        <item>Condiments</item>
+        <item>Condiments</item>
+        <item>Deli</item>
+        <item>Peanut Butter</item>
+        <item>Condiments</item>
+        <item>Produce</item>
+        <item>Produce</item>
+        <item>Condiments</item>
+        <item>Dairy</item>
+        <item>Dairy</item>
+        <item>Paper Products</item>
+        <item>Produce</item>
+        <item>Health-Beauty</item>
+        <item>Meat-Seafood (canned)</item>
+        <item>Spices</item>
+        <item>Condiments</item>
+        <item>Wine</item>
+        <item>Dairy</item>
+    </string-array>
     <string-array name="grocery_groups">
         <item>Baby Products</item>
         <item>Bakery</item>

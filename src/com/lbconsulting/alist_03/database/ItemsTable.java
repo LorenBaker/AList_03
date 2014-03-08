@@ -356,7 +356,7 @@ public class ItemsTable {
 		return cursorLoader;
 	}
 
-	public static CursorLoader getAllSelectedItemsInListByGroup(Context context, long listID, boolean selected) {
+	public static CursorLoader getAllSelectedItemsInListWithGroups(Context context, long listID, boolean selected) {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			int selectedValue = AListUtilities.boolToInt(selected);
@@ -366,11 +366,30 @@ public class ItemsTable {
 					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";
 			//String selection = COL_LIST_ID + " = ? AND " + COL_SELECTED + " = ?";
 			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(selectedValue) };
-			String sortOrder = null;
+			String sortOrder = GroupsTable.SORT_ORDER_GROUP + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
 			try {
 				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
 			} catch (Exception e) {
-				MyLog.e("Exception error  in ItemsTable: getAllSelectedItemsInListByGroup. ", e.toString());
+				MyLog.e("Exception error  in ItemsTable: getAllSelectedItemsInListWithGroups. ", e.toString());
+			}
+		}
+		return cursorLoader;
+	}
+
+	public static CursorLoader getAllSelectedItemsInListWithLocations(Context context, long listID, boolean selected) {
+		CursorLoader cursorLoader = null;
+		if (listID > 1) {
+			int selectedValue = AListUtilities.boolToInt(selected);
+			Uri uri = CONTENT_URI_ITEMS_WITH_LOCATIONS;
+			String[] projection = ItemsTable.PROJECTION_ALL_WITH_LOCATION_NAME;
+			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
+					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(selectedValue) };
+			String sortOrder = LocationsTable.SORT_ORDER_LOCATION + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
+			try {
+				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllSelectedItemsInListWithLocations. ", e.toString());
 			}
 		}
 		return cursorLoader;
@@ -463,25 +482,25 @@ public class ItemsTable {
 	 * @param groupID
 	 * @return
 	 */
-	public static Cursor getAllItemsInGroup(Context context, long groupID, String sortOrder) {
-		Cursor cursor = null;
-		if (groupID > 0) {
-			if (sortOrder == null) {
-				sortOrder = SORT_ORDER_ITEM_NAME;
+	/*	public static Cursor getAllItemsInGroup(Context context, long groupID, String sortOrder) {
+			Cursor cursor = null;
+			if (groupID > 0) {
+				if (sortOrder == null) {
+					sortOrder = SORT_ORDER_ITEM_NAME;
+				}
+				Uri uri = CONTENT_URI;
+				String[] projection = PROJECTION_ALL;
+				String selection = COL_GROUP_ID + " = ?";
+				String[] selectionArgs = { String.valueOf(groupID) };
+				ContentResolver cr = context.getContentResolver();
+				try {
+					cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+				} catch (Exception e) {
+					MyLog.e("Exception error in ItemsTable: getAllItemsInGroup. ", e.toString());
+				}
 			}
-			Uri uri = CONTENT_URI;
-			String[] projection = PROJECTION_ALL;
-			String selection = COL_GROUP_ID + " = ?";
-			String[] selectionArgs = { String.valueOf(groupID) };
-			ContentResolver cr = context.getContentResolver();
-			try {
-				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
-			} catch (Exception e) {
-				MyLog.e("Exception error in ItemsTable: getAllItemsInGroup. ", e.toString());
-			}
-		}
-		return cursor;
-	}
+			return cursor;
+		}*/
 
 	/**
 	 * This method gets all items in the provided group that are selected (True)

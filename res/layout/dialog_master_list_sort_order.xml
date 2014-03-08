@@ -70,10 +70,4 @@
             android:textSize="20sp" />
     </LinearLayout>
 
-    <RadioGro>
-    </RadioGro>
-
-    <RadioGroup>
-    </RadioGroup>
-
 </LinearLayout>

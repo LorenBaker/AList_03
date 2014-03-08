@@ -98,9 +98,9 @@ public class StoresActivity extends Activity {
 			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
-		case R.id.action_groups:
+		case R.id.action_manage_locations:
 			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
-			StartGroupsActivity();
+			StartManageLocationsActivity();
 			return true;
 
 		default:
@@ -114,8 +114,8 @@ public class StoresActivity extends Activity {
 		super.onDestroy();
 	}
 
-	private void StartGroupsActivity() {
-		Intent intent = new Intent(this, GroupsActivity.class);
+	private void StartManageLocationsActivity() {
+		Intent intent = new Intent(this, ManageLocationsActivity.class);
 		startActivity(intent);
 	}
 }
