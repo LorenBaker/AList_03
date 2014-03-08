@@ -195,6 +195,24 @@ public class StoresTable {
 		return cursor;
 	}
 
+	public static Cursor getAllStoresInListCursor(Context context, long listID,
+			String sortOrder) {
+		Cursor cursor = null;
+		if (listID > 1) {
+			Uri uri = CONTENT_URI;
+			String[] projection = PROJECTION_ALL;
+			String selection = COL_LIST_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID) };
+			ContentResolver cr = context.getContentResolver();
+			try {
+				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error in StoresTable: getAllStoresInListCursor. ", e.toString());
+			}
+		}
+		return cursor;
+	}
+
 	public static CursorLoader getAllStoresInList(Context context, long listID,
 			String sortOrder) {
 		CursorLoader cursorLoader = null;

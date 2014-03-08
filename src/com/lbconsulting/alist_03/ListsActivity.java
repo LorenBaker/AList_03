@@ -213,6 +213,9 @@ public class ListsActivity extends FragmentActivity {
 
 	private void StartStoresActivity() {
 		Intent intent = new Intent(this, StoresActivity.class);
+		intent.putExtra("listTitle", mListSettings.getListTitle());
+		intent.putExtra("titleBackgroundColor", mListSettings.getTitleBackgroundColor());
+		intent.putExtra("titleTextColor", mListSettings.getTitleTextColor());
 		startActivity(intent);
 	}
 

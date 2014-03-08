@@ -25,10 +25,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.lbconsulting.alist_03.adapters.ManageLocationsPagerAdapter;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.dialogs.MoveCheckedItemsDialogFragment;
+import com.lbconsulting.alist_03.fragments.ManageLocationsFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ManageLocationsActivity extends FragmentActivity {
@@ -473,7 +475,7 @@ public class ManageLocationsActivity extends FragmentActivity {
 	}
 
 	private void CheckUnused(long numberOfDays) {
-		ItemsTable.ManageLocationsUnused(this, mActiveListID, numberOfDays);
+		//ItemsTable.ManageLocationsUnused(this, mActiveListID, numberOfDays);
 	}
 
 	private void ResetManualSortOrderToIDs() {

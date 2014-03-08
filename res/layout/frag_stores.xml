@@ -6,8 +6,6 @@
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-    <include layout="@layout/list_title" />
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
@@ -88,11 +86,18 @@
                 android:inputType="textUri" />
 
             <EditText
-                android:id="@+id/PhoneNumber"
+                android:id="@+id/txtPhoneNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Phone Number"
                 android:inputType="phone" />
+
+            <Button
+                android:id="@+id/btnApplyStoreChanges"
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:background="@drawable/alist_custom_button_square_corners_no_stroke"
+                android:text="Apply Store Changes" />
         </LinearLayout>
     </ScrollView>
 
