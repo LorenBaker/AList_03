@@ -26,7 +26,7 @@ public class ItemsCursorAdaptor extends CursorAdapter {
 		MyLog.i("ItemsCursorAdaptor", "ItemsCursorAdaptor constructor.");
 	}
 
-	private boolean ShowSeparator(TextView tv, Cursor listCursor) {
+	private boolean ShowGroupSeparator(TextView tv, Cursor listCursor) {
 		// TODO code show separator logic
 		boolean result = false;
 		long currentGroupID = listCursor.getLong(listCursor.getColumnIndexOrThrow(ItemsTable.COL_GROUP_ID));
@@ -49,6 +49,29 @@ public class ItemsCursorAdaptor extends CursorAdapter {
 		return result;
 	}
 
+	private boolean ShowLocationSeparator(TextView tv, Cursor listCursor) {
+		// TODO code show separator logic
+		boolean result = false;
+		long currentLocationID = listCursor.getLong(listCursor.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_ID));
+		long previousLocationID = -1;
+		if (listCursor.moveToPrevious()) {
+			previousLocationID = listCursor.getLong(listCursor.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_ID));
+			listCursor.moveToNext();
+			if (currentLocationID == previousLocationID) {
+				tv.setVisibility(View.GONE);
+				result = false;
+			} else {
+				tv.setVisibility(View.VISIBLE);
+				result = true;
+			}
+		} else {
+			tv.setVisibility(View.VISIBLE);
+			listCursor.moveToFirst();
+			result = true;
+		}
+		return result;
+	}
+
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
 		if (cursor != null) {
@@ -56,7 +79,7 @@ public class ItemsCursorAdaptor extends CursorAdapter {
 			TextView tvListItemSeparator = (TextView) view.findViewById(R.id.tvListItemSeparator);
 			if (tvListItemSeparator != null) {
 				if (mListSettings.getShowGroupsInListsFragment()) {
-					if (ShowSeparator(tvListItemSeparator, cursor)) {
+					if (ShowGroupSeparator(tvListItemSeparator, cursor)) {
 						try {
 							tvListItemSeparator.setText(cursor.getString(cursor
 									.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME)));
@@ -66,7 +89,7 @@ public class ItemsCursorAdaptor extends CursorAdapter {
 						}
 					}
 				} else if (mListSettings.getShowStores()) {
-					if (ShowSeparator(tvListItemSeparator, cursor)) {
+					if (ShowLocationSeparator(tvListItemSeparator, cursor)) {
 						try {
 							tvListItemSeparator.setText(cursor.getString(cursor
 									.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_NAME)));

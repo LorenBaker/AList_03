@@ -191,10 +191,6 @@ public class StoresActivity extends FragmentActivity {
 			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
-		case R.id.action_manage_locations:
-
-			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
-			return true;
 		default:
 			return super.onMenuItemSelected(featureId, item);
 		}

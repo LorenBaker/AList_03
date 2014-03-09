@@ -393,8 +393,8 @@ public class CheckItemsFragment extends Fragment
 				if (mListSettings.getShowGroupsInMasterListFragment()) {
 					cursorLoader = ItemsTable.getAllItemsInListWithGroups(getActivity(), mActiveListID, null);
 
-				} else if (mListSettings.getShowStores()) {
-					cursorLoader = ItemsTable.getAllItemsInListWithLocations(getActivity(), mActiveListID);
+					/*} else if (mListSettings.getShowStores()) {
+						cursorLoader = ItemsTable.getAllItemsInListWithLocations(getActivity(), mActiveListID);*/
 
 				} else {
 					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);

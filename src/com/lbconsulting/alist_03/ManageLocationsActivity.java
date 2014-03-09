@@ -11,8 +11,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.ManageLocationsPagerAdaptor;
+import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -27,6 +29,10 @@ public class ManageLocationsActivity extends FragmentActivity {
 	private ViewPager mPager;
 	private Cursor mAllStoresCursor;
 
+	String mActiveListTitle;
+	int mTitleBackgroundColor;
+	int mTitleTextColor;
+
 	/*private BroadcastReceiver mListTitleChanged;
 	public static final String LIST_TITLE_CHANGE_BROADCAST_KEY = "listTitleChanged";*/
 
@@ -35,9 +41,9 @@ public class ManageLocationsActivity extends FragmentActivity {
 		MyLog.i("ManageLocations_ACTIVITY", "onCreate");
 		super.onCreate(savedInstanceState);
 		Intent intent = getIntent();
-		String activeListTitle = intent.getStringExtra("listTitle");
-		int titleBackgroundColor = intent.getIntExtra("titleBackgroundColor", 0);
-		int titleTextColor = intent.getIntExtra("titleTextColor", 0);
+		mActiveListTitle = intent.getStringExtra("listTitle");
+		mTitleBackgroundColor = intent.getIntExtra("titleBackgroundColor", 0);
+		mTitleTextColor = intent.getIntExtra("titleTextColor", 0);
 
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
@@ -46,9 +52,9 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 		TextView tvListTitle = (TextView) findViewById(R.id.tvListTitle);
 		if (tvListTitle != null) {
-			tvListTitle.setText(activeListTitle);
-			tvListTitle.setBackgroundColor(titleBackgroundColor);
-			tvListTitle.setTextColor(titleTextColor);
+			tvListTitle.setText(mActiveListTitle);
+			tvListTitle.setBackgroundColor(mTitleBackgroundColor);
+			tvListTitle.setTextColor(mTitleTextColor);
 		}
 
 		View frag_stores_placeholder = this.findViewById(R.id.frag_stores_placeholder);
@@ -173,36 +179,39 @@ public class ManageLocationsActivity extends FragmentActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MyLog.i("ManageLocations_ACTIVITY", "onCreateOptionsMenu");
-		// TODO create manage_locations_1activity menu
-		//getMenuInflater().inflate(R.menu.manage_locations_1activity, menu);
+		getMenuInflater().inflate(R.menu.manage_locations_1activity, menu);
 		return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-		return super.onMenuItemSelected(featureId, item);
-		// TODO manage_locations_1activity menu
-		/*		switch (item.getItemId()) {
 
-				case R.id.action_newStore:
-					Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
-					return true;
+		switch (item.getItemId()) {
 
-				case R.id.action_showStoreLocation:
-					Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
-					return true;
+		case R.id.action_clearAllCheckedGroups:
+			GroupsTable.UnCheckAllCheckedGroups(this, mActiveListID);
+			return true;
 
-				case R.id.action_editStoreName:
-					Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
-					return true;
+		case R.id.action_sortOrder:
+			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			return true;
 
-				case R.id.action_manage_locations:
+		case R.id.action_manageStores:
+			StartStoresActivity();
+			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
+			return true;
 
-					Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
-					return true;
-				default:
-					return super.onMenuItemSelected(featureId, item);
-				}*/
+		default:
+			return super.onMenuItemSelected(featureId, item);
+		}
+	}
+
+	private void StartStoresActivity() {
+		Intent intent = new Intent(this, StoresActivity.class);
+		intent.putExtra("listTitle", mActiveListTitle);
+		intent.putExtra("titleBackgroundColor", mTitleBackgroundColor);
+		intent.putExtra("titleTextColor", mTitleTextColor);
+		startActivity(intent);
 	}
 
 	@Override

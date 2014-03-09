@@ -46,7 +46,7 @@ public class ItemsTable {
 			TABLE_ITEMS + "." + COL_LIST_ID,
 			TABLE_ITEMS + "." + COL_GROUP_ID,
 			COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED,
-			//BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_GROUP_ID,
+			LocationsTable.TABLE_LOCATIONS + "." + LocationsTable.COL_LOCATION_ID,
 			LocationsTable.TABLE_LOCATIONS + "." + LocationsTable.COL_LOCATION_NAME };
 
 	public static final String CONTENT_PATH = TABLE_ITEMS;
@@ -306,13 +306,14 @@ public class ItemsTable {
 		return cursorLoader;
 	}
 
-	public static CursorLoader getAllItemsInListWithLocations(Context context, long listID) {
+	public static CursorLoader getAllItemsInListWithLocations(Context context, long listID, long storeID) {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			Uri uri = CONTENT_URI_ITEMS_WITH_LOCATIONS;
 			String[] projection = ItemsTable.PROJECTION_ALL_WITH_LOCATION_NAME;
-			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ?";
-			String selectionArgs[] = new String[] { String.valueOf(listID) };
+			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
+					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_STORE_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(storeID) };
 			String sortOrder = LocationsTable.SORT_ORDER_LOCATION + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
 			try {
 				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
@@ -376,15 +377,18 @@ public class ItemsTable {
 		return cursorLoader;
 	}
 
-	public static CursorLoader getAllSelectedItemsInListWithLocations(Context context, long listID, boolean selected) {
+	public static CursorLoader getAllSelectedItemsInListWithLocations(Context context, long listID, long storeID,
+			boolean selected) {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			int selectedValue = AListUtilities.boolToInt(selected);
 			Uri uri = CONTENT_URI_ITEMS_WITH_LOCATIONS;
 			String[] projection = ItemsTable.PROJECTION_ALL_WITH_LOCATION_NAME;
 			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
+					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_STORE_ID + " = ? AND "
 					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";
-			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(selectedValue) };
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(storeID),
+					String.valueOf(selectedValue) };
 			String sortOrder = LocationsTable.SORT_ORDER_LOCATION + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
 			try {
 				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);

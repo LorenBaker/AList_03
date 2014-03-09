@@ -255,7 +255,7 @@ public class GroupsTable {
 		return numberOfUpdatedRecords;
 	}
 
-	private static int UnCheckAllCheckedGroups(Context context, long listID) {
+	public static int UnCheckAllCheckedGroups(Context context, long listID) {
 		int numberOfUpdatedRecords = -1;
 		// cannot update the default group with ID=1
 		if (listID > 1) {

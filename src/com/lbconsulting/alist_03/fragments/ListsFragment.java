@@ -203,12 +203,14 @@ public class ListsFragment extends Fragment
 
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				ContentValues cv = new ContentValues();
+				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+				/*ContentValues cv = new ContentValues();
 				cv.put(ListsTable.COL_STORE_ID, id);
 				listSettings.updateListsTableFieldValues(cv);
 				//listSettings.setStoreID(id);
 
-				long storeIDCheck = listSettings.getStoreID();
+				long storeIDCheck = listSettings.getStoreID();*/
+
 			}
 
 			@Override
@@ -420,7 +422,8 @@ public class ListsFragment extends Fragment
 
 				} else if (listSettings.getShowStores()) {
 					cursorLoader = ItemsTable
-							.getAllSelectedItemsInListWithLocations(getActivity(), mActiveListID, true);
+							.getAllSelectedItemsInListWithLocations(getActivity(), mActiveListID,
+									mStoreSpinner.getSelectedItemId(), true);
 
 				} else {
 					cursorLoader = ItemsTable.getAllSelectedItemsInList(getActivity(), mActiveListID, true, sortOrder);

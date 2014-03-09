@@ -75,6 +75,26 @@ public class BridgeTable {
 	 * @param itemName
 	 * @return Returns the new item's ID.
 	 */
+	public static long CreateNewBridgeRow(Context context, long listID, long storeID, long groupID, long locationID) {
+		long newBridgeRowID = -1;
+		ContentResolver cr = context.getContentResolver();
+		Uri uri = CONTENT_URI;
+		ContentValues values = new ContentValues();
+		values.put(COL_LIST_ID, listID);
+		values.put(COL_STORE_ID, storeID);
+		values.put(COL_GROUP_ID, groupID);
+		values.put(COL_LOCATION_ID, locationID);
+		try {
+			Uri newBridgeRowUri = cr.insert(uri, values);
+			if (newBridgeRowUri != null) {
+				newBridgeRowID = Long.parseLong(newBridgeRowUri.getLastPathSegment());
+			}
+		} catch (Exception e) {
+			MyLog.e("Exception error in CreateNewBridgeRow. ", e.toString());
+		}
+		return newBridgeRowID;
+	}
+
 	public static long CreateNewBridgeRow(Context context, long listID, long storeID, long groupID) {
 		long newBridgeRowID = -1;
 		ContentResolver cr = context.getContentResolver();
