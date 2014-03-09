@@ -34,6 +34,7 @@ import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
+import com.lbconsulting.alist_03.database.UniqueLoaderIDsTable;
 import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
@@ -52,8 +53,8 @@ public class ListsFragment extends Fragment
 
 	//OnListItemSelectedListener mListsCallback;
 	//private static final int LISTS_LOADER_ID = 1;
-	private static final int ITEMS_LOADER_ID = 2;
-	private static final int STORES_LOADER_ID = 3;
+	private int ITEMS_LOADER_ID = 2;
+	private int STORES_LOADER_ID = 3;
 	//private static final int GROUPS_LOADER_ID = 4;
 	//private static final int LOCATIONS_LOADER_ID = 5;
 
@@ -187,14 +188,6 @@ public class ListsFragment extends Fragment
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				ItemsTable.ToggleStrikeOut(getActivity(), id);
-				// TODO restartLoader(ITEMS_LOADER_ID does not work correctly with 
-				// the Groups Join table query.
-				// Also ... I don't think that I should have to call the restart. 
-				// Refreshing the data should be triggered by the content provider.
-				// Also ... the issue may be associated with the pager
-				// because under the "MasterListFragment" i don't user a pager
-				// and the restartLoader works fine with the same Groups Join table query!!
-				// Also ... The refresh works correctly when there is a single table query!
 				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 			}
 		});
@@ -239,6 +232,10 @@ public class ListsFragment extends Fragment
 			}
 		});
 
+		ITEMS_LOADER_ID = UniqueLoaderIDsTable.FetchNextUniqueID(getActivity(), AListUtilities.LISTS_FRAGMENT_ID,
+				AListUtilities.ITEMS_LOADER_ID);
+		STORES_LOADER_ID = UniqueLoaderIDsTable.FetchNextUniqueID(getActivity(), AListUtilities.LISTS_FRAGMENT_ID,
+				AListUtilities.STORES_LOADER_ID);
 		mLoaderManager = getLoaderManager();
 		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 		mLoaderManager.initLoader(STORES_LOADER_ID, null, mListsFragmentCallbacks);
@@ -348,6 +345,10 @@ public class ListsFragment extends Fragment
 		// Unregister local broadcast receivers
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartStoresLoaderReceiver);
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartItemsLoaderReceiver);
+
+		// Release unique loader IDs
+		UniqueLoaderIDsTable.ReleaseUniqueID(getActivity(), ITEMS_LOADER_ID);
+		UniqueLoaderIDsTable.ReleaseUniqueID(getActivity(), STORES_LOADER_ID);
 		super.onDestroy();
 
 	}
@@ -384,10 +385,81 @@ public class ListsFragment extends Fragment
 
 		CursorLoader cursorLoader = null;
 
-		switch (id) {
+		/*		switch (id) {
 
-		case ITEMS_LOADER_ID:
+				case ITEMS_LOADER_ID:
 
+					int masterListSortOrder = listSettings.getMasterListSortOrder();
+					String sortOrder = "";
+					switch (masterListSortOrder) {
+					case ListPreferencesFragment.ALPHABETICAL:
+						sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+						break;
+
+								case ListPreferencesFragment.BY_GROUP:
+									sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
+									break;
+
+								case ListPreferencesFragment.SELECTED_AT_TOP:
+									sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
+									break;
+
+								case ListPreferencesFragment.SELECTED_AT_BOTTOM:
+									sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
+									break;
+
+					case ListPreferencesFragment.LAST_USED:
+						sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
+						break;
+
+					default:
+						sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+						break;
+					}
+					try {
+						if (listSettings.getShowGroupsInListsFragment()) {
+							cursorLoader = ItemsTable
+									.getAllSelectedItemsInListWithGroups(getActivity(), mActiveListID, true);
+
+						} else if (listSettings.getShowStores()) {
+							cursorLoader = ItemsTable
+									.getAllSelectedItemsInListWithLocations(getActivity(), mActiveListID,
+											mStoreSpinner.getSelectedItemId(), true);
+
+						} else {
+							cursorLoader = ItemsTable.getAllSelectedItemsInList(getActivity(), mActiveListID, true, sortOrder);
+						}
+
+					} catch (SQLiteException e) {
+						MyLog.e("ListsFragment: onCreateLoader SQLiteException: ", e.toString());
+						return null;
+
+					} catch (IllegalArgumentException e) {
+						MyLog.e("ListsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
+						return null;
+					}
+					break;
+
+				case STORES_LOADER_ID:
+					try {
+						cursorLoader = StoresTable.getAllStoresInList(getActivity(), mActiveListID,
+								StoresTable.SORT_ORDER_STORE_NAME);
+
+					} catch (SQLiteException e) {
+						MyLog.e("ListsFragment: onCreateLoader SQLiteException: ", e.toString());
+						return null;
+
+					} catch (IllegalArgumentException e) {
+						MyLog.e("ListsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
+						return null;
+					}
+					break;
+
+				default:
+					break;
+				}*/
+
+		if (id == ITEMS_LOADER_ID) {
 			int masterListSortOrder = listSettings.getMasterListSortOrder();
 			String sortOrder = "";
 			switch (masterListSortOrder) {
@@ -399,13 +471,13 @@ public class ListsFragment extends Fragment
 							sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
 							break;*/
 
-			/*			case ListPreferencesFragment.SELECTED_AT_TOP:
-							sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
-							break;
+			case ListPreferencesFragment.SELECTED_AT_TOP:
+				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
+				break;
 
-						case ListPreferencesFragment.SELECTED_AT_BOTTOM:
-							sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
-							break;*/
+			case ListPreferencesFragment.SELECTED_AT_BOTTOM:
+				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
+				break;
 
 			case ListPreferencesFragment.LAST_USED:
 				sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
@@ -437,9 +509,8 @@ public class ListsFragment extends Fragment
 				MyLog.e("ListsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
 				return null;
 			}
-			break;
 
-		case STORES_LOADER_ID:
+		} else if (id == STORES_LOADER_ID) {
 			try {
 				cursorLoader = StoresTable.getAllStoresInList(getActivity(), mActiveListID,
 						StoresTable.SORT_ORDER_STORE_NAME);
@@ -452,10 +523,6 @@ public class ListsFragment extends Fragment
 				MyLog.e("ListsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
 				return null;
 			}
-			break;
-
-		default:
-			break;
 		}
 
 		return cursorLoader;
@@ -467,8 +534,29 @@ public class ListsFragment extends Fragment
 		MyLog.i("ListsFragment", "onLoadFinished. LoaderID = " + id + "; listID = " + mActiveListID);
 
 		// The asynchronous load is complete and the newCursor is now available for use. 
-		switch (loader.getId()) {
-		case ITEMS_LOADER_ID:
+
+		/*		switch (loader.getId()) {
+				case ITEMS_LOADER_ID:
+					mItemsCursorAdaptor.swapCursor(newCursor);
+
+					if (flag_FirstTimeLoadingItemDataSinceOnResume) {
+						mItemsListView.setSelectionFromTop(listSettings.getListViewFirstVisiblePosition(),
+								listSettings.getListViewTop());
+						flag_FirstTimeLoadingItemDataSinceOnResume = false;
+					}
+
+					break;
+
+				case STORES_LOADER_ID:
+					mStoresSpinnerCursorAdapter.swapCursor(newCursor);
+					mStoreSpinner.setSelection(AListUtilities.getIndex(mStoreSpinner, listSettings.getStoreID()));
+					break;
+
+				default:
+					break;
+				}*/
+
+		if (id == ITEMS_LOADER_ID) {
 			mItemsCursorAdaptor.swapCursor(newCursor);
 
 			if (flag_FirstTimeLoadingItemDataSinceOnResume) {
@@ -477,15 +565,9 @@ public class ListsFragment extends Fragment
 				flag_FirstTimeLoadingItemDataSinceOnResume = false;
 			}
 
-			break;
-
-		case STORES_LOADER_ID:
+		} else if (id == STORES_LOADER_ID) {
 			mStoresSpinnerCursorAdapter.swapCursor(newCursor);
 			mStoreSpinner.setSelection(AListUtilities.getIndex(mStoreSpinner, listSettings.getStoreID()));
-			break;
-
-		default:
-			break;
 		}
 
 	}
@@ -495,21 +577,27 @@ public class ListsFragment extends Fragment
 		int id = loader.getId();
 		MyLog.i("ListsFragment", "onLoaderReset. LoaderID = " + id + "; listID = " + mActiveListID);
 
-		switch (loader.getId()) {
-		case ITEMS_LOADER_ID:
+		/*		switch (loader.getId()) {
+				case ITEMS_LOADER_ID:
+					mItemsCursorAdaptor.swapCursor(null);
+					break;
+
+				case STORES_LOADER_ID:
+					mStoresSpinnerCursorAdapter.swapCursor(null);
+					break;
+
+				case GROUPS_LOADER_ID:
+					mGroupsSpinnerCursorAdapter.swapCursor(null);
+					break;
+
+				default:
+					break;
+				}*/
+
+		if (id == ITEMS_LOADER_ID) {
 			mItemsCursorAdaptor.swapCursor(null);
-			break;
-
-		case STORES_LOADER_ID:
+		} else if (id == STORES_LOADER_ID) {
 			mStoresSpinnerCursorAdapter.swapCursor(null);
-			break;
-
-		/*case GROUPS_LOADER_ID:
-			mGroupsSpinnerCursorAdapter.swapCursor(null);
-			break;*/
-
-		default:
-			break;
 		}
 	}
 }

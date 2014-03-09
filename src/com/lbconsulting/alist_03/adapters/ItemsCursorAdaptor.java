@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
+import com.lbconsulting.alist_03.database.BridgeTable;
 import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.LocationsTable;
@@ -52,10 +53,10 @@ public class ItemsCursorAdaptor extends CursorAdapter {
 	private boolean ShowLocationSeparator(TextView tv, Cursor listCursor) {
 		// TODO code show separator logic
 		boolean result = false;
-		long currentLocationID = listCursor.getLong(listCursor.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_ID));
+		long currentLocationID = listCursor.getLong(listCursor.getColumnIndexOrThrow(BridgeTable.COL_LOCATION_ID));
 		long previousLocationID = -1;
 		if (listCursor.moveToPrevious()) {
-			previousLocationID = listCursor.getLong(listCursor.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_ID));
+			previousLocationID = listCursor.getLong(listCursor.getColumnIndexOrThrow(BridgeTable.COL_LOCATION_ID));
 			listCursor.moveToNext();
 			if (currentLocationID == previousLocationID) {
 				tv.setVisibility(View.GONE);

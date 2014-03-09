@@ -9,7 +9,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class AListDatabaseHelper extends SQLiteOpenHelper {
 
 	private static final String DATABASE_NAME = "AList.db";
-	private static final int DATABASE_VERSION = 3;
+	private static final int DATABASE_VERSION = 4;
 
 	public AListDatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -25,6 +25,7 @@ public class AListDatabaseHelper extends SQLiteOpenHelper {
 		ItemsTable.onCreate(database);
 		LocationsTable.onCreate(database);
 		BridgeTable.onCreate(database);
+		UniqueLoaderIDsTable.onCreate(database);
 	}
 
 	@Override
@@ -36,6 +37,7 @@ public class AListDatabaseHelper extends SQLiteOpenHelper {
 		StoresTable.onUpgrade(database, oldVersion, newVersion);
 		LocationsTable.onUpgrade(database, oldVersion, newVersion);
 		BridgeTable.onUpgrade(database, oldVersion, newVersion);
+		UniqueLoaderIDsTable.onUpgrade(database, oldVersion, newVersion);
 	}
 
 }

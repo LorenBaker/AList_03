@@ -22,6 +22,7 @@ import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.database.LocationsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
+import com.lbconsulting.alist_03.database.UniqueLoaderIDsTable;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class AListContentProvider extends ContentProvider {
@@ -51,6 +52,8 @@ public class AListContentProvider extends ContentProvider {
 	private static final int ITEMS_WITH_GROUPS = 70;
 	private static final int ITEMS_WITH_LOCATIONS = 71;
 
+	private static final int UNIQUE_LOADER_ID = 80;
+
 	public static final String AUTHORITY = "com.lbconsulting.alist_03.contentprovider";
 
 	private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -75,6 +78,8 @@ public class AListContentProvider extends ContentProvider {
 
 		sURIMatcher.addURI(AUTHORITY, ItemsTable.CONTENT_PATH_ITEMS_WITH_GROUPS, ITEMS_WITH_GROUPS);
 		sURIMatcher.addURI(AUTHORITY, ItemsTable.CONTENT_PATH_ITEMS_WITH_LOCATIONS, ITEMS_WITH_LOCATIONS);
+
+		sURIMatcher.addURI(AUTHORITY, UniqueLoaderIDsTable.CONTENT_PATH, UNIQUE_LOADER_ID);
 	}
 
 	@Override
@@ -203,6 +208,10 @@ public class AListContentProvider extends ContentProvider {
 					+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
 			// Perform the deletion
 			deleteCount = db.delete(BridgeTable.TABLE_BRIDGE, selection, selectionArgs);
+			break;
+
+		case UNIQUE_LOADER_ID:
+			deleteCount = db.delete(UniqueLoaderIDsTable.TABLE_UNIQUE_LOADER_IDs, selection, selectionArgs);
 			break;
 
 		default:
@@ -362,6 +371,18 @@ public class AListContentProvider extends ContentProvider {
 		case BRIDGE_SINGLE_ROW:
 			throw new IllegalArgumentException(
 					"Method insert: Cannot insert a new row with a single row URI. Illegal URI: " + uri);
+
+		case UNIQUE_LOADER_ID:
+			newRowId = db.insertOrThrow(UniqueLoaderIDsTable.TABLE_UNIQUE_LOADER_IDs, nullColumnHack, values);
+			if (newRowId > 0) {
+				// Construct and return the URI of the newly inserted row.
+				Uri newRowUri = ContentUris.withAppendedId(UniqueLoaderIDsTable.CONTENT_URI, newRowId);
+				// Notify and observers of the change in the database.
+				getContext().getContentResolver().notifyChange(UniqueLoaderIDsTable.CONTENT_URI, null);
+				return newRowUri;
+			} else {
+				return null;
+			}
 
 		default:
 			throw new IllegalArgumentException("Method insert: Unknown URI: " + uri);

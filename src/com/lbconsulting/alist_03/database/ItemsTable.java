@@ -46,7 +46,7 @@ public class ItemsTable {
 			TABLE_ITEMS + "." + COL_LIST_ID,
 			TABLE_ITEMS + "." + COL_GROUP_ID,
 			COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED,
-			LocationsTable.TABLE_LOCATIONS + "." + LocationsTable.COL_LOCATION_ID,
+			BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_LOCATION_ID,
 			LocationsTable.TABLE_LOCATIONS + "." + LocationsTable.COL_LOCATION_NAME };
 
 	public static final String CONTENT_PATH = TABLE_ITEMS;
