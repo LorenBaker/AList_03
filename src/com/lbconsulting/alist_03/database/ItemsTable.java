@@ -32,20 +32,28 @@ public class ItemsTable {
 	public static final String[] PROJECTION_ALL = { COL_ITEM_ID, COL_ITEM_NAME, COL_ITEM_NOTE, COL_LIST_ID,
 			COL_GROUP_ID, COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED };
 
-	public static final String[] PROJECTION_ALL_WITH_GROUP_NAME = {
+	public static final String[] PROJECTION_WITH_GROUP_NAME = {
 			TABLE_ITEMS + "." + COL_ITEM_ID,
-			COL_ITEM_NAME, COL_ITEM_NOTE,
+			TABLE_ITEMS + "." + COL_ITEM_NAME,
+			TABLE_ITEMS + "." + COL_ITEM_NOTE,
 			TABLE_ITEMS + "." + COL_LIST_ID,
 			TABLE_ITEMS + "." + COL_GROUP_ID,
-			COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED,
-			GroupsTable.COL_GROUP_NAME };
+			TABLE_ITEMS + "." + COL_SELECTED,
+			TABLE_ITEMS + "." + COL_STRUCK_OUT,
+			TABLE_ITEMS + "." + COL_CHECKED,
+			TABLE_ITEMS + "." + COL_MANUAL_SORT_ORDER,
+			GroupsTable.TABLE_GROUPS + "." + GroupsTable.COL_GROUP_NAME };
 
-	public static final String[] PROJECTION_ALL_WITH_LOCATION_NAME = {
+	public static final String[] PROJECTION_WITH_LOCATION_NAME = {
 			TABLE_ITEMS + "." + COL_ITEM_ID,
-			COL_ITEM_NAME, COL_ITEM_NOTE,
+			TABLE_ITEMS + "." + COL_ITEM_NAME,
+			TABLE_ITEMS + "." + COL_ITEM_NOTE,
 			TABLE_ITEMS + "." + COL_LIST_ID,
 			TABLE_ITEMS + "." + COL_GROUP_ID,
-			COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED,
+			TABLE_ITEMS + "." + COL_SELECTED,
+			TABLE_ITEMS + "." + COL_STRUCK_OUT,
+			TABLE_ITEMS + "." + COL_CHECKED,
+			TABLE_ITEMS + "." + COL_MANUAL_SORT_ORDER,
 			BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_LOCATION_ID,
 			LocationsTable.TABLE_LOCATIONS + "." + LocationsTable.COL_LOCATION_NAME };
 
@@ -71,6 +79,7 @@ public class ItemsTable {
 	public static final String SORT_ORDER_LAST_USED = COL_DATE_TIME_LAST_USED + " DESC, " + SORT_ORDER_ITEM_NAME;
 
 	public static final String ITEM_MOVE_BROADCAST_KEY = "itemMoved";
+	public static final String ITEM_CHANGED_BROADCAST_KEY = "itemChanged";
 
 	//TODO: SORT by group name not id!
 	//public static final String SORT_ORDER_BY_GROUP = COL_GROUP_ID + " ASC, " + SORT_ORDER_ITEM_NAME;
@@ -288,7 +297,7 @@ public class ItemsTable {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			Uri uri = CONTENT_URI_ITEMS_WITH_GROUPS;
-			String[] projection = ItemsTable.PROJECTION_ALL_WITH_GROUP_NAME;
+			String[] projection = ItemsTable.PROJECTION_WITH_GROUP_NAME;
 
 			if (selection != null) {
 				selection = selection + " AND " + TABLE_ITEMS + "." + COL_LIST_ID + " = ?";
@@ -310,7 +319,7 @@ public class ItemsTable {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			Uri uri = CONTENT_URI_ITEMS_WITH_LOCATIONS;
-			String[] projection = ItemsTable.PROJECTION_ALL_WITH_LOCATION_NAME;
+			String[] projection = ItemsTable.PROJECTION_WITH_LOCATION_NAME;
 			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
 					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_STORE_ID + " = ?";
 			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(storeID) };
@@ -362,7 +371,7 @@ public class ItemsTable {
 		if (listID > 1) {
 			int selectedValue = AListUtilities.boolToInt(selected);
 			Uri uri = CONTENT_URI_ITEMS_WITH_GROUPS;
-			String[] projection = null;
+			String[] projection = ItemsTable.PROJECTION_WITH_GROUP_NAME;
 			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
 					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";
 			//String selection = COL_LIST_ID + " = ? AND " + COL_SELECTED + " = ?";
@@ -383,7 +392,7 @@ public class ItemsTable {
 		if (listID > 1) {
 			int selectedValue = AListUtilities.boolToInt(selected);
 			Uri uri = CONTENT_URI_ITEMS_WITH_LOCATIONS;
-			String[] projection = ItemsTable.PROJECTION_ALL_WITH_LOCATION_NAME;
+			String[] projection = ItemsTable.PROJECTION_WITH_LOCATION_NAME;
 			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
 					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_STORE_ID + " = ? AND "
 					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";

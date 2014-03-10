@@ -1,7 +1,12 @@
 package com.lbconsulting.alist_03.fragments;
 
 import android.app.Activity;
+import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
@@ -11,6 +16,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -19,6 +25,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -32,6 +39,7 @@ import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
+import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class MasterListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -43,17 +51,11 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 		public void onMasterListItemLongClick(int position, long itemID);
 	}
 
-	//OnListItemSelectedListener mListsCallback;
-	//private static final int LISTS_LOADER_ID = 1;
-	private static final int ITEMS_LOADER_ID = 2;
-	//private static final int STORES_LOADER_ID = 3;
-	//private static final int GROUPS_LOADER_ID = 4;
 	private String[] loaderNames = { "Lists_Loader", "Items_Loader", "Stores_Loader", "Groups_Loader" };
 
 	private long mActiveListID;
 	private long mActiveItemID;
-	///private int mMasterListViewFirstVisiblePosition;
-	//private int mMasterListViewTop;
+	private BroadcastReceiver mItemChangedReceiver;
 
 	private ListSettings listSettings;
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
@@ -134,11 +136,16 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 
 		txtItemName = (EditText) view.findViewById(R.id.txtItemName);
 		btnAddToMasterList = (Button) view.findViewById(R.id.btnAddToMasterList);
+
 		btnAddToMasterList.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				SelectItemForList();
+				// hide the soft input keyboard
+				InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
+						Service.INPUT_METHOD_SERVICE);
+				imm.hideSoftInputFromWindow(txtItemName.getWindowToken(), 0);
 			}
 		});
 
@@ -165,15 +172,15 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				mActiveItemID = id;
 				ItemsTable.ToggleSelection(getActivity(), id);
-				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
 			}
 		});
 
 		lvItemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
 			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View listView, int position, long id) {
-				mActiveItemID = id;
+			public boolean onItemLongClick(AdapterView<?> parent, View listView, int position, long itemID) {
+				mActiveItemID = itemID;
 				FragmentManager fm = getFragmentManager();
 				Fragment prev = fm.findFragmentByTag("dialog_edit_item");
 				if (prev != null) {
@@ -181,7 +188,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 					ft.remove(prev);
 					ft.commit();
 				}
-				EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(id);
+				EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(mActiveListID, itemID);
 				editItemDialog.show(fm, "dialog_edit_item");
 
 				return true;
@@ -217,7 +224,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 
 				MyLog.i("MasterListFragment", "onActivityCreated; txtItemName.afterTextChanged -- "
 						+ txtItemName.getText().toString());
-				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
 			}
 
 			@Override
@@ -238,46 +245,20 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 
 		});
 
-		/*		txtItemNote.setOnKeyListener(new OnKeyListener() {
-					@Override
-					public boolean onKey(View v, int keyCode, KeyEvent event) {
-						boolean result = false;
-						if ((event.getAction() == KeyEvent.ACTION_DOWN)
-								&& (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.FLAG_EDITOR_ACTION || keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
+		mItemChangedReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
+			}
+		};
 
-							String newItemName = txtItemName.getText().toString().trim();
-							if (!newItemName.isEmpty()) {
-								long newItemNameID = ItemsTable.CreateNewItem(getActivity(), mActiveListID, newItemName);
-								ItemsTable.SelectItem(getActivity(), newItemNameID, true);
-
-								String newItemNote = txtItemNote.getText().toString().trim();
-								if (!newItemNote.isEmpty()) {
-									ContentValues newFieldValues = new ContentValues();
-									newFieldValues.put(ItemsTable.COL_ITEM_NOTE, newItemNote);
-									ItemsTable.UpdateItemFieldValues(getActivity(), newItemNameID, newFieldValues);
-								}
-							}
-							txtItemNote.setText("");
-							txtItemName.setText("");
-
-							txtItemName.post(new Runnable()
-							{
-								public void run()
-								{
-									txtItemName.requestFocus();
-								}
-							});
-
-							getActivity().getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-							result = true;
-						}
-						return result;
-					}
-				});*/
+		String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemChangedReceiver,
+				new IntentFilter(itemChangedReceiverKey));
 
 		MyLog.i("MasterListFragment", "onActivityCreated");
 		mLoaderManager = getLoaderManager();
-		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
+		mLoaderManager.initLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
 		super.onActivityCreated(savedInstanceState);
 
 	}
@@ -355,6 +336,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 	@Override
 	public void onDestroyView() {
 		MyLog.i("MasterListFragment", "onDestroyView");
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemChangedReceiver);
 		super.onDestroyView();
 	}
 
@@ -390,7 +372,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 		CursorLoader cursorLoader = null;
 		switch (id) {
 
-		case ITEMS_LOADER_ID:
+		case AListUtilities.ITEMS_LOADER_ID:
 
 			int masterListSortOrder = listSettings.getMasterListSortOrder();
 			String sortOrder = "";
@@ -474,7 +456,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 		// The asynchronous load is complete and the newCursor is now available for use. 
 		// Update the masterListAdapter to show the changed data.
 		switch (loader.getId()) {
-		case ITEMS_LOADER_ID:
+		case AListUtilities.ITEMS_LOADER_ID:
 			mMasterListCursorAdaptor.swapCursor(newCursor);
 			if (flag_FirstTimeLoadingItemDataSinceOnResume) {
 				lvItemsListView.setSelectionFromTop(
@@ -504,7 +486,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 		String loaderName = loaderNames[id - 1];
 		MyLog.i("MasterListFragment: onLoaderReset; " + loaderName, "; listID = " + mActiveListID);
 		switch (loader.getId()) {
-		case ITEMS_LOADER_ID:
+		case AListUtilities.ITEMS_LOADER_ID:
 			mMasterListCursorAdaptor.swapCursor(null);
 			break;
 

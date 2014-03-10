@@ -34,7 +34,6 @@ import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
-import com.lbconsulting.alist_03.database.UniqueLoaderIDsTable;
 import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
@@ -50,15 +49,6 @@ public class ListsFragment extends Fragment
 	public interface OnListItemLongClickListener {
 		public void onListItemLongClick(int position, long itemID);
 	}
-
-	//OnListItemSelectedListener mListsCallback;
-	//private static final int LISTS_LOADER_ID = 1;
-	private int ITEMS_LOADER_ID = 2;
-	private int STORES_LOADER_ID = 3;
-	//private static final int GROUPS_LOADER_ID = 4;
-	//private static final int LOCATIONS_LOADER_ID = 5;
-
-	//private String[] loaderNames = { "Lists_Loader", "Items_Loader", "Stores_Loader", "Groups_Loader" };
 
 	private long mActiveListID = -9999;
 	private long mActiveItemID = -9999;
@@ -76,6 +66,8 @@ public class ListsFragment extends Fragment
 	public static final String RESART_ITEMS_LOADER_KEY = "RestartItemsLoaderKey";
 	private BroadcastReceiver mRestartItemsLoaderReceiver;
 
+	private BroadcastReceiver mItemChangedReceiver;
+
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
 	private LoaderManager.LoaderCallbacks<Cursor> mListsFragmentCallbacks;
@@ -84,15 +76,6 @@ public class ListsFragment extends Fragment
 	//private GroupsSpinnerCursorAdapter mGroupsSpinnerCursorAdapter;
 
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
-
-	/*	private boolean checkListID(String method) {
-			if (mActiveListID < 2) {
-				MyLog.e("ListsFragment", method + "; listID = " + mActiveListID + " is less than 2!!!!");
-			} else {
-				MyLog.i("ListsFragment", method + "; listID = " + mActiveListID);
-			}
-			return (mActiveListID > 1);
-		}*/
 
 	public ListsFragment() {
 		// Empty constructor
@@ -188,7 +171,7 @@ public class ListsFragment extends Fragment
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				ItemsTable.ToggleStrikeOut(getActivity(), id);
-				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 			}
 		});
 
@@ -196,7 +179,7 @@ public class ListsFragment extends Fragment
 
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 				/*ContentValues cv = new ContentValues();
 				cv.put(ListsTable.COL_STORE_ID, id);
 				listSettings.updateListsTableFieldValues(cv);
@@ -216,8 +199,8 @@ public class ListsFragment extends Fragment
 		mItemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
 			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				mActiveItemID = id;
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long activeItemID) {
+				mActiveItemID = activeItemID;
 				FragmentManager fm = getFragmentManager();
 				Fragment prev = fm.findFragmentByTag("dialog_edit_item");
 				if (prev != null) {
@@ -225,20 +208,12 @@ public class ListsFragment extends Fragment
 					ft.remove(prev);
 					ft.commit();
 				}
-				EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(id);
+				EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(mActiveListID, activeItemID);
 				editItemDialog.show(fm, "dialog_edit_item");
 
 				return true;
 			}
 		});
-
-		ITEMS_LOADER_ID = UniqueLoaderIDsTable.FetchNextUniqueID(getActivity(), AListUtilities.LISTS_FRAGMENT_ID,
-				AListUtilities.ITEMS_LOADER_ID);
-		STORES_LOADER_ID = UniqueLoaderIDsTable.FetchNextUniqueID(getActivity(), AListUtilities.LISTS_FRAGMENT_ID,
-				AListUtilities.STORES_LOADER_ID);
-		mLoaderManager = getLoaderManager();
-		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
-		mLoaderManager.initLoader(STORES_LOADER_ID, null, mListsFragmentCallbacks);
 
 		return view;
 	}
@@ -257,14 +232,21 @@ public class ListsFragment extends Fragment
 		mRestartStoresLoaderReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(STORES_LOADER_ID, null, mListsFragmentCallbacks);
+				mLoaderManager.restartLoader(AListUtilities.STORES_LOADER_ID, null, mListsFragmentCallbacks);
 			}
 		};
 
 		mRestartItemsLoaderReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+			}
+		};
+
+		mItemChangedReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 			}
 		};
 
@@ -278,9 +260,14 @@ public class ListsFragment extends Fragment
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartItemsLoaderReceiver,
 				new IntentFilter(restartItemsLoaderReceiver));
 
-		/*mLoaderManager = getLoaderManager();
-		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
-		mLoaderManager.initLoader(STORES_LOADER_ID, null, mListsFragmentCallbacks);*/
+		String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemChangedReceiver,
+				new IntentFilter(itemChangedReceiverKey));
+
+		mLoaderManager = getLoaderManager();
+		mLoaderManager.initLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+		mLoaderManager.initLoader(AListUtilities.STORES_LOADER_ID, null, mListsFragmentCallbacks);
+
 		super.onActivityCreated(savedInstanceState);
 	}
 
@@ -345,10 +332,8 @@ public class ListsFragment extends Fragment
 		// Unregister local broadcast receivers
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartStoresLoaderReceiver);
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartItemsLoaderReceiver);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemChangedReceiver);
 
-		// Release unique loader IDs
-		UniqueLoaderIDsTable.ReleaseUniqueID(getActivity(), ITEMS_LOADER_ID);
-		UniqueLoaderIDsTable.ReleaseUniqueID(getActivity(), STORES_LOADER_ID);
 		super.onDestroy();
 
 	}
@@ -385,91 +370,16 @@ public class ListsFragment extends Fragment
 
 		CursorLoader cursorLoader = null;
 
-		/*		switch (id) {
+		switch (id) {
 
-				case ITEMS_LOADER_ID:
+		case AListUtilities.ITEMS_LOADER_ID:
 
-					int masterListSortOrder = listSettings.getMasterListSortOrder();
-					String sortOrder = "";
-					switch (masterListSortOrder) {
-					case ListPreferencesFragment.ALPHABETICAL:
-						sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
-						break;
-
-								case ListPreferencesFragment.BY_GROUP:
-									sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
-									break;
-
-								case ListPreferencesFragment.SELECTED_AT_TOP:
-									sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
-									break;
-
-								case ListPreferencesFragment.SELECTED_AT_BOTTOM:
-									sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
-									break;
-
-					case ListPreferencesFragment.LAST_USED:
-						sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
-						break;
-
-					default:
-						sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
-						break;
-					}
-					try {
-						if (listSettings.getShowGroupsInListsFragment()) {
-							cursorLoader = ItemsTable
-									.getAllSelectedItemsInListWithGroups(getActivity(), mActiveListID, true);
-
-						} else if (listSettings.getShowStores()) {
-							cursorLoader = ItemsTable
-									.getAllSelectedItemsInListWithLocations(getActivity(), mActiveListID,
-											mStoreSpinner.getSelectedItemId(), true);
-
-						} else {
-							cursorLoader = ItemsTable.getAllSelectedItemsInList(getActivity(), mActiveListID, true, sortOrder);
-						}
-
-					} catch (SQLiteException e) {
-						MyLog.e("ListsFragment: onCreateLoader SQLiteException: ", e.toString());
-						return null;
-
-					} catch (IllegalArgumentException e) {
-						MyLog.e("ListsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
-						return null;
-					}
-					break;
-
-				case STORES_LOADER_ID:
-					try {
-						cursorLoader = StoresTable.getAllStoresInList(getActivity(), mActiveListID,
-								StoresTable.SORT_ORDER_STORE_NAME);
-
-					} catch (SQLiteException e) {
-						MyLog.e("ListsFragment: onCreateLoader SQLiteException: ", e.toString());
-						return null;
-
-					} catch (IllegalArgumentException e) {
-						MyLog.e("ListsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
-						return null;
-					}
-					break;
-
-				default:
-					break;
-				}*/
-
-		if (id == ITEMS_LOADER_ID) {
 			int masterListSortOrder = listSettings.getMasterListSortOrder();
 			String sortOrder = "";
 			switch (masterListSortOrder) {
 			case ListPreferencesFragment.ALPHABETICAL:
 				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
 				break;
-
-			/*			case ListPreferencesFragment.BY_GROUP:
-							sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
-							break;*/
 
 			case ListPreferencesFragment.SELECTED_AT_TOP:
 				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
@@ -509,10 +419,11 @@ public class ListsFragment extends Fragment
 				MyLog.e("ListsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
 				return null;
 			}
+			break;
 
-		} else if (id == STORES_LOADER_ID) {
+		case AListUtilities.STORES_LOADER_ID:
 			try {
-				cursorLoader = StoresTable.getAllStoresInList(getActivity(), mActiveListID,
+				cursorLoader = StoresTable.getAllStoresInListExcludeDefaultStore(getActivity(), mActiveListID,
 						StoresTable.SORT_ORDER_STORE_NAME);
 
 			} catch (SQLiteException e) {
@@ -523,6 +434,10 @@ public class ListsFragment extends Fragment
 				MyLog.e("ListsFragment: onCreateLoader IllegalArgumentException: ", e.toString());
 				return null;
 			}
+			break;
+
+		default:
+			break;
 		}
 
 		return cursorLoader;
@@ -535,28 +450,8 @@ public class ListsFragment extends Fragment
 
 		// The asynchronous load is complete and the newCursor is now available for use. 
 
-		/*		switch (loader.getId()) {
-				case ITEMS_LOADER_ID:
-					mItemsCursorAdaptor.swapCursor(newCursor);
-
-					if (flag_FirstTimeLoadingItemDataSinceOnResume) {
-						mItemsListView.setSelectionFromTop(listSettings.getListViewFirstVisiblePosition(),
-								listSettings.getListViewTop());
-						flag_FirstTimeLoadingItemDataSinceOnResume = false;
-					}
-
-					break;
-
-				case STORES_LOADER_ID:
-					mStoresSpinnerCursorAdapter.swapCursor(newCursor);
-					mStoreSpinner.setSelection(AListUtilities.getIndex(mStoreSpinner, listSettings.getStoreID()));
-					break;
-
-				default:
-					break;
-				}*/
-
-		if (id == ITEMS_LOADER_ID) {
+		switch (loader.getId()) {
+		case AListUtilities.ITEMS_LOADER_ID:
 			mItemsCursorAdaptor.swapCursor(newCursor);
 
 			if (flag_FirstTimeLoadingItemDataSinceOnResume) {
@@ -565,9 +460,15 @@ public class ListsFragment extends Fragment
 				flag_FirstTimeLoadingItemDataSinceOnResume = false;
 			}
 
-		} else if (id == STORES_LOADER_ID) {
+			break;
+
+		case AListUtilities.STORES_LOADER_ID:
 			mStoresSpinnerCursorAdapter.swapCursor(newCursor);
 			mStoreSpinner.setSelection(AListUtilities.getIndex(mStoreSpinner, listSettings.getStoreID()));
+			break;
+
+		default:
+			break;
 		}
 
 	}
@@ -577,27 +478,18 @@ public class ListsFragment extends Fragment
 		int id = loader.getId();
 		MyLog.i("ListsFragment", "onLoaderReset. LoaderID = " + id + "; listID = " + mActiveListID);
 
-		/*		switch (loader.getId()) {
-				case ITEMS_LOADER_ID:
-					mItemsCursorAdaptor.swapCursor(null);
-					break;
-
-				case STORES_LOADER_ID:
-					mStoresSpinnerCursorAdapter.swapCursor(null);
-					break;
-
-				case GROUPS_LOADER_ID:
-					mGroupsSpinnerCursorAdapter.swapCursor(null);
-					break;
-
-				default:
-					break;
-				}*/
-
-		if (id == ITEMS_LOADER_ID) {
+		switch (loader.getId()) {
+		case AListUtilities.ITEMS_LOADER_ID:
 			mItemsCursorAdaptor.swapCursor(null);
-		} else if (id == STORES_LOADER_ID) {
+			break;
+
+		case AListUtilities.STORES_LOADER_ID:
 			mStoresSpinnerCursorAdapter.swapCursor(null);
+			break;
+
+		default:
+			break;
 		}
+
 	}
 }

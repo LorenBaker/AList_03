@@ -25,7 +25,6 @@ public class AListDatabaseHelper extends SQLiteOpenHelper {
 		ItemsTable.onCreate(database);
 		LocationsTable.onCreate(database);
 		BridgeTable.onCreate(database);
-		UniqueLoaderIDsTable.onCreate(database);
 	}
 
 	@Override
@@ -37,7 +36,6 @@ public class AListDatabaseHelper extends SQLiteOpenHelper {
 		StoresTable.onUpgrade(database, oldVersion, newVersion);
 		LocationsTable.onUpgrade(database, oldVersion, newVersion);
 		BridgeTable.onUpgrade(database, oldVersion, newVersion);
-		UniqueLoaderIDsTable.onUpgrade(database, oldVersion, newVersion);
 	}
 
 }

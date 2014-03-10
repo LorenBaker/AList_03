@@ -3,6 +3,7 @@ package com.lbconsulting.alist_03.dialogs;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -37,9 +39,9 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 	private Button btnApply;
 	private Button btnCancel;
 	private long mActiveItemID;
+	private long mActiveListID;
 	private ItemSettings itemSettings;
 
-	private static final int GROUPS_LOADER_ID = 4;
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
 	private LoaderManager.LoaderCallbacks<Cursor> mEditItemDialogCallbacks;
@@ -61,10 +63,11 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 	 * @param itemID
 	 * @return EditItemDialogFragment
 	 */
-	public static EditItemDialogFragment newInstance(long itemID) {
+	public static EditItemDialogFragment newInstance(long listID, long itemID) {
 		EditItemDialogFragment f = new EditItemDialogFragment();
 		// Supply itemID input as an argument.
 		Bundle args = new Bundle();
+		args.putLong("listID", listID);
 		args.putLong("itemID", itemID);
 		f.setArguments(args);
 
@@ -81,6 +84,7 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 	public void onSaveInstanceState(Bundle outState) {
 		MyLog.i("EditItemDialogFragment", "onSaveInstanceState");
 		// Store our itemID
+		outState.putLong("listID", this.mActiveListID);
 		outState.putLong("itemID", this.mActiveItemID);
 		super.onSaveInstanceState(outState);
 	}
@@ -90,10 +94,12 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 		MyLog.i("EditItemDialogFragment", "onCreateView");
 
 		if (savedInstanceState != null && savedInstanceState.containsKey("itemID")) {
+			mActiveListID = savedInstanceState.getLong("listID", -1);
 			mActiveItemID = savedInstanceState.getLong("itemID", -1);
 		} else {
 			Bundle bundle = getArguments();
 			if (bundle != null) {
+				mActiveListID = bundle.getLong("listID", -1);
 				mActiveItemID = bundle.getLong("itemID", -1);
 			}
 		}
@@ -107,16 +113,17 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 		btnApply.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 
-				/*				String key = String.valueOf(mActiveItemID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
-								Intent intent = new Intent(key);
-								intent.putExtra("itemID", mActiveItemID)*/;
-
 				String newItemName = txtEditItemName.getText().toString().trim();
 				String newItemNote = txtEditItemNote.getText().toString().trim();
 				long newItemGroupID = spinEditItemGroup.getSelectedItemId();
 
 				ItemsTable.UpdateItem(getActivity(), mActiveItemID, newItemName, newItemNote, newItemGroupID);
-				/*				LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);*/
+
+				String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
+				Intent intent = new Intent(itemChangedReceiverKey);
+				intent.putExtra("itemID", mActiveItemID);
+				LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+
 				getDialog().dismiss();
 			}
 		});
@@ -145,6 +152,7 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 
 		Bundle bundle = this.getArguments();
 		if (bundle != null) {
+			mActiveListID = bundle.getLong("listID", 0);
 			mActiveItemID = bundle.getLong("itemID", 0);
 		}
 		if (mActiveItemID > 0) {
@@ -160,7 +168,7 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 
 		mEditItemDialogCallbacks = this;
 		mLoaderManager = getLoaderManager();
-		mLoaderManager.initLoader(GROUPS_LOADER_ID, null, mEditItemDialogCallbacks);
+		mLoaderManager.initLoader(AListUtilities.GROUPS_LOADER_ID, null, mEditItemDialogCallbacks);
 	}
 
 	@Override

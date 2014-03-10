@@ -2,6 +2,9 @@ package com.lbconsulting.alist_03.fragments;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
@@ -9,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,6 +32,7 @@ import com.lbconsulting.alist_03.adapters.ManageLocationsCursorAdaptor;
 import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.LocationsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
+import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ManageLocationsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -35,9 +40,6 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 	private long mActiveListID = -1;
 	private long mActiveStoreID = -1;
 	private Cursor mActiveStoreCursor;
-
-	private static final int GROUPS_LOADER_ID = 4;
-	private static final int LOCATIONS_LOADER_ID = 5;
 
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
@@ -47,7 +49,7 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 
 	//private boolean flag_FirstTimeLoadingGroupDataSinceOnResume = false;
 
-	public static final String RESART_GROUPS_LOADER_KEY = "RestartGroupsLoaderKey";
+	public static final String RESART_GROUPS_LOADER_KEY = "ManageLocationsFragment_RestartGroupsLoaderKey";
 	private BroadcastReceiver mRestartGroupsLoaderReceiver;
 
 	private TextView tvStoreName;
@@ -155,7 +157,7 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 			@Override
 			public void onItemClick(AdapterView<?> parent, View onItemClickView, int position, long groupID) {
 				GroupsTable.ToggleCheckBox(getActivity(), groupID);
-				//mLoaderManager.restartLoader(GROUPS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
+				mLoaderManager.restartLoader(AListUtilities.GROUPS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
 			}
 		});
 
@@ -189,7 +191,7 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 		long locationID = spinLocations.getSelectedItemId();
 		GroupsTable.ApplyLocationToCheckedGroups(getActivity(),
 				mActiveListID, mActiveStoreID, locationID);
-		mLoaderManager.restartLoader(GROUPS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
+		mLoaderManager.restartLoader(AListUtilities.GROUPS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
 	}
 
 	@Override
@@ -198,8 +200,21 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 		getActivity().getActionBar().setTitle("Store Group Locations");
 
 		mLoaderManager = getLoaderManager();
-		mLoaderManager.initLoader(GROUPS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
-		mLoaderManager.initLoader(LOCATIONS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
+		mLoaderManager.initLoader(AListUtilities.GROUPS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
+		mLoaderManager.initLoader(AListUtilities.LOCATIONS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
+
+		mRestartGroupsLoaderReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				mLoaderManager.restartLoader(AListUtilities.GROUPS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
+			}
+		};
+
+		// Register local broadcast receivers.
+
+		String restartGroupsLoaderKey = String.valueOf(mActiveStoreID) + RESART_GROUPS_LOADER_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartGroupsLoaderReceiver,
+				new IntentFilter(restartGroupsLoaderKey));
 
 		super.onActivityCreated(savedInstanceState);
 	}
@@ -237,6 +252,8 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 	@Override
 	public void onDestroy() {
 		MyLog.i("ManageLocationsFragment", "onDestroy");
+		// Unregister local broadcast receivers
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartGroupsLoaderReceiver);
 		super.onDestroy();
 	}
 
@@ -266,10 +283,10 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 
 		switch (id) {
 
-		case GROUPS_LOADER_ID:
+		case AListUtilities.GROUPS_LOADER_ID:
 			try {
-				cursorLoader = GroupsTable.getAllGroupsInList(getActivity(), mActiveListID,
-						GroupsTable.SORT_ORDER_GROUP);
+				cursorLoader = GroupsTable.getAllGroupsInListIncludeLocations(getActivity(), mActiveListID,
+						mActiveStoreID);
 			} catch (SQLiteException e) {
 				MyLog.e("ManageLocationsFragment: onCreateLoader SQLiteException: ", e.toString());
 				return null;
@@ -281,7 +298,7 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 
 			break;
 
-		case LOCATIONS_LOADER_ID:
+		case AListUtilities.LOCATIONS_LOADER_ID:
 			try {
 				cursorLoader = LocationsTable.getAllLocationssInListIncludeDefault(getActivity(),
 						LocationsTable.SORT_ORDER_LOCATION);
@@ -312,11 +329,11 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 		// Update the adapter to show the changed data.
 		switch (loader.getId()) {
 
-		case GROUPS_LOADER_ID:
+		case AListUtilities.GROUPS_LOADER_ID:
 			mManageLocationsCursorAdaptor.swapCursor(newCursor);
 			break;
 
-		case LOCATIONS_LOADER_ID:
+		case AListUtilities.LOCATIONS_LOADER_ID:
 			mLocationsSpinnerCursorAdapter.swapCursor(newCursor);
 			break;
 
@@ -333,11 +350,11 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 
 		switch (loader.getId()) {
 
-		case GROUPS_LOADER_ID:
+		case AListUtilities.GROUPS_LOADER_ID:
 			mManageLocationsCursorAdaptor.swapCursor(null);
 			break;
 
-		case LOCATIONS_LOADER_ID:
+		case AListUtilities.LOCATIONS_LOADER_ID:
 			mLocationsSpinnerCursorAdapter.swapCursor(null);
 			break;
 		default:

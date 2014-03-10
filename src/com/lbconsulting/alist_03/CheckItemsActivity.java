@@ -81,6 +81,7 @@ public class CheckItemsActivity extends FragmentActivity {
 					mSelectedListID = intent.getLongExtra("selectedListID", -1);
 					int numberOfItemsMoved = ItemsTable.MoveAllCheckedItemsInList(CheckItemsActivity.this,
 							mActiveListID, mSelectedListID);
+					SendRestartItemsLoaderBroadCast();
 
 					AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
 					// set title
@@ -205,6 +206,8 @@ public class CheckItemsActivity extends FragmentActivity {
 						mCheckItemsActivitySelectedNavigationIndex);
 				LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(
 						applyCheckItemsTabPositionIntent);
+
+				SendRestartItemsLoaderBroadCast();
 
 				MyLog.d("CheckItems_ACTIVITY", "onPageSelected() - position = " + position + " ; listID = "
 						+ mActiveListID);
@@ -377,6 +380,7 @@ public class CheckItemsActivity extends FragmentActivity {
 						public void onClick(DialogInterface dialog, int id) {
 							// delete all checked items
 							ItemsTable.DeleteAllCheckedItemsInList(CheckItemsActivity.this, mActiveListID);
+							SendRestartItemsLoaderBroadCast();
 						}
 					})
 					.setNegativeButton(R.string.btn_no_text, new DialogInterface.OnClickListener() {

@@ -24,8 +24,21 @@ public class GroupsTable {
 	public static final String COL_CHECKED = "groupChecked";
 
 	public static final String[] PROJECTION_ALL = { COL_GROUP_ID, COL_GROUP_NAME, COL_LIST_ID, COL_CHECKED };
+	//SELECT tblGroups._id, tblGroups.groupName, tblGroups.groupChecked ,tblBridge.locationID, tblLocations.locationName
+	public static final String[] PROJECTION_WITH_LOCATION_NAME = {
+			TABLE_GROUPS + "." + COL_GROUP_ID,
+			TABLE_GROUPS + "." + COL_GROUP_NAME,
+			TABLE_GROUPS + "." + COL_CHECKED,
+			BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_LOCATION_ID,
+			LocationsTable.TABLE_LOCATIONS + "." + LocationsTable.COL_LOCATION_NAME
+	};
 
 	public static final String CONTENT_PATH = TABLE_GROUPS;
+
+	public static final String CONTENT_PATH_GROUPS_WITH_LOCATIONS = "groupsWithLocations";
+	public static final Uri CONTENT_URI_GROUPS_WITH_LOCATIONS = Uri.parse("content://" + AListContentProvider.AUTHORITY
+			+ "/" + CONTENT_PATH_GROUPS_WITH_LOCATIONS);
+
 	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + "vnd.lbconsulting."
 			+ TABLE_GROUPS;
 	public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + "vnd.lbconsulting."
@@ -183,6 +196,32 @@ public class GroupsTable {
 				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
 			} catch (Exception e) {
 				MyLog.e("Exception error in GroupsTable: getAllGroupsInList. ", e.toString());
+			}
+		}
+		return cursorLoader;
+	}
+
+	public static CursorLoader getAllGroupsInListIncludeLocations(Context context, long listID, long storeID) {
+		CursorLoader cursorLoader = null;
+		if (listID > 1) {
+
+			/*SELECT tblGroups._id, tblGroups.groupName,tblBridge.locationID, tblLocations.locationName
+			FROM tblGroups
+			JOIN tblBridge ON tblGroups._id= tblBridge.groupID
+			JOIN tblLocations ON tblLocations._id =  tblBridge.locationID
+			WHERE tblGroups.listID = 3 AND tblBridge.storeID=2
+			ORDER BY   tblLocations.locationName, tblGroups.groupName*/
+
+			Uri uri = CONTENT_URI_GROUPS_WITH_LOCATIONS;
+			String[] projection = PROJECTION_WITH_LOCATION_NAME;
+			String selection = TABLE_GROUPS + "." + COL_LIST_ID + " = ? AND "
+					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_STORE_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(storeID) };
+			String sortOrder = LocationsTable.SORT_ORDER_LOCATION + ", " + GroupsTable.SORT_ORDER_GROUP;
+			try {
+				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllGroupsInListIncludeLocations. ", e.toString());
 			}
 		}
 		return cursorLoader;

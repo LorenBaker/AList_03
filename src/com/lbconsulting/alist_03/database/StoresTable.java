@@ -213,21 +213,19 @@ public class StoresTable {
 		return cursor;
 	}
 
-	public static CursorLoader getAllStoresInList(Context context, long listID,
+	public static CursorLoader getAllStoresInListExcludeDefaultStore(Context context, long listID,
 			String sortOrder) {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			Uri uri = CONTENT_URI;
 			String[] projection = PROJECTION_ALL;
-			String selection = COL_LIST_ID + " = ? OR " + COL_LIST_ID + " = ?";
-			String selectionArgs[] = new String[] { String.valueOf(1), String.valueOf(listID) };
-			/*ContentResolver cr = context.getContentResolver();*/
+			String selection = COL_LIST_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID) };
 			try {
-
 				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
-				/*cursorLoader = cr.query(uri, projection, selection, selectionArgs, sortOrder);*/
+
 			} catch (Exception e) {
-				MyLog.e("Exception error in StoresTable: getAllStoresInList. ", e.toString());
+				MyLog.e("Exception error in StoresTable: getAllStoresInListExcludeDefaultStore. ", e.toString());
 			}
 		}
 		return cursorLoader;

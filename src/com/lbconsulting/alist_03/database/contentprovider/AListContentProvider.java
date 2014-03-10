@@ -22,7 +22,6 @@ import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.database.LocationsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
-import com.lbconsulting.alist_03.database.UniqueLoaderIDsTable;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class AListContentProvider extends ContentProvider {
@@ -51,8 +50,7 @@ public class AListContentProvider extends ContentProvider {
 
 	private static final int ITEMS_WITH_GROUPS = 70;
 	private static final int ITEMS_WITH_LOCATIONS = 71;
-
-	private static final int UNIQUE_LOADER_ID = 80;
+	private static final int GROUPS_WITH_LOCATIONS = 72;
 
 	public static final String AUTHORITY = "com.lbconsulting.alist_03.contentprovider";
 
@@ -78,8 +76,8 @@ public class AListContentProvider extends ContentProvider {
 
 		sURIMatcher.addURI(AUTHORITY, ItemsTable.CONTENT_PATH_ITEMS_WITH_GROUPS, ITEMS_WITH_GROUPS);
 		sURIMatcher.addURI(AUTHORITY, ItemsTable.CONTENT_PATH_ITEMS_WITH_LOCATIONS, ITEMS_WITH_LOCATIONS);
+		sURIMatcher.addURI(AUTHORITY, GroupsTable.CONTENT_PATH_GROUPS_WITH_LOCATIONS, GROUPS_WITH_LOCATIONS);
 
-		sURIMatcher.addURI(AUTHORITY, UniqueLoaderIDsTable.CONTENT_PATH, UNIQUE_LOADER_ID);
 	}
 
 	@Override
@@ -208,10 +206,6 @@ public class AListContentProvider extends ContentProvider {
 					+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
 			// Perform the deletion
 			deleteCount = db.delete(BridgeTable.TABLE_BRIDGE, selection, selectionArgs);
-			break;
-
-		case UNIQUE_LOADER_ID:
-			deleteCount = db.delete(UniqueLoaderIDsTable.TABLE_UNIQUE_LOADER_IDs, selection, selectionArgs);
 			break;
 
 		default:
@@ -372,18 +366,6 @@ public class AListContentProvider extends ContentProvider {
 			throw new IllegalArgumentException(
 					"Method insert: Cannot insert a new row with a single row URI. Illegal URI: " + uri);
 
-		case UNIQUE_LOADER_ID:
-			newRowId = db.insertOrThrow(UniqueLoaderIDsTable.TABLE_UNIQUE_LOADER_IDs, nullColumnHack, values);
-			if (newRowId > 0) {
-				// Construct and return the URI of the newly inserted row.
-				Uri newRowUri = ContentUris.withAppendedId(UniqueLoaderIDsTable.CONTENT_URI, newRowId);
-				// Notify and observers of the change in the database.
-				getContext().getContentResolver().notifyChange(UniqueLoaderIDsTable.CONTENT_URI, null);
-				return newRowUri;
-			} else {
-				return null;
-			}
-
 		default:
 			throw new IllegalArgumentException("Method insert: Unknown URI: " + uri);
 		}
@@ -468,10 +450,11 @@ public class AListContentProvider extends ContentProvider {
 			// TODO #*#*#*#*#*#*#*# cursor.setNotificationUri(getContext().getContentResolver(), uri); #*#*#*#*#*#*#*#
 			// does not seem to work with this JOIN query.  Works fine with other single table queries.
 
-			/*SELECT tblItems._id, itemName, groupID, groupName 
-			  FROM tblItems JOIN tblGroups ON tblItems.groupID = tblGroups._id
-			  WHERE tblItems.listID=3
-			  ORDER BY groupName ASC, itemName ASC*/
+			/*SELECT tblItems._id, tblItems.itemName, tblItems.groupID, tblGroups.groupName 
+			FROM tblItems 
+			JOIN tblGroups ON tblItems.groupID = tblGroups._id
+			WHERE tblItems.listID=3
+			ORDER BY groupName ASC, itemName ASC*/
 
 			String tables = ItemsTable.TABLE_ITEMS +
 					" JOIN " + GroupsTable.TABLE_GROUPS + " ON "
@@ -489,7 +472,7 @@ public class AListContentProvider extends ContentProvider {
 			WHERE tblItems.listID=2 AND tblBridge.storeID =5
 			ORDER BY   tblLocations.locationName, tblItems.itemName*/
 
-			projection = ItemsTable.PROJECTION_ALL_WITH_LOCATION_NAME;
+			projection = ItemsTable.PROJECTION_WITH_LOCATION_NAME;
 
 			tables = ItemsTable.TABLE_ITEMS
 					+ " JOIN " + BridgeTable.TABLE_BRIDGE + " ON "
@@ -504,6 +487,29 @@ public class AListContentProvider extends ContentProvider {
 
 			sortOrder = LocationsTable.SORT_ORDER_LOCATION + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
 
+			break;
+
+		case GROUPS_WITH_LOCATIONS:
+
+			/*SELECT tblGroups._id, tblGroups.groupName,tblBridge.locationID, tblLocations.locationName
+			
+			FROM tblGroups
+			JOIN tblBridge ON tblGroups._id= tblBridge.groupID
+			JOIN tblLocations ON tblLocations._id =  tblBridge.locationID
+			
+			WHERE tblGroups.listID = 3 AND tblBridge.storeID=2
+			ORDER BY   tblLocations.locationName, tblGroups.groupName*/
+
+			tables = GroupsTable.TABLE_GROUPS
+					+ " JOIN " + BridgeTable.TABLE_BRIDGE + " ON "
+					+ GroupsTable.TABLE_GROUPS + "." + GroupsTable.COL_GROUP_ID + " = "
+					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_GROUP_ID
+
+					+ " JOIN " + LocationsTable.TABLE_LOCATIONS + " ON "
+					+ LocationsTable.TABLE_LOCATIONS + "." + LocationsTable.COL_LOCATION_ID + " = "
+					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_LOCATION_ID;
+
+			queryBuilder.setTables(tables);
 			break;
 
 		default:

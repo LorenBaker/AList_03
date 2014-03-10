@@ -37,13 +37,11 @@ import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
+import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class CheckItemsFragment extends Fragment
 		implements LoaderManager.LoaderCallbacks<Cursor> {
-
-	private static final int ITEMS_LOADER_ID = 2;
-	private static final int GROUPS_LOADER_ID = 4;
 
 	private long mActiveListID = -9999;
 	//private long mActiveItemID = -9999;
@@ -70,11 +68,13 @@ public class CheckItemsFragment extends Fragment
 	public static final String CHECK_ITEMS_TAB_BROADCAST_KEY = "CheckItemsTabBroadcastKey";
 	private BroadcastReceiver mCheckItemsTabBroadcastReceiver;
 
-	public static final String RESART_GROUPS_LOADER_KEY = "RestartGroupsLoaderKey";
+	public static final String RESART_GROUPS_LOADER_KEY = "CheckItemsFragment_RestartGroupsLoaderKey";
 	private BroadcastReceiver mRestartGroupsLoaderReceiver;
 
-	public static final String RESART_ITEMS_LOADER_KEY = "RestartItemsLoaderKey";
+	public static final String RESART_ITEMS_LOADER_KEY = "CheckItemsFragment_RestartItemsLoaderKey";
 	private BroadcastReceiver mRestartItemsLoaderReceiver;
+
+	private BroadcastReceiver mItemChangedReceiver;
 
 	public static final int CHECK_ITEMS_TAB_CULL_MOVE_ITEMS = 0;
 	public static final int CHECK_ITEMS_TAB_SET_GROUPS = 1;
@@ -172,7 +172,7 @@ public class CheckItemsFragment extends Fragment
 			public void onItemClick(AdapterView<?> parent, View onItemClickView, int position, long id) {
 				ItemsTable.ToggleCheckBox(getActivity(), id);
 				// TO DO figure out why the content provider does not restart loader
-				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
 			}
 		});
 
@@ -189,7 +189,7 @@ public class CheckItemsFragment extends Fragment
 					ft.remove(prev);
 					ft.commit();
 				}
-				EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(activeItemID);
+				EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(mActiveListID, activeItemID);
 				editItemDialog.show(fm, "dialog_edit_item");
 
 				return true;
@@ -202,7 +202,7 @@ public class CheckItemsFragment extends Fragment
 	protected void ApplyGroupsToCheckedItems() {
 		long groupID = spinGroups.getSelectedItemId();
 		ItemsTable.ApplyGroupToCheckedItems(getActivity(), mActiveListID, groupID);
-		mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
+		mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
 	}
 
 	private void setFragmentColors() {
@@ -222,8 +222,8 @@ public class CheckItemsFragment extends Fragment
 	public void onActivityCreated(Bundle savedInstanceState) {
 		MyLog.i("CheckItemsFragment", "onActivityCreated");
 		mLoaderManager = getLoaderManager();
-		mLoaderManager.initLoader(ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
-		mLoaderManager.initLoader(GROUPS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
+		mLoaderManager.initLoader(AListUtilities.ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
+		mLoaderManager.initLoader(AListUtilities.GROUPS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
 
 		mCheckItemsTabBroadcastReceiver = new BroadcastReceiver() {
 			@Override
@@ -238,14 +238,21 @@ public class CheckItemsFragment extends Fragment
 		mRestartGroupsLoaderReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(GROUPS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
+				mLoaderManager.restartLoader(AListUtilities.GROUPS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
 			}
 		};
 
 		mRestartItemsLoaderReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
+			}
+		};
+
+		mItemChangedReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
 			}
 		};
 
@@ -261,6 +268,10 @@ public class CheckItemsFragment extends Fragment
 		String restartItemsLoaderReceiver = String.valueOf(mActiveListID) + RESART_ITEMS_LOADER_KEY;
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartItemsLoaderReceiver,
 				new IntentFilter(restartItemsLoaderReceiver));
+
+		String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemChangedReceiver,
+				new IntentFilter(itemChangedReceiverKey));
 
 		super.onActivityCreated(savedInstanceState);
 	}
@@ -341,6 +352,8 @@ public class CheckItemsFragment extends Fragment
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mCheckItemsTabBroadcastReceiver);
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartGroupsLoaderReceiver);
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartItemsLoaderReceiver);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemChangedReceiver);
+
 	}
 
 	@Override
@@ -364,7 +377,7 @@ public class CheckItemsFragment extends Fragment
 
 		switch (id) {
 
-		case ITEMS_LOADER_ID:
+		case AListUtilities.ITEMS_LOADER_ID:
 			int masterListSortOrder = mListSettings.getMasterListSortOrder();
 			String sortOrder = "";
 			switch (masterListSortOrder) {
@@ -410,7 +423,7 @@ public class CheckItemsFragment extends Fragment
 			}
 			break;
 
-		case GROUPS_LOADER_ID:
+		case AListUtilities.GROUPS_LOADER_ID:
 			try {
 				cursorLoader = GroupsTable.getAllGroupsInListIncludeDefault(getActivity(), mActiveListID,
 						GroupsTable.SORT_ORDER_GROUP);
@@ -439,7 +452,7 @@ public class CheckItemsFragment extends Fragment
 		// The asynchronous load is complete and the newCursor is now available for use. 
 		// Update the adapter to show the changed data.
 		switch (loader.getId()) {
-		case ITEMS_LOADER_ID:
+		case AListUtilities.ITEMS_LOADER_ID:
 			mCheckItemsCursorAdaptor.swapCursor(newCursor);
 			if (flag_FirstTimeLoadingItemDataSinceOnResume) {
 				itemsListView.setSelectionFromTop(
@@ -448,7 +461,7 @@ public class CheckItemsFragment extends Fragment
 			}
 			break;
 
-		case GROUPS_LOADER_ID:
+		case AListUtilities.GROUPS_LOADER_ID:
 			mGroupsSpinnerCursorAdapter.swapCursor(newCursor);
 			break;
 
@@ -464,11 +477,11 @@ public class CheckItemsFragment extends Fragment
 		MyLog.i("CheckItemsFragment: onLoaderReset; id = " + id, "; listID = " + mActiveListID);
 
 		switch (loader.getId()) {
-		case ITEMS_LOADER_ID:
+		case AListUtilities.ITEMS_LOADER_ID:
 			mCheckItemsCursorAdaptor.swapCursor(null);
 			break;
 
-		case GROUPS_LOADER_ID:
+		case AListUtilities.GROUPS_LOADER_ID:
 			mGroupsSpinnerCursorAdapter.swapCursor(null);
 			break;
 

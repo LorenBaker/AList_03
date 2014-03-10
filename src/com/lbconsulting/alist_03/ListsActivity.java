@@ -51,6 +51,7 @@ public class ListsActivity extends FragmentActivity {
 	private long mActiveListID = NO_ACTIVE_LIST_ID;
 	private long mActiveItemID;
 	private int mActiveListPosition = 0;
+	private long mActiveStoreID = 0;
 	private ListSettings mListSettings;
 
 	private Cursor mAllListsCursor;
@@ -66,8 +67,10 @@ public class ListsActivity extends FragmentActivity {
 
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
-		mActiveItemID = storedStates.getLong("ActiveItemID", -1);
 		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
+		mActiveItemID = storedStates.getLong("ActiveItemID", -1);
+		// TODO crate new field in ListsTable for the ActiveStoreID
+		//mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
 
 		mListTitleChanged = new BroadcastReceiver() {
 

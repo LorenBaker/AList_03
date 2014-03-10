@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import com.lbconsulting.alist_03.adapters.ManageLocationsPagerAdaptor;
 import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
+import com.lbconsulting.alist_03.fragments.ManageLocationsFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ManageLocationsActivity extends FragmentActivity {
@@ -29,9 +31,10 @@ public class ManageLocationsActivity extends FragmentActivity {
 	private ViewPager mPager;
 	private Cursor mAllStoresCursor;
 
-	String mActiveListTitle;
-	int mTitleBackgroundColor;
-	int mTitleTextColor;
+	private String mActiveListTitle;
+	private int mTitleBackgroundColor;
+	private int mTitleTextColor;
+	private String mRestartGroupsLoaderKey;
 
 	/*private BroadcastReceiver mListTitleChanged;
 	public static final String LIST_TITLE_CHANGE_BROADCAST_KEY = "listTitleChanged";*/
@@ -47,6 +50,8 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
+
+		mRestartGroupsLoaderKey = String.valueOf(mActiveStoreID) + ManageLocationsFragment.RESART_GROUPS_LOADER_KEY;
 
 		setContentView(R.layout.activity_manage_locations_pager);
 
@@ -88,6 +93,7 @@ public class ManageLocationsActivity extends FragmentActivity {
 			@Override
 			public void onPageSelected(int position) {
 				SetActiveStoreID(position);
+				SendRestartGroupsLoaderBroadCast();
 				MyLog.d("ManageLocations_ACTIVITY", "onPageSelected() - position = " + position + " ; storeID = "
 						+ mActiveStoreID);
 
@@ -113,6 +119,11 @@ public class ManageLocationsActivity extends FragmentActivity {
 		mPager.setAdapter(mManageLocationsPagerAdaptor);
 	}
 
+	private void SendRestartGroupsLoaderBroadCast() {
+		Intent restartGroupsLoaderIntent = new Intent(mRestartGroupsLoaderKey);
+		LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(restartGroupsLoaderIntent);
+	}
+
 	private void LoadStoresFragment() {
 		// TODO code LoadStoresFragment
 
@@ -129,6 +140,7 @@ public class ManageLocationsActivity extends FragmentActivity {
 			}
 			mActiveStoreID = storeID;
 			mActiveStorePosition = position;
+			mRestartGroupsLoaderKey = String.valueOf(mActiveStoreID) + ManageLocationsFragment.RESART_GROUPS_LOADER_KEY;
 		}
 	}
 
@@ -190,6 +202,7 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 		case R.id.action_clearAllCheckedGroups:
 			GroupsTable.UnCheckAllCheckedGroups(this, mActiveListID);
+			SendRestartGroupsLoaderBroadCast();
 			return true;
 
 		case R.id.action_sortOrder:

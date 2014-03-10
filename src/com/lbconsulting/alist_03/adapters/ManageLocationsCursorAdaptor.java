@@ -10,7 +10,9 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.lbconsulting.alist_03.R;
+import com.lbconsulting.alist_03.database.BridgeTable;
 import com.lbconsulting.alist_03.database.GroupsTable;
+import com.lbconsulting.alist_03.database.LocationsTable;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -21,20 +23,56 @@ public class ManageLocationsCursorAdaptor extends CursorAdapter {
 		MyLog.i("ManageLocationsCursorAdaptor", "ManageLocationsCursorAdaptor constructor.");
 	}
 
+	private boolean ShowLocationSeparator(TextView tv, Cursor listCursor) {
+		boolean result = false;
+		//SELECT tblGroups._id, tblGroups.groupName,tblBridge.locationID, tblLocations.locationName
+		long currentLocationID = listCursor.getLong(listCursor.getColumnIndexOrThrow(BridgeTable.COL_LOCATION_ID));
+		long previousLocationID = -1;
+		if (listCursor.moveToPrevious()) {
+			previousLocationID = listCursor.getLong(listCursor.getColumnIndexOrThrow(BridgeTable.COL_LOCATION_ID));
+			listCursor.moveToNext();
+			if (currentLocationID == previousLocationID) {
+				tv.setVisibility(View.GONE);
+				result = false;
+			} else {
+				tv.setVisibility(View.VISIBLE);
+				result = true;
+			}
+		} else {
+			tv.setVisibility(View.VISIBLE);
+			listCursor.moveToFirst();
+			result = true;
+		}
+		return result;
+	}
+
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
 		if (cursor != null) {
 
-			int isCheckedValue = cursor.getInt(cursor.getColumnIndexOrThrow(GroupsTable.COL_CHECKED));
-			boolean isChecked = AListUtilities.intToBoolean(isCheckedValue);
-			CheckBox ckBox = (CheckBox) view.findViewById(R.id.ckBox);
-			if (ckBox != null) {
-				ckBox.setChecked(isChecked);
-			}
+			TextView tvListItemSeparator = (TextView) view.findViewById(R.id.tvListItemSeparator);
+			if (tvListItemSeparator != null) {
+				if (ShowLocationSeparator(tvListItemSeparator, cursor)) {
+					try {
+						tvListItemSeparator.setText(
+								cursor.getString(cursor.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_NAME)));
+					} catch (IllegalArgumentException e) {
+						MyLog.e("IllegalArgumentException error in ManageLocationsCursorAdaptor:",
+								e.toString());
+					}
+				}
 
-			TextView tvGroupName = (TextView) view.findViewById(R.id.tvGroupName);
-			if (tvGroupName != null) {
-				tvGroupName.setText(cursor.getString(cursor.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME)));
+				int isCheckedValue = cursor.getInt(cursor.getColumnIndexOrThrow(GroupsTable.COL_CHECKED));
+				boolean isChecked = AListUtilities.intToBoolean(isCheckedValue);
+				CheckBox ckBox = (CheckBox) view.findViewById(R.id.ckBox);
+				if (ckBox != null) {
+					ckBox.setChecked(isChecked);
+				}
+
+				TextView tvGroupName = (TextView) view.findViewById(R.id.tvGroupName);
+				if (tvGroupName != null) {
+					tvGroupName.setText(cursor.getString(cursor.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME)));
+				}
 			}
 		}
 	}

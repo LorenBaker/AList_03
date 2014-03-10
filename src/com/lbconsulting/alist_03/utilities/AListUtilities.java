@@ -25,7 +25,7 @@ public class AListUtilities {
 	public static final int GROUPS_LOADER_ID = 4;
 	public static final int LOCATIONS_LOADER_ID = 5;
 
-	public static final int CHECK_ITEMS_FRAGMENT = 1;
+	/*public static final int CHECK_ITEMS_FRAGMENT = 1;
 	public static final int COLORS_PREVIEW_FRAGMENT = 2;
 	public static final int CULL_ITEMS_FRAGMENT = 3;
 	public static final int GROUPS_FRAGMENT = 4;
@@ -33,7 +33,7 @@ public class AListUtilities {
 	public static final int LISTS_FRAGMENT_ID = 6;
 	public static final int MANAGE_LOCATIONS_FRAGMENT = 7;
 	public static final int MAASTER_LIST_FRAGEMENT = 8;
-	public static final int STORES_FRAGMENT = 9;
+	public static final int STORES_FRAGMENT = 9;*/
 
 	public static final String TAG = "AList";
 
