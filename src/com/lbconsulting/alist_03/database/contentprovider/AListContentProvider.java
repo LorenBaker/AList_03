@@ -214,6 +214,10 @@ public class AListContentProvider extends ContentProvider {
 
 		// Notify and observers of the change in the database.
 		getContext().getContentResolver().notifyChange(uri, null);
+
+		getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+		getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+		getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
 		return deleteCount;
 	}
 
@@ -277,6 +281,10 @@ public class AListContentProvider extends ContentProvider {
 				Uri newRowUri = ContentUris.withAppendedId(ItemsTable.CONTENT_URI, newRowId);
 				// Notify and observers of the change in the database.
 				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI, null);
+
+				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
 				return newRowUri;
 			} else {
 				return null;
@@ -293,6 +301,11 @@ public class AListContentProvider extends ContentProvider {
 				Uri newRowUri = ContentUris.withAppendedId(ListsTable.CONTENT_URI, newRowId);
 				// Notify and observers of the change in the database.
 				getContext().getContentResolver().notifyChange(ListsTable.CONTENT_URI, null);
+
+				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+
 				return newRowUri;
 			} else {
 				return null;
@@ -309,6 +322,10 @@ public class AListContentProvider extends ContentProvider {
 				Uri newRowUri = ContentUris.withAppendedId(GroupsTable.CONTENT_URI, newRowId);
 				// Notify and observers of the change in the database.
 				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI, null);
+
+				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
 				return newRowUri;
 			} else {
 				return null;
@@ -341,6 +358,10 @@ public class AListContentProvider extends ContentProvider {
 				Uri newRowUri = ContentUris.withAppendedId(LocationsTable.CONTENT_URI, newRowId);
 				// Notify and observers of the change in the database.
 				getContext().getContentResolver().notifyChange(LocationsTable.CONTENT_URI, null);
+
+				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
 				return newRowUri;
 			} else {
 				return null;
@@ -357,6 +378,10 @@ public class AListContentProvider extends ContentProvider {
 				Uri newRowUri = ContentUris.withAppendedId(BridgeTable.CONTENT_URI, newRowId);
 				// Notify and observers of the change in the database.
 				getContext().getContentResolver().notifyChange(BridgeTable.CONTENT_URI, null);
+
+				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
 				return newRowUri;
 			} else {
 				return null;
@@ -659,6 +684,10 @@ public class AListContentProvider extends ContentProvider {
 
 		// Notify any observers of the change in the database.
 		getContext().getContentResolver().notifyChange(uri, null);
+
+		getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+		getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+		getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
 		return updateCount;
 	}
 

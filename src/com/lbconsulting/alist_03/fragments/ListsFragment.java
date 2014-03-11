@@ -171,7 +171,7 @@ public class ListsFragment extends Fragment
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				ItemsTable.ToggleStrikeOut(getActivity(), id);
-				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+				//mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 			}
 		});
 
@@ -232,21 +232,21 @@ public class ListsFragment extends Fragment
 		mRestartStoresLoaderReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(AListUtilities.STORES_LOADER_ID, null, mListsFragmentCallbacks);
+				//mLoaderManager.restartLoader(AListUtilities.STORES_LOADER_ID, null, mListsFragmentCallbacks);
 			}
 		};
 
 		mRestartItemsLoaderReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+				//mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 			}
 		};
 
 		mItemChangedReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+				//mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
 			}
 		};
 

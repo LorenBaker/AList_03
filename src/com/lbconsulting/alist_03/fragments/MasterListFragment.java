@@ -172,6 +172,8 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				mActiveItemID = id;
 				ItemsTable.ToggleSelection(getActivity(), id);
+				txtItemName.setText("");
+				txtItemNote.setText("");
 				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
 			}
 		});

@@ -84,6 +84,9 @@ public class ItemsCursorAdaptor extends CursorAdapter {
 						try {
 							tvListItemSeparator.setText(cursor.getString(cursor
 									.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME)));
+							tvListItemSeparator.setBackgroundColor(this.mListSettings.getSeparatorBackgroundColor());
+							tvListItemSeparator.setTextColor(this.mListSettings.getSeparatorTextColor());
+
 						} catch (IllegalArgumentException e) {
 							MyLog.e("IllegalArgumentException error in ItemsCursorAdaptor:bindView: getShowGroupsInListsFragment: list:"
 									+ mListSettings.getListTitle(), e.toString());
@@ -94,6 +97,8 @@ public class ItemsCursorAdaptor extends CursorAdapter {
 						try {
 							tvListItemSeparator.setText(cursor.getString(cursor
 									.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_NAME)));
+							tvListItemSeparator.setBackgroundColor(this.mListSettings.getSeparatorBackgroundColor());
+							tvListItemSeparator.setTextColor(this.mListSettings.getSeparatorTextColor());
 						} catch (IllegalArgumentException e) {
 							MyLog.e("IllegalArgumentException error in ItemsCursorAdaptor:bindView: getShowStores: list:"
 									+ mListSettings.getListTitle(), e.toString());
