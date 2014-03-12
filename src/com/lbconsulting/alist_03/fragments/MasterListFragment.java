@@ -268,7 +268,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 	private void SelectItemForList() {
 		String newItemName = txtItemName.getText().toString().trim();
 		if (!newItemName.isEmpty()) {
-			long newItemNameID = ItemsTable.CreateNewItem(getActivity(), mActiveListID, newItemName);
+			long newItemNameID = ItemsTable.CreateNewItem(getActivity(), mActiveListID, newItemName, 1);
 			ItemsTable.SelectItem(getActivity(), newItemNameID, true);
 
 			String newItemNote = txtItemNote.getText().toString().trim();
@@ -276,6 +276,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 			ContentValues newFieldValues = new ContentValues();
 			newFieldValues.put(ItemsTable.COL_ITEM_NOTE, newItemNote);
 			ItemsTable.UpdateItemFieldValues(getActivity(), newItemNameID, newFieldValues);
+			//mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
 			//}
 		}
 		txtItemNote.setText("");

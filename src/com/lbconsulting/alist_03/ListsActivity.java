@@ -450,6 +450,7 @@ public class ListsActivity extends FragmentActivity {
 
 			Hashtable<String, Long> groceryGroupsHashTable = new Hashtable<String, Long>();
 
+			groceryGroupsHashTable.put("[No Group]", (long) 1);
 			// create grocery groups
 			String[] groceryGroups = this.getResources().getStringArray(R.array.grocery_groups);
 			for (int i = 0; i < groceryGroups.length; i++) {
@@ -486,6 +487,7 @@ public class ListsActivity extends FragmentActivity {
 
 			// create Bridge table
 			long locationID = -1;
+			long groupID = -1;
 			String[] Albertons = this.getResources().getStringArray(R.array.Albertsons_Eastgate_Locations);
 			long storeID = storesHashTable.get(groceryStores[0]);
 			for (int i = 0; i < Albertons.length; i++) {
@@ -495,7 +497,12 @@ public class ListsActivity extends FragmentActivity {
 				} else {
 					locationID = locationsHashTable.get(Albertons[i]);
 				}
-				long groupID = groceryGroupsHashTable.get(groceryGroups[i]);
+				if (i == 0) {
+					groupID = 1;
+				} else {
+					groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+				}
+
 				BridgeTable.CreateNewBridgeRow(this, groceriesListID, storeID, groupID, locationID);
 			}
 
@@ -508,7 +515,11 @@ public class ListsActivity extends FragmentActivity {
 				} else {
 					locationID = locationsHashTable.get(QFC[i]);
 				}
-				long groupID = groceryGroupsHashTable.get(groceryGroups[i]);
+				if (i == 0) {
+					groupID = 1;
+				} else {
+					groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+				}
 				BridgeTable.CreateNewBridgeRow(this, groceriesListID, storeID, groupID, locationID);
 			}
 
@@ -521,7 +532,11 @@ public class ListsActivity extends FragmentActivity {
 				} else {
 					locationID = locationsHashTable.get(sw_belfair[i]);
 				}
-				long groupID = groceryGroupsHashTable.get(groceryGroups[i]);
+				if (i == 0) {
+					groupID = 1;
+				} else {
+					groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+				}
 				BridgeTable.CreateNewBridgeRow(this, groceriesListID, storeID, groupID, locationID);
 			}
 
@@ -534,7 +549,11 @@ public class ListsActivity extends FragmentActivity {
 				} else {
 					locationID = locationsHashTable.get(sw_evergreen[i]);
 				}
-				long groupID = groceryGroupsHashTable.get(groceryGroups[i]);
+				if (i == 0) {
+					groupID = 1;
+				} else {
+					groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+				}
 				BridgeTable.CreateNewBridgeRow(this, groceriesListID, storeID, groupID, locationID);
 			}
 
@@ -547,7 +566,11 @@ public class ListsActivity extends FragmentActivity {
 				} else {
 					locationID = locationsHashTable.get(sw_Issaquah[i]);
 				}
-				long groupID = groceryGroupsHashTable.get(groceryGroups[i]);
+				if (i == 0) {
+					groupID = 1;
+				} else {
+					groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+				}
 				BridgeTable.CreateNewBridgeRow(this, groceriesListID, storeID, groupID, locationID);
 			}
 

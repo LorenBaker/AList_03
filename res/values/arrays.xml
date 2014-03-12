@@ -22,15 +22,15 @@
         <item>Cheese</item>
         <item>Chicken</item>
         <item>Chicken Broth</item>
-        <item>Corn - Canned</item>
-        <item>Corn - Fresh</item>
-        <item>Corn - Frozen</item>
+        <item>Corn-canned</item>
+        <item>Corn-Fresh</item>
+        <item>Corn-frozen</item>
         <item>Cottage Cheese</item>
         <item>Cream Cheese</item>
+        <item>Cream of Mushroom Soup</item>
         <item>Distilled Water</item>
         <item>Eggs</item>
-        <item>Flour - white</item>
-        <item>Flour - whole wheat</item>
+        <item>Flour </item>
         <item>Garlic</item>
         <item>Ground Beef</item>
         <item>Hummus</item>
@@ -50,6 +50,7 @@
         <item>Sour Cream</item>
         <item>String Cheese</item>
         <item>Toilet Paper</item>
+        <item>Tomato Soup</item>
         <item>Tomatoes</item>
         <item>Toothpaste</item>
         <item>Tuna</item>
@@ -84,9 +85,9 @@
         <item>Vegetables (frozen)</item>
         <item>Dairy</item>
         <item>Dairy</item>
+        <item>Soups</item>
         <item>Beverages</item>
         <item>Dairy</item>
-        <item>Baking Products</item>
         <item>Baking Products</item>
         <item>Produce</item>
         <item>Meat-Seafood</item>
@@ -99,7 +100,7 @@
         <item>Condiments</item>
         <item>Condiments</item>
         <item>Deli</item>
-        <item>Peanut Butter</item>
+        <item>Jams, Jellies, Honey</item>
         <item>Condiments</item>
         <item>Produce</item>
         <item>Produce</item>
@@ -107,6 +108,7 @@
         <item>Dairy</item>
         <item>Dairy</item>
         <item>Paper Products</item>
+        <item>Soups</item>
         <item>Produce</item>
         <item>Health-Beauty</item>
         <item>Meat-Seafood (canned)</item>
@@ -157,7 +159,6 @@
         <item>Nuts (packaged)</item>
         <item>Paper Products</item>
         <item>Pasta/Pasta Sauce</item>
-        <item>Peanut Butter</item>
         <item>Pet Supplies</item>
         <item>Pharmacy</item>
         <item>Potatoes (dried)</item>
@@ -188,15 +189,17 @@
         <item>Priority 3</item>
     </string-array>
     <string-array name="locations">
-        <item>Aisle 1</item>
-        <item>Aisle 2</item>
-        <item>Aisle 3</item>
-        <item>Aisle 4</item>
-        <item>Aisle 5</item>
-        <item>Aisle 6</item>
-        <item>Aisle 7</item>
-        <item>Aisle 8</item>
-        <item>Aisle 9</item>
+        <item>[No LOCATION]</item>
+        <item>Aisle  1</item>
+        <item>Aisle  2</item>
+        <item>Aisle  3</item>
+        <item>Aisle  4</item>
+        <item>Aisle  5</item>
+        <item>Aisle  6</item>
+        <item>Aisle  7</item>
+        <item>Aisle  7-8</item>
+        <item>Aisle  8</item>
+        <item>Aisle  9</item>
         <item>Aisle 10</item>
         <item>Aisle 11</item>
         <item>Aisle 12</item>
@@ -211,21 +214,24 @@
         <item>Dairy</item>
         <item>Deli</item>
         <item>Floral</item>
+        <item>Frozen Foods</item>
         <item>Meat-Seafood</item>
         <item>Produce</item>
+        <item>Rx</item>
         <item>Store  Back</item>
         <item>Store  Right</item>
     </string-array>
     <string-array name="Albertsons_Eastgate_Locations">
+        <item>[No LOCATION]</item>
         <item>Aisle 7</item>
         <item>Bakery</item>
         <item>Aisle 2</item>
         <item>Aisle 3</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 3</item>
         <item>Aisle 9</item>
         <item>Aisle 9</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 9</item>
+        <item>Aisle 7</item>
         <item>Aisle 1</item>
         <item>Aisle 5</item>
         <item>Aisle 2</item>
@@ -239,158 +245,158 @@
         <item>Dairy</item>
         <item>Deli</item>
         <item>Aisle 5</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>Aisle 8</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 2</item>
         <item>Aisle 3</item>
-        <item>[No LOCATION]</item>
-        <item>Aisle 4</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>Meat-Seafood</item>
-        <item>[No LOCATION]</item>
-        <item>Aisle 6</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>Aisle 2</item>
-        <item>Aisle 2</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>Aisle 9</item>
-    </string-array>
-    <string-array name="QFC_Factoria_Locations">
         <item>Aisle 7</item>
-        <item>Bakery</item>
-        <item>Aisle 2</item>
-        <item>Aisle 3</item>
-        <item>[No LOCATION]</item>
-        <item>Aisle 9</item>
-        <item>Aisle 9</item>
-        <item>[No LOCATION]</item>
-        <item>Aisle 7</item>
-        <item>Aisle 1</item>
-        <item>Aisle 2</item>
-        <item>Aisle 2</item>
-        <item>Aisle 2</item>
-        <item>Deli</item>
-        <item>[No LOCATION]</item>
-        <item>Aisle 4</item>
-        <item>Aisle 4</item>
-        <item>Aisle 1</item>
-        <item>Aisle 1</item>
-        <item>Dairy</item>
-        <item>Deli</item>
-        <item>Aisle 5</item>
-        <item>[No LOCATION]</item>
-        <item>Aisle 3</item>
-        <item>[No LOCATION]</item>
         <item>Floral</item>
         <item>Aisle 8</item>
         <item>Aisle 3</item>
+        <item>Aisle 7</item>
+        <item>Aisle 8</item>
+        <item>Aisle 1</item>
+        <item>Aisle 4</item>
+        <item>Aisle 4</item>
+        <item>Aisle 6</item>
+        <item>Frozen Foods</item>
+        <item>Meat-Seafood</item>
+        <item>Aisle 3</item>
+        <item>Aisle 6</item>
+        <item>Aisle 2</item>
+        <item>Aisle 7</item>
+        <item>Aisle 3</item>
+        <item>Aisle 8</item>
         <item>[No LOCATION]</item>
+        <item>Aisle 3</item>
+        <item>Produce</item>
+        <item>Aisle 1</item>
+        <item>Aisle 2</item>
+        <item>Aisle 2</item>
+        <item>Aisle 3</item>
+        <item>Aisle 3</item>
+        <item>Aisle 6</item>
+        <item>Aisle 9</item>
+    </string-array>
+    <string-array name="QFC_Factoria_Locations">
         <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 7</item>
+        <item>Bakery</item>
+        <item>Aisle 2</item>
+        <item>Aisle 3</item>
+        <item>Aisle 3</item>
+        <item>Aisle 9</item>
+        <item>Aisle 9</item>
+        <item>Aisle 9</item>
+        <item>Aisle 7</item>
+        <item>Aisle 1</item>
+        <item>Aisle 2</item>
+        <item>Aisle 2</item>
+        <item>Aisle 2</item>
+        <item>Deli</item>
+        <item>Aisle 8</item>
+        <item>Aisle 4</item>
+        <item>Aisle 4</item>
+        <item>Aisle 1</item>
+        <item>Aisle 1</item>
+        <item>Dairy</item>
+        <item>Deli</item>
+        <item>Aisle 5</item>
+        <item>Aisle 2</item>
+        <item>Aisle 3</item>
+        <item>Store Back</item>
+        <item>Floral</item>
+        <item>Aisle 8</item>
+        <item>Aisle 3</item>
+        <item>Store Back</item>
+        <item>Store Back</item>
+        <item>Aisle 1</item>
         <item>Aisle 4</item>
         <item>Store  Right</item>
         <item>Aisle 6</item>
-        <item>[No LOCATION]</item>
+        <item>Frozen Foods</item>
         <item>Meat-Seafood</item>
         <item>Aisle 3</item>
         <item>Aisle 6</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>Aisle 3</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
         <item>Aisle 2</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 7</item>
+        <item>Aisle 3</item>
+        <item>Aisle 8</item>
+        <item>Store Back</item>
+        <item>Aisle 3</item>
+        <item>Produce</item>
+        <item>Aisle 1</item>
+        <item>Aisle 2</item>
+        <item>Aisle 2</item>
+        <item>Aisle 3</item>
+        <item>Aisle 3</item>
+        <item>Frozen Foods</item>
         <item>Store  Back</item>
     </string-array>
     <string-array name="Safeway_Belfair_Locations">
+        <item>[No LOCATION]</item>
         <item>Aisle 4</item>
         <item>Bakery</item>
         <item>Aisle 15</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 17</item>
+        <item>Aisle 15</item>
         <item>Aisle 1</item>
         <item>Aisle 11</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 2</item>
+        <item>Aisle 6</item>
+        <item>Aisle 13</item>
         <item>Aisle 13</item>
         <item>Aisle 12</item>
         <item>Aisle 14</item>
         <item>Aisle 4</item>
         <item>Aisle 9</item>
         <item>Aisle 13</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 16</item>
         <item>Aisle 13</item>
         <item>Aisle 13</item>
         <item>Dairy</item>
         <item>Deli</item>
         <item>Aisle 3</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 12</item>
         <item>Aisle 17</item>
         <item>Aisle 7</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Floral</item>
+        <item>Aisle 8</item>
+        <item>Aisle 17</item>
+        <item>Aisle 7-8</item>
+        <item>Aisle 9</item>
+        <item>Aisle 13</item>
         <item>Aisle 14</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 2</item>
+        <item>Aisle 3</item>
+        <item>Frozen Foods</item>
         <item>Meat-Seafood</item>
+        <item>Aisle 16</item>
+        <item>Aisle 2</item>
+        <item>Aisle 12</item>
+        <item>Aisle 8</item>
+        <item>Aisle 17</item>
+        <item>Aisle 10</item>
         <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 13</item>
+        <item>Produce</item>
         <item>Aisle 11</item>
         <item>Aisle 16</item>
         <item>Aisle 15</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 17</item>
+        <item>Aisle 17</item>
+        <item>Aisle 3</item>
         <item>Aisle 1</item>
     </string-array>
     <string-array name="Safeway_Evergreen_Village_Locations">
+        <item>[No LOCATION]</item>
         <item>Aisle 10</item>
         <item>Bakery</item>
         <item>Aisle 2</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 2</item>
+        <item>Aisle 1</item>
         <item>Aisle 11</item>
         <item>Aisle 6</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 11</item>
+        <item>Aisle 10</item>
         <item>Aisle 12</item>
         <item>Aisle 5</item>
         <item>Aisle 10</item>
@@ -398,45 +404,45 @@
         <item>Aisle 4</item>
         <item>Aisle 9</item>
         <item>Aisle 5</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 1</item>
         <item>Aisle 5</item>
         <item>Aisle 5</item>
         <item>Dairy</item>
         <item>Deli</item>
         <item>Aisle 4</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 5</item>
         <item>Aisle 1</item>
         <item>Aisle 7</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Floral</item>
+        <item>Aisle 8</item>
+        <item>Aisle 2</item>
+        <item>Aisle 7</item>
+        <item>Aisle 9</item>
+        <item>Aisle 2</item>
         <item>Aisle 6</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 11</item>
+        <item>Aisle 4</item>
+        <item>Aisle 3</item>
         <item>Meat-Seafood</item>
+        <item>Aisle 2</item>
+        <item>Aisle 3</item>
+        <item>Aisle 6</item>
+        <item>Aisle 8</item>
+        <item>Aisle 1</item>
+        <item>Aisle 8</item>
         <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 2</item>
+        <item>Produce</item>
         <item>Aisle 5</item>
         <item>Aisle 1</item>
         <item>Aisle 2</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 1</item>
+        <item>Aisle 1</item>
+        <item>Aisle 4</item>
         <item>Aisle 11</item>
     </string-array>
     <string-array name="Safeway_Issaquah_Locations">
+        <item>[No LOCATION]</item>
         <item>Aisle 9</item>
         <item>Bakery</item>
         <item>Aisle 15</item>
@@ -444,7 +450,7 @@
         <item>Aisle 16</item>
         <item>Aisle 2</item>
         <item>Aisle 4</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 4</item>
         <item>Aisle 5</item>
         <item>Aisle 1</item>
         <item>Aisle 14</item>
@@ -461,34 +467,33 @@
         <item>Aisle 11</item>
         <item>Aisle 18</item>
         <item>Aisle 17</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 6</item>
+        <item>Floral</item>
         <item>Aisle 15</item>
         <item>Aisle 16</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 6</item>
+        <item>Aisle 10</item>
+        <item>Aisle 14</item>
         <item>Aisle 13</item>
         <item>Aisle 3</item>
         <item>Aisle 11</item>
-        <item>[No LOCATION]</item>
+        <item>Frozen Foods</item>
         <item>Meat-Seafood</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 17</item>
+        <item>Aisle 12</item>
+        <item>Aisle 4</item>
+        <item>Aisle 10</item>
+        <item>Aisle 17</item>
+        <item>Aisle 7-8</item>
+        <item>Rx</item>
         <item>Aisle 18</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 18</item>
         <item>Aisle 4</item>
         <item>Aisle 18</item>
         <item>Aisle 15</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
-        <item>[No LOCATION]</item>
+        <item>Aisle 17</item>
+        <item>Aisle 16</item>
+        <item>Aisle 12</item>
         <item>Bakery/Deli</item>
     </string-array>
 

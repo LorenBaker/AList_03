@@ -297,6 +297,8 @@ public class ListsFragment extends Fragment
 
 		// Set onResume flags
 		flag_FirstTimeLoadingItemDataSinceOnResume = true;
+		mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+
 	}
 
 	@Override
