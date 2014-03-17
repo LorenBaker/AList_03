@@ -20,36 +20,26 @@ public class BridgeTable {
 	public static final String COL_STORE_ID = "storeID";
 	public static final String COL_LOCATION_ID = "locationID";
 
-	public static final String[] PROJECTION_ALL = { COL_BRIDGE_ID, COL_LIST_ID,
-			COL_GROUP_ID, COL_STORE_ID, COL_LOCATION_ID };
+	public static final String[] PROJECTION_ALL = { COL_BRIDGE_ID, COL_LIST_ID, COL_GROUP_ID, COL_STORE_ID, COL_LOCATION_ID };
 
 	public static final String CONTENT_PATH = TABLE_BRIDGE;
 
-	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + "vnd.lbconsulting."
-			+ TABLE_BRIDGE;
-	public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + "vnd.lbconsulting."
-			+ TABLE_BRIDGE;
+	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + "vnd.lbconsulting." + TABLE_BRIDGE;
+	public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + "vnd.lbconsulting." + TABLE_BRIDGE;
 	public static final Uri CONTENT_URI = Uri.parse("content://" + AListContentProvider.AUTHORITY + "/" + CONTENT_PATH);
 
 	// Database creation SQL statements
-	private static final String DATATABLE_CREATE =
-			"create table " + TABLE_BRIDGE
-					+ " ("
-					+ COL_BRIDGE_ID + " integer primary key autoincrement, "
+	private static final String DATATABLE_CREATE = "create table " + TABLE_BRIDGE + " (" + COL_BRIDGE_ID + " integer primary key autoincrement, "
 
-					+ COL_LIST_ID + " integer not null references "
-					+ ListsTable.TABLE_LISTS + " (" + ListsTable.COL_LIST_ID + ") default 1, "
+	+ COL_LIST_ID + " integer not null references " + ListsTable.TABLE_LISTS + " (" + ListsTable.COL_LIST_ID + ") default 1, "
 
-					+ COL_GROUP_ID + " integer not null references "
-					+ GroupsTable.TABLE_GROUPS + " (" + GroupsTable.COL_GROUP_ID + ") default 1, "
+	+ COL_GROUP_ID + " integer not null references " + GroupsTable.TABLE_GROUPS + " (" + GroupsTable.COL_GROUP_ID + ") default 1, "
 
-					+ COL_STORE_ID + " integer not null references "
-					+ StoresTable.TABLE_STORES + " (" + StoresTable.COL_STORE_ID + ") default 1, "
+	+ COL_STORE_ID + " integer not null references " + StoresTable.TABLE_STORES + " (" + StoresTable.COL_STORE_ID + ") default 1, "
 
-					+ COL_LOCATION_ID + " integer not null references "
-					+ LocationsTable.TABLE_LOCATIONS + " (" + LocationsTable.COL_LOCATION_ID + ") default 1 "
+	+ COL_LOCATION_ID + " integer not null references " + LocationsTable.TABLE_LOCATIONS + " (" + LocationsTable.COL_LOCATION_ID + ") default 1 "
 
-					+ ");";
+	+ ");";
 
 	public static void onCreate(SQLiteDatabase database) {
 		database.execSQL(DATATABLE_CREATE);
@@ -57,15 +47,32 @@ public class BridgeTable {
 	}
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-		database.execSQL("DROP TABLE IF EXISTS " + TABLE_BRIDGE);
-		onCreate(database);
-		MyLog.w(TABLE_BRIDGE, "Upgrading database from version " + oldVersion + " to version " + newVersion
-				+ ". New " + TABLE_BRIDGE + " created.");
+
+		MyLog.w(TABLE_BRIDGE, "Upgrading database from version " + oldVersion + " to version " + newVersion);
+
+		int upgradeToVersion = oldVersion + 1;
+		switch (upgradeToVersion) {
+		// fall through each case to upgrade to the newVersion
+		case 2:
+		case 3:
+		case 4:
+			// create new bridge table
+			database.execSQL("DROP TABLE IF EXISTS " + TABLE_BRIDGE);
+			onCreate(database);
+			MyLog.i(TABLE_BRIDGE, "New " + TABLE_BRIDGE + " created.");
+			break;
+
+		default:
+			// upgrade version not found!
+			MyLog.e(TABLE_BRIDGE, "Upgrade version not found!");
+			break;
+		}
+
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Create Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * This method creates a new item in the provided list.
@@ -114,17 +121,16 @@ public class BridgeTable {
 		return newBridgeRowID;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Read Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static long getBridgeTableRowID(Context context, long listID, long storeID, long groupID) {
 		long bridgeTableRowID = -1;
 		Cursor cursor = null;
 		Uri uri = CONTENT_URI;
 		String[] projection = PROJECTION_ALL;
 		String selection = COL_LIST_ID + " = ? AND " + COL_STORE_ID + " = ? AND " + COL_GROUP_ID + " = ?";
-		String selectionArgs[] = new String[]
-		{ String.valueOf(listID), String.valueOf(storeID), String.valueOf(groupID) };
+		String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(storeID), String.valueOf(groupID) };
 		String sortOrder = null;
 		ContentResolver cr = context.getContentResolver();
 		try {
@@ -134,7 +140,7 @@ public class BridgeTable {
 		}
 
 		if (cursor == null || cursor.getCount() == 0) {
-			// bridgeTableRow does not exist... so create one		
+			// bridgeTableRow does not exist... so create one
 			bridgeTableRowID = CreateNewBridgeRow(context, listID, storeID, groupID);
 		} else {
 			// bridgeTable row exists ... so return its ID
@@ -166,9 +172,9 @@ public class BridgeTable {
 		return cursor;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Update Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public static int UpdateItemFieldValues(Context context, long bridgeRowID, ContentValues newFieldValues) {
 		int numberOfUpdatedRecords = -1;
@@ -189,9 +195,9 @@ public class BridgeTable {
 		}
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Delete Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static int DeleteBridgeRow(Context context, long bridgeRowID) {
 		int numberOfDeletedRecords = -1;
 		if (bridgeRowID > 0) {
