@@ -1,5 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
     <item
         android:id="@+id/action_removeStruckOffItems"
         android:icon="@drawable/ic_action_accept"
@@ -13,21 +12,10 @@
         android:showAsAction="ifRoom"
         android:title="@string/action_addItem"/>
     <item
+        android:id="@+id/action_newList"
         android:orderInCategory="30"
         android:showAsAction="never"
-        android:title="@string/action_newList">
-        <menu>
-            <item
-                android:id="@+id/action_newList"
-                android:title="@string/action_newList"/>
-            <item
-                android:id="@+id/action_create_groceries_list"
-                android:title="Groceries List"/>
-            <item
-                android:id="@+id/action_create_todo_list"
-                android:title="To Do List"/>
-        </menu>
-    </item>
+        android:title="@string/action_newList"/>
     <item
         android:id="@+id/action_clearList"
         android:orderInCategory="40"
@@ -63,5 +51,4 @@
         android:orderInCategory="120"
         android:showAsAction="never"
         android:title="@string/action_about"/>
-
 </menu>

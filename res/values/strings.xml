@@ -85,5 +85,9 @@
     <string name="tvStoreName_store_name_text">Store Name</string>
     <string name="tvGroupName_group_name_text">Group Name</string>
     <string name="action_manageLocations_text">Manage Group Locations</string>
+    <string name="dialog_lists_blank_list_text">[Blank List]</string>
+    <string name="dialog_lists_groceries_list_text">Groceries List</string>
+    <string name="dialog_lists_to_do_list_text">To Do List</string>
+    <string name="dialog_lists_new_list_text">New List</string>
 
 </resources>

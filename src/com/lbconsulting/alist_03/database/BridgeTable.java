@@ -13,6 +13,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class BridgeTable {
 
 	// Items data table
+	// Version 4
 	public static final String TABLE_BRIDGE = "tblBridge";
 	public static final String COL_BRIDGE_ID = "_id";
 	public static final String COL_LIST_ID = "listID";
@@ -29,17 +30,13 @@ public class BridgeTable {
 	public static final Uri CONTENT_URI = Uri.parse("content://" + AListContentProvider.AUTHORITY + "/" + CONTENT_PATH);
 
 	// Database creation SQL statements
-	private static final String DATATABLE_CREATE = "create table " + TABLE_BRIDGE + " (" + COL_BRIDGE_ID + " integer primary key autoincrement, "
-
-	+ COL_LIST_ID + " integer not null references " + ListsTable.TABLE_LISTS + " (" + ListsTable.COL_LIST_ID + ") default 1, "
-
-	+ COL_GROUP_ID + " integer not null references " + GroupsTable.TABLE_GROUPS + " (" + GroupsTable.COL_GROUP_ID + ") default 1, "
-
-	+ COL_STORE_ID + " integer not null references " + StoresTable.TABLE_STORES + " (" + StoresTable.COL_STORE_ID + ") default 1, "
-
-	+ COL_LOCATION_ID + " integer not null references " + LocationsTable.TABLE_LOCATIONS + " (" + LocationsTable.COL_LOCATION_ID + ") default 1 "
-
-	+ ");";
+	private static final String DATATABLE_CREATE = "create table " + TABLE_BRIDGE + " ("
+			+ COL_BRIDGE_ID + " integer primary key autoincrement, "
+			+ COL_LIST_ID + " integer not null references " + ListsTable.TABLE_LISTS + " (" + ListsTable.COL_LIST_ID + ") default 1, "
+			+ COL_GROUP_ID + " integer not null references " + GroupsTable.TABLE_GROUPS + " (" + GroupsTable.COL_GROUP_ID + ") default 1, "
+			+ COL_STORE_ID + " integer not null references " + StoresTable.TABLE_STORES + " (" + StoresTable.COL_STORE_ID + ") default 1, "
+			+ COL_LOCATION_ID + " integer not null references " + LocationsTable.TABLE_LOCATIONS + " (" + LocationsTable.COL_LOCATION_ID + ") default 1 "
+			+ ");";
 
 	public static void onCreate(SQLiteDatabase database) {
 		database.execSQL(DATATABLE_CREATE);
@@ -64,7 +61,9 @@ public class BridgeTable {
 
 		default:
 			// upgrade version not found!
-			MyLog.e(TABLE_BRIDGE, "Upgrade version not found!");
+			MyLog.e(TABLE_BRIDGE, "Upgrade version " + newVersion + " not found!");
+			database.execSQL("DROP TABLE IF EXISTS " + TABLE_BRIDGE);
+			onCreate(database);
 			break;
 		}
 

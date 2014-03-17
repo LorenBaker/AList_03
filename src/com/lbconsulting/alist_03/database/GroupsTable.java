@@ -17,14 +17,17 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class GroupsTable {
 
 	// Groups data table
+	// Version 1
 	public static final String TABLE_GROUPS = "tblGroups";
 	public static final String COL_GROUP_ID = "_id";
 	public static final String COL_GROUP_NAME = "groupName";
 	public static final String COL_LIST_ID = "listID";
+	// Version 4 changes
 	public static final String COL_CHECKED = "groupChecked";
 
 	public static final String[] PROJECTION_ALL = { COL_GROUP_ID, COL_GROUP_NAME, COL_LIST_ID, COL_CHECKED };
-	//SELECT tblGroups._id, tblGroups.groupName, tblGroups.groupChecked ,tblBridge.locationID, tblLocations.locationName
+	// SELECT tblGroups._id, tblGroups.groupName, tblGroups.groupChecked
+	// ,tblBridge.locationID, tblLocations.locationName
 	public static final String[] PROJECTION_WITH_LOCATION_NAME = {
 			TABLE_GROUPS + "." + COL_GROUP_ID,
 			TABLE_GROUPS + "." + COL_GROUP_NAME,
@@ -53,8 +56,8 @@ public class GroupsTable {
 			+ " ("
 			+ COL_GROUP_ID + " integer primary key autoincrement, "
 			+ COL_GROUP_NAME + " text collate nocase, "
-			+ COL_LIST_ID + " integer not null references "
-			+ ListsTable.TABLE_LISTS + " (" + ListsTable.COL_LIST_ID + ") default 1, "
+			+ COL_LIST_ID + " integer not null references " + ListsTable.TABLE_LISTS + " (" + ListsTable.COL_LIST_ID + ") default 1, "
+			// Version 4 changes
 			+ COL_CHECKED + " integer default 0 "
 			+ ");";
 
@@ -75,37 +78,51 @@ public class GroupsTable {
 		sqlStatements.add(insertProjection + "(NULL, '" + defalutGroupValue + "', 1)");
 
 		// Groups for Groceries List (2)
-		/*sqlStatements.add(insertProjection + "(NULL, 'Aisle 1', 2)");
-		sqlStatements.add(insertProjection + "(NULL, 'Aisle 2', 2)");
-		sqlStatements.add(insertProjection + "(NULL, 'Aisle 3', 2)");
-		sqlStatements.add(insertProjection + "(NULL, 'Aisle 4', 2)");
-		sqlStatements.add(insertProjection + "(NULL, 'Aisle 5', 2)");
-		sqlStatements.add(insertProjection + "(NULL, 'Produce', 2)");
-		sqlStatements.add(insertProjection + "(NULL, 'Dairy', 2)");
-		sqlStatements.add(insertProjection + "(NULL, 'Meats', 2)");
-		sqlStatements.add(insertProjection + "(NULL, 'Bakery', 2)");
-
-		// Groups for ToDo List (3)
-		sqlStatements.add(insertProjection + "(NULL, 'Group 4', 3)");
-		sqlStatements.add(insertProjection + "(NULL, 'Group 3', 3)");
-		sqlStatements.add(insertProjection + "(NULL, 'Group 2', 3)");
-		sqlStatements.add(insertProjection + "(NULL, 'Group 1', 3)");*/
+		/*
+		 * sqlStatements.add(insertProjection + "(NULL, 'Aisle 1', 2)");
+		 * sqlStatements.add(insertProjection + "(NULL, 'Aisle 2', 2)");
+		 * sqlStatements.add(insertProjection + "(NULL, 'Aisle 3', 2)");
+		 * sqlStatements.add(insertProjection + "(NULL, 'Aisle 4', 2)");
+		 * sqlStatements.add(insertProjection + "(NULL, 'Aisle 5', 2)");
+		 * sqlStatements.add(insertProjection + "(NULL, 'Produce', 2)");
+		 * sqlStatements.add(insertProjection + "(NULL, 'Dairy', 2)");
+		 * sqlStatements.add(insertProjection + "(NULL, 'Meats', 2)");
+		 * sqlStatements.add(insertProjection + "(NULL, 'Bakery', 2)");
+		 * 
+		 * // Groups for ToDo List (3) sqlStatements.add(insertProjection +
+		 * "(NULL, 'Group 4', 3)"); sqlStatements.add(insertProjection +
+		 * "(NULL, 'Group 3', 3)"); sqlStatements.add(insertProjection +
+		 * "(NULL, 'Group 2', 3)"); sqlStatements.add(insertProjection +
+		 * "(NULL, 'Group 1', 3)");
+		 */
 
 		AListUtilities.execMultipleSQL(database, sqlStatements);
 	}
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-		MyLog.w(TABLE_GROUPS, "Upgrading database from version " + oldVersion + " to version " + newVersion
-				+ ". Adding groupChecked column.");
+		MyLog.w(TABLE_GROUPS, "Upgrading database from version " + oldVersion + " to version " + newVersion);
+		int upgradeToVersion = oldVersion + 1;
+		switch (upgradeToVersion) {
+		// fall through each case to upgrade to the newVersion
+		case 2:
+		case 3:
+		case 4:
+			database.execSQL("ALTER TABLE " + TABLE_GROUPS + " ADD COLUMN " + COL_CHECKED + " integer default 0");
+			MyLog.i(TABLE_GROUPS, "GroupChecked column added.");
+			break;
 
-		// ALTER TABLE tblGroups ADD COLUMN groupChecked integer default 0
-		database.execSQL("ALTER TABLE " + TABLE_GROUPS + " ADD COLUMN " + COL_CHECKED + " integer default 0");
-
+		default:
+			// upgrade version not found!
+			MyLog.e(TABLE_GROUPS, "Upgrade version " + newVersion + " not found!");
+			database.execSQL("DROP TABLE IF EXISTS " + TABLE_GROUPS);
+			onCreate(database);
+			break;
+		}
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Create Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static long CreateNewGroup(Context context, long listID, String groupName) {
 		long newGroupID = -1;
 		if (listID > 1) {
@@ -118,7 +135,7 @@ public class GroupsTable {
 				newGroupID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_GROUP_ID));
 				cursor.close();
 			} else {
-				// group does not exist in the table ... so add it	
+				// group does not exist in the table ... so add it
 				if (groupName != null) {
 					groupName = groupName.trim();
 					if (!groupName.isEmpty()) {
@@ -146,9 +163,9 @@ public class GroupsTable {
 		return newGroupID;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Read Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static Cursor getGroup(Context context, long groupID) {
 		Cursor cursor = null;
 		if (groupID > 0) {
@@ -205,12 +222,14 @@ public class GroupsTable {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 
-			/*SELECT tblGroups._id, tblGroups.groupName,tblBridge.locationID, tblLocations.locationName
-			FROM tblGroups
-			JOIN tblBridge ON tblGroups._id= tblBridge.groupID
-			JOIN tblLocations ON tblLocations._id =  tblBridge.locationID
-			WHERE tblGroups.listID = 3 AND tblBridge.storeID=2
-			ORDER BY   tblLocations.locationName, tblGroups.groupName*/
+			/*
+			 * SELECT tblGroups._id, tblGroups.groupName,tblBridge.locationID,
+			 * tblLocations.locationName FROM tblGroups JOIN tblBridge ON
+			 * tblGroups._id= tblBridge.groupID JOIN tblLocations ON
+			 * tblLocations._id = tblBridge.locationID WHERE tblGroups.listID =
+			 * 3 AND tblBridge.storeID=2 ORDER BY tblLocations.locationName,
+			 * tblGroups.groupName
+			 */
 
 			Uri uri = CONTENT_URI_GROUPS_WITH_LOCATIONS;
 			String[] projection = PROJECTION_WITH_LOCATION_NAME;
@@ -272,9 +291,9 @@ public class GroupsTable {
 		return groupName;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Update Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static int UpdateGroupName(Context context, long groupID, String groupName) {
 		int numberOfUpdatedRecords = -1;
 		// cannot update the default group with ID=1
@@ -342,9 +361,9 @@ public class GroupsTable {
 		return numberOfUpdatedRecords;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Delete Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public static int DeleteGroup(Context context, long groupID) {
 		int numberOfDeletedRecords = -1;

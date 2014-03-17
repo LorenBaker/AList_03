@@ -17,6 +17,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class LocationsTable {
 
 	// LOCATIONs data table
+	// Version 4 changes
 	public static final String TABLE_LOCATIONS = "tblLocations";
 	public static final String COL_LOCATION_ID = "_id";
 	public static final String COL_LOCATION_NAME = "locationName";
@@ -58,15 +59,31 @@ public class LocationsTable {
 	}
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-		database.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATIONS);
-		onCreate(database);
-		MyLog.w(TABLE_LOCATIONS, "Upgrading database from version " + oldVersion + " to version " + newVersion
-				+ ". New " + TABLE_LOCATIONS + " created.");
+
+		int upgradeToVersion = oldVersion + 1;
+		switch (upgradeToVersion) {
+		// fall through each case to upgrade to the newVersion
+		case 2:
+		case 3:
+		case 4:
+			// create new locations table
+			database.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATIONS);
+			onCreate(database);
+			MyLog.i(TABLE_LOCATIONS, "New " + TABLE_LOCATIONS + " created.");
+			break;
+
+		default:
+			// upgrade version not found!
+			MyLog.e(TABLE_LOCATIONS, "Upgrade version " + newVersion + " not found!");
+			database.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATIONS);
+			onCreate(database);
+			break;
+		}
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Create Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static long CreateNewLocation(Context context, long listID, String locationName) {
 		long newlocationID = -1;
 		if (listID > 1) {
@@ -79,7 +96,7 @@ public class LocationsTable {
 				newlocationID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_LOCATION_ID));
 				cursor.close();
 			} else {
-				// Location does not exist in the table ... so add it	
+				// Location does not exist in the table ... so add it
 				if (locationName != null) {
 					locationName = locationName.trim();
 					if (!locationName.isEmpty()) {
@@ -106,9 +123,9 @@ public class LocationsTable {
 		return newlocationID;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Read Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static Cursor getLocation(Context context, long locationID) {
 		Cursor cursor = null;
 		if (locationID > 0) {
@@ -170,9 +187,9 @@ public class LocationsTable {
 		return cursorLoader;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Update Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public static int UpdateLocationName(Context context, long locationID, String locationName) {
 		int numberOfUpdatedRecords = -1;
@@ -193,9 +210,9 @@ public class LocationsTable {
 		return numberOfUpdatedRecords;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Delete Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public static int DeleteLocation(Context context, long locationID) {
 		int numberOfDeletedRecords = -1;

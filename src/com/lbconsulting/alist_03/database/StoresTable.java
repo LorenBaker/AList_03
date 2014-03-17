@@ -17,18 +17,18 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class StoresTable {
 	// Lists data table
 	public static final String TABLE_STORES = "tblStores";
-	public static final String COL_STORE_ID = "_id"; //0
-	public static final String COL_STORE_NAME = "storeName"; //1
-	public static final String COL_LIST_ID = "listTitleID"; //2
-	public static final String COL_STREET1 = "street1"; //3
-	public static final String COL_STREET2 = "street2"; //4
-	public static final String COL_CITY = "city"; //5
-	public static final String COL_STATE = "state"; //6
-	public static final String COL_ZIP = "zip"; //7
-	public static final String COL_GPS_LATITUDE = "gpsLatitude"; //8
-	public static final String COL_GPS_LONGITUDE = "gpsLongitude"; //9
-	public static final String COL_WEBSITE_URL = "websiteURL"; //10
-	public static final String COL_PHONE_NUMBER = "phoneNumber"; //11
+	public static final String COL_STORE_ID = "_id"; // 0
+	public static final String COL_STORE_NAME = "storeName"; // 1
+	public static final String COL_LIST_ID = "listTitleID"; // 2
+	public static final String COL_STREET1 = "street1"; // 3
+	public static final String COL_STREET2 = "street2"; // 4
+	public static final String COL_CITY = "city"; // 5
+	public static final String COL_STATE = "state"; // 6
+	public static final String COL_ZIP = "zip"; // 7
+	public static final String COL_GPS_LATITUDE = "gpsLatitude"; // 8
+	public static final String COL_GPS_LONGITUDE = "gpsLongitude"; // 9
+	public static final String COL_WEBSITE_URL = "websiteURL"; // 10
+	public static final String COL_PHONE_NUMBER = "phoneNumber"; // 11
 
 	public static final String[] PROJECTION_ALL = { COL_STORE_ID, COL_STORE_NAME, COL_LIST_ID,
 			COL_STREET1, COL_STREET2, COL_CITY, COL_STATE, COL_ZIP,
@@ -46,6 +46,7 @@ public class StoresTable {
 	public static final Uri LIST_WITH_group_URI = Uri.parse("content://" + AListContentProvider.AUTHORITY + "/"
 			+ CONTENT_LIST_WITH_GROUP);
 
+	// Version 1
 	public static final String SORT_ORDER_STORE_NAME = COL_STORE_NAME + " ASC";
 	public static final String SORT_ORDER_CITY = COL_CITY + " ASC";
 	public static final String SORT_ORDER_STATE = COL_STATE + " ASC";
@@ -90,31 +91,60 @@ public class StoresTable {
 		sqlStatements.add(insertProjection + "(NULL,1, '" + defalutStoreValue + "', '', '')");
 
 		// Stores for Groceries List (2)
-		/*sqlStatements.add(insertProjection + "(NULL,2, 'Safeway-Factoria', 'Bellevue', 'WA')");
-		sqlStatements.add(insertProjection + "(NULL,2, 'QFC-Factoria', 'Bellevue', 'WA')");
-		sqlStatements.add(insertProjection + "(NULL,2, 'QFC-Issaquah', 'Bellevue', 'WA')");
-		sqlStatements.add(insertProjection + "(NULL,2, 'Albertson-Eastgate', 'Bellevue', 'WA')");
-
-		// Stores for ToDo List (3)
-		sqlStatements.add(insertProjection + "(NULL,3, 'ToDo Store 1', 'Anywhere 1', 'OR')");
-		sqlStatements.add(insertProjection + "(NULL,3, 'ToDo Store 2', 'Anywhere 2', 'WA')");
-		sqlStatements.add(insertProjection + "(NULL,3, 'ToDo Store 3', 'Anywhere 3', 'CA')");
-		sqlStatements.add(insertProjection + "(NULL,3, 'ToDo Store 4', 'Anywhere 4', 'NY')");
-		sqlStatements.add(insertProjection + "(NULL,3, 'ToDo Store 5', 'Anywhere 5', 'UT')");*/
+		/*
+		 * sqlStatements.add(insertProjection +
+		 * "(NULL,2, 'Safeway-Factoria', 'Bellevue', 'WA')");
+		 * sqlStatements.add(insertProjection +
+		 * "(NULL,2, 'QFC-Factoria', 'Bellevue', 'WA')");
+		 * sqlStatements.add(insertProjection +
+		 * "(NULL,2, 'QFC-Issaquah', 'Bellevue', 'WA')");
+		 * sqlStatements.add(insertProjection +
+		 * "(NULL,2, 'Albertson-Eastgate', 'Bellevue', 'WA')");
+		 * 
+		 * // Stores for ToDo List (3) sqlStatements.add(insertProjection +
+		 * "(NULL,3, 'ToDo Store 1', 'Anywhere 1', 'OR')");
+		 * sqlStatements.add(insertProjection +
+		 * "(NULL,3, 'ToDo Store 2', 'Anywhere 2', 'WA')");
+		 * sqlStatements.add(insertProjection +
+		 * "(NULL,3, 'ToDo Store 3', 'Anywhere 3', 'CA')");
+		 * sqlStatements.add(insertProjection +
+		 * "(NULL,3, 'ToDo Store 4', 'Anywhere 4', 'NY')");
+		 * sqlStatements.add(insertProjection +
+		 * "(NULL,3, 'ToDo Store 5', 'Anywhere 5', 'UT')");
+		 */
 
 		AListUtilities.execMultipleSQL(database, sqlStatements);
 	}
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-		/*		database.execSQL("DROP TABLE IF EXISTS " + TABLE_STORES);
-				onCreate(database);*/
+		/*
+		 * database.execSQL("DROP TABLE IF EXISTS " + TABLE_STORES);
+		 * onCreate(database);
+		 */
 		MyLog.w(TABLE_STORES, ": Upgrading database from version " + oldVersion + " to version " + newVersion
 				+ ". NO CHANGES REQUIRED.");
+
+		int upgradeToVersion = oldVersion + 1;
+		switch (upgradeToVersion) {
+		// fall through each case to upgrade to the newVersion
+		case 2:
+		case 3:
+		case 4:
+			// No changes in TABLE_STORES
+			break;
+
+		default:
+			// upgrade version not found!
+			MyLog.e(TABLE_STORES, "Upgrade version " + newVersion + " not found!");
+			database.execSQL("DROP TABLE IF EXISTS " + TABLE_STORES);
+			onCreate(database);
+			break;
+		}
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Create Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static long CreateNewStore(Context context, long listID, String storeName) {
 		long newStoreID = -1;
 		if (listID > 1) {
@@ -127,7 +157,7 @@ public class StoresTable {
 				newStoreID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_STORE_ID));
 				cursor.close();
 			} else {
-				// item does not exist in the table ... so add it	
+				// item does not exist in the table ... so add it
 				if (storeName != null) {
 					storeName = storeName.trim();
 					if (!storeName.isEmpty()) {
@@ -156,9 +186,9 @@ public class StoresTable {
 		return newStoreID;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Read Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static Cursor getStore(Context context, long storeID) {
 		Cursor cursor = null;
 		if (storeID > 0) {
@@ -246,9 +276,9 @@ public class StoresTable {
 		return displayName;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//Update Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Update Methods
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public static int UpdateAllStoreFields(
 			Context context,
@@ -379,9 +409,9 @@ public class StoresTable {
 		return numberOfUpdatedRecords;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Delete Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public static int DeleteStore(Context context, long storeID) {
 		int numberOfDeletedRecords = -1;

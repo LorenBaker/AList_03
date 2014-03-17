@@ -1,5 +1,8 @@
 package com.lbconsulting.alist_03.dialogs;
 
+import java.util.ArrayList;
+import java.util.Hashtable;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentValues;
@@ -13,16 +16,25 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager.LayoutParams;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
+import com.lbconsulting.alist_03.database.BridgeTable;
+import com.lbconsulting.alist_03.database.GroupsTable;
+import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
+import com.lbconsulting.alist_03.database.LocationsTable;
+import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -33,11 +45,14 @@ public class ListsDialogFragment extends DialogFragment {
 	public static final int EDIT_LIST_TITLE = 30;
 	public static final int NEW_LIST = 40;
 
+	private static final int BLANK_LIST_TEMPLATE = 0;
+	private static final int GROCERIES_LIST_TEMPLATE = 1;
+	private static final int TO_DO_LIST_TEMPLATE = 2;
+
 	private Button btnApply;
 	private Button btnCancel;
 	private EditText txtEditListTitle;
-	private Button btnCreateGroceriesList;
-	private Button btnCreateToDoList;
+	private Spinner spinListTemplate;
 
 	private RadioGroup radioGroup_list_sort_order;
 	private RadioGroup radioGroup_master_list_sort_order;
@@ -126,7 +141,7 @@ public class ListsDialogFragment extends DialogFragment {
 
 		case NEW_LIST:
 			MyLog.i("SortOrderDialogFragment", "onCreateView: New List");
-			view = inflater.inflate(R.layout.dialog_edit_list_title, container);
+			view = inflater.inflate(R.layout.dialog_new_list, container);
 			getDialog().setTitle(R.string.dialog_new_list_title);
 			break;
 
@@ -137,6 +152,7 @@ public class ListsDialogFragment extends DialogFragment {
 		if (view != null) {
 			btnApply = (Button) view.findViewById(R.id.btnApply);
 			btnApply.setOnClickListener(new OnClickListener() {
+				@Override
 				public void onClick(View v) {
 					ContentValues newFieldValues = new ContentValues();
 					String key = String.valueOf(mActiveListID)
@@ -168,11 +184,32 @@ public class ListsDialogFragment extends DialogFragment {
 						break;
 
 					case NEW_LIST:
+						long newListID = -1;
 						newListTitle = txtEditListTitle.getText().toString();
 						newListTitle = newListTitle.trim();
-						long newListID = ListsTable.CreateNewList(getActivity(), newListTitle);
-						intent.putExtra("newListID", newListID);
-						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+						if (newListTitle != "") {
+							newListID = ListsTable.CreateNewList(getActivity(), newListTitle);
+							if (newListID > 0) {
+								switch (spinListTemplate.getSelectedItemPosition()) {
+								case BLANK_LIST_TEMPLATE:
+									// do nothing
+									break;
+
+								case GROCERIES_LIST_TEMPLATE:
+									FillGroceriesList(newListID);
+									break;
+
+								case TO_DO_LIST_TEMPLATE:
+									FillToDoList(newListID);
+									break;
+
+								default:
+									break;
+								}
+								intent.putExtra("newListID", newListID);
+								LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+							}
+						}
 						break;
 
 					default:
@@ -185,6 +222,7 @@ public class ListsDialogFragment extends DialogFragment {
 
 			btnCancel = (Button) view.findViewById(R.id.btnCancel);
 			btnCancel.setOnClickListener(new OnClickListener() {
+				@Override
 				public void onClick(View v) {
 					getDialog().dismiss();
 				}
@@ -202,12 +240,11 @@ public class ListsDialogFragment extends DialogFragment {
 						rb.setChecked(true);
 					}
 					break;
-				/*				case ListPreferencesFragment.BY_GROUP:
-									rb = (RadioButton) view.findViewById(R.id.rbByGroup_list);
-									if (rb != null) {
-										rb.setChecked(true);
-									}
-									break;*/
+				/*
+				 * case ListPreferencesFragment.BY_GROUP: rb = (RadioButton)
+				 * view.findViewById(R.id.rbByGroup_list); if (rb != null) {
+				 * rb.setChecked(true); } break;
+				 */
 				case ListPreferencesFragment.MANUAL:
 					rb = (RadioButton) view.findViewById(R.id.rbManual);
 					if (rb != null) {
@@ -220,14 +257,16 @@ public class ListsDialogFragment extends DialogFragment {
 
 				radioGroup_list_sort_order.setOnCheckedChangeListener(new OnCheckedChangeListener()
 				{
+					@Override
 					public void onCheckedChanged(RadioGroup group, int checkedId) {
 						switch (checkedId) {
 						case R.id.rbAlphabetical_list:
 							mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 							break;
-						/*						case R.id.rbByGroup_list:
-													mSortOrderResult = ListPreferencesFragment.BY_GROUP;
-													break;	*/
+						/*
+						 * case R.id.rbByGroup_list: mSortOrderResult =
+						 * ListPreferencesFragment.BY_GROUP; break;
+						 */
 
 						case R.id.rbManual:
 							mSortOrderResult = ListPreferencesFragment.MANUAL;
@@ -253,12 +292,11 @@ public class ListsDialogFragment extends DialogFragment {
 						rb.setChecked(true);
 					}
 					break;
-				/*				case ListPreferencesFragment.BY_GROUP:
-									rb = (RadioButton) view.findViewById(R.id.rbByGroup_master_list);
-									if (rb != null) {
-										rb.setChecked(true);
-									}
-									break;*/
+				/*
+				 * case ListPreferencesFragment.BY_GROUP: rb = (RadioButton)
+				 * view.findViewById(R.id.rbByGroup_master_list); if (rb !=
+				 * null) { rb.setChecked(true); } break;
+				 */
 				case ListPreferencesFragment.SELECTED_AT_TOP:
 					rb = (RadioButton) view.findViewById(R.id.rbSelectedItemsAtTop);
 					if (rb != null) {
@@ -283,14 +321,16 @@ public class ListsDialogFragment extends DialogFragment {
 
 				radioGroup_master_list_sort_order.setOnCheckedChangeListener(new OnCheckedChangeListener()
 				{
+					@Override
 					public void onCheckedChanged(RadioGroup group, int checkedId) {
 						switch (checkedId) {
 						case R.id.rbAlphabetical_master_list:
 							mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 							break;
-						/*						case R.id.rbByGroup_master_list:
-													mSortOrderResult = ListPreferencesFragment.BY_GROUP;
-													break;*/
+						/*
+						 * case R.id.rbByGroup_master_list: mSortOrderResult =
+						 * ListPreferencesFragment.BY_GROUP; break;
+						 */
 						case R.id.rbSelectedItemsAtTop:
 							mSortOrderResult = ListPreferencesFragment.SELECTED_AT_TOP;
 							break;
@@ -319,6 +359,48 @@ public class ListsDialogFragment extends DialogFragment {
 
 				case NEW_LIST:
 					// We're creating a new List
+					spinListTemplate = (Spinner) view.findViewById(R.id.spinListTemplate);
+					if (spinListTemplate != null) {
+						fillSpinListTemplate();
+
+						/*
+						 * spinListItems.add(getActivity().getString(R.string.
+						 * dialog_lists_blank_list_text)); // 0
+						 * spinListItems.add(getActivity().getString(R.string.
+						 * dialog_lists_groceries_list_text)); // 1
+						 * spinListItems.add(getActivity().getString(R.string.
+						 * dialog_lists_to_do_list_text)); // 2
+						 */
+
+						spinListTemplate.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+							@Override
+							public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+								switch (position) {
+								case BLANK_LIST_TEMPLATE:
+									txtEditListTitle.setText(R.string.dialog_lists_new_list_text);
+									break;
+								case GROCERIES_LIST_TEMPLATE:
+									txtEditListTitle.setText(
+											getActivity().getString(R.string.dialog_lists_groceries_list_text));
+									break;
+
+								case TO_DO_LIST_TEMPLATE:
+									txtEditListTitle.setText(
+											getActivity().getString(R.string.dialog_lists_to_do_list_text));
+									break;
+
+								default:
+									break;
+								}
+							}
+
+							@Override
+							public void onNothingSelected(AdapterView<?> arg0) {
+								// do nothing
+							}
+						});
+					}
 					break;
 
 				default:
@@ -333,6 +415,166 @@ public class ListsDialogFragment extends DialogFragment {
 		}
 
 		return view;
+	}
+
+	protected void FillToDoList(long todosListID) {
+
+		ArrayList<Long> todoGroupIDs = new ArrayList<Long>();
+		// create to do groups
+		String[] todoGroups = this.getResources().getStringArray(R.array.todo_groups);
+		for (int i = 0; i < todoGroups.length; i++) {
+			todoGroupIDs.add(GroupsTable.CreateNewGroup(getActivity(), todosListID, todoGroups[i]));
+		}
+
+		// create to do items
+		String[] todoItems = getActivity().getResources().getStringArray(R.array.todo_items);
+		for (int i = 0; i < todoItems.length; i++) {
+			ItemsTable.CreateNewItem(getActivity(), todosListID, todoItems[i], todoGroupIDs.get(i));
+		}
+
+		mActiveListID = todosListID;
+	}
+
+	protected void FillGroceriesList(long groceriesListID) {
+
+		Hashtable<String, Long> groceryGroupsHashTable = new Hashtable<String, Long>();
+
+		groceryGroupsHashTable.put("[No Group]", (long) 1);
+		// create grocery groups
+		String[] groceryGroups = this.getResources().getStringArray(R.array.grocery_groups);
+		for (int i = 0; i < groceryGroups.length; i++) {
+			long groupID = GroupsTable.CreateNewGroup(getActivity(), groceriesListID, groceryGroups[i]);
+			groceryGroupsHashTable.put(groceryGroups[i], groupID);
+		}
+
+		// create grocery items
+		// NOTE: this only works if R.array.grocery_items and
+		// R.array.grocery_items_groups
+		// are in the proper order!!!!!!
+		String[] groceryItems = this.getResources().getStringArray(R.array.grocery_items);
+		String[] groceryItemGroups = this.getResources().getStringArray(R.array.grocery_items_groups);
+
+		for (int i = 0; i < groceryItems.length; i++) {
+			long groupID = groceryGroupsHashTable.get(groceryItemGroups[i]);
+			ItemsTable.CreateNewItem(getActivity(), groceriesListID, groceryItems[i], groupID);
+		}
+
+		// create grocery stores
+		Hashtable<String, Long> storesHashTable = new Hashtable<String, Long>();
+		String[] groceryStores = this.getResources().getStringArray(R.array.grocery_stores);
+		for (int i = 0; i < groceryStores.length; i++) {
+			long storeID = StoresTable.CreateNewStore(getActivity(), groceriesListID, groceryStores[i]);
+			storesHashTable.put(groceryStores[i], storeID);
+		}
+
+		// create locations
+		Hashtable<String, Long> locationsHashTable = new Hashtable<String, Long>();
+		String[] storeLocations = this.getResources().getStringArray(R.array.locations);
+		for (int i = 0; i < storeLocations.length; i++) {
+			long locationID = LocationsTable.CreateNewLocation(getActivity(), groceriesListID, storeLocations[i]);
+			locationsHashTable.put(storeLocations[i], locationID);
+		}
+
+		// create Bridge table
+		long locationID = -1;
+		long groupID = -1;
+		String[] Albertons = this.getResources().getStringArray(R.array.Albertsons_Eastgate_Locations);
+		long storeID = storesHashTable.get(groceryStores[0]);
+		for (int i = 0; i < Albertons.length; i++) {
+			String groupLocation = Albertons[i];
+			if (groupLocation.equals("[No LOCATION]")) {
+				locationID = 1;
+			} else {
+				locationID = locationsHashTable.get(Albertons[i]);
+			}
+			if (i == 0) {
+				groupID = 1;
+			} else {
+				groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+			}
+
+			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
+		}
+
+		String[] QFC = this.getResources().getStringArray(R.array.QFC_Factoria_Locations);
+		storeID = storesHashTable.get(groceryStores[1]);
+		for (int i = 0; i < QFC.length; i++) {
+			String groupLocation = QFC[i];
+			if (groupLocation.equals("[No LOCATION]")) {
+				locationID = 1;
+			} else {
+				locationID = locationsHashTable.get(QFC[i]);
+			}
+			if (i == 0) {
+				groupID = 1;
+			} else {
+				groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+			}
+			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
+		}
+
+		String[] sw_belfair = this.getResources().getStringArray(R.array.Safeway_Belfair_Locations);
+		storeID = storesHashTable.get(groceryStores[2]);
+		for (int i = 0; i < sw_belfair.length; i++) {
+			String groupLocation = sw_belfair[i];
+			if (groupLocation.equals("[No LOCATION]")) {
+				locationID = 1;
+			} else {
+				locationID = locationsHashTable.get(sw_belfair[i]);
+			}
+			if (i == 0) {
+				groupID = 1;
+			} else {
+				groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+			}
+			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
+		}
+
+		String[] sw_evergreen = this.getResources().getStringArray(R.array.Safeway_Evergreen_Village_Locations);
+		storeID = storesHashTable.get(groceryStores[3]);
+		for (int i = 0; i < sw_evergreen.length; i++) {
+			String groupLocation = sw_evergreen[i];
+			if (groupLocation.equals("[No LOCATION]")) {
+				locationID = 1;
+			} else {
+				locationID = locationsHashTable.get(sw_evergreen[i]);
+			}
+			if (i == 0) {
+				groupID = 1;
+			} else {
+				groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+			}
+			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
+		}
+
+		String[] sw_Issaquah = this.getResources().getStringArray(R.array.Safeway_Issaquah_Locations);
+		storeID = storesHashTable.get(groceryStores[4]);
+		for (int i = 0; i < sw_Issaquah.length; i++) {
+			String groupLocation = sw_Issaquah[i];
+			if (groupLocation.equals("[No LOCATION]")) {
+				locationID = 1;
+			} else {
+				locationID = locationsHashTable.get(sw_Issaquah[i]);
+			}
+			if (i == 0) {
+				groupID = 1;
+			} else {
+				groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+			}
+			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
+		}
+
+		mActiveListID = groceriesListID;
+	}
+
+	private void fillSpinListTemplate() {
+		ArrayList<String> spinListItems = new ArrayList<String>();
+		spinListItems.add(getActivity().getString(R.string.dialog_lists_blank_list_text)); // 0
+		spinListItems.add(getActivity().getString(R.string.dialog_lists_groceries_list_text)); // 1
+		spinListItems.add(getActivity().getString(R.string.dialog_lists_to_do_list_text)); // 2
+		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, spinListItems);
+		dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinListTemplate.setAdapter(dataAdapter);
 	}
 
 	@Override
@@ -352,18 +594,20 @@ public class ListsDialogFragment extends DialogFragment {
 		case R.id.rbAlphabetical_list:
 			mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 			break;
-		/*		case R.id.rbByGroup_list:
-					mSortOrderResult = ListPreferencesFragment.BY_GROUP;
-					break;*/
+		/*
+		 * case R.id.rbByGroup_list: mSortOrderResult =
+		 * ListPreferencesFragment.BY_GROUP; break;
+		 */
 		case R.id.rbManual:
 			mSortOrderResult = ListPreferencesFragment.MANUAL;
 			break;
 		case R.id.rbAlphabetical_master_list:
 			mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
 			break;
-		/*		case R.id.rbByGroup_master_list:
-					mSortOrderResult = ListPreferencesFragment.BY_GROUP;
-					break;*/
+		/*
+		 * case R.id.rbByGroup_master_list: mSortOrderResult =
+		 * ListPreferencesFragment.BY_GROUP; break;
+		 */
 		case R.id.rbSelectedItemsAtTop:
 			mSortOrderResult = ListPreferencesFragment.SELECTED_AT_TOP;
 			break;

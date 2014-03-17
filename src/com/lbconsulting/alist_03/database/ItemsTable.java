@@ -17,6 +17,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class ItemsTable {
 
 	// Items data table
+	// Version 1
 	public static final String TABLE_ITEMS = "tblItems";
 	public static final String COL_ITEM_ID = "_id";
 	public static final String COL_ITEM_NAME = "itemName";
@@ -81,8 +82,9 @@ public class ItemsTable {
 	public static final String ITEM_MOVE_BROADCAST_KEY = "itemMoved";
 	public static final String ITEM_CHANGED_BROADCAST_KEY = "itemChanged";
 
-	//TODO: SORT by group name not id!
-	//public static final String SORT_ORDER_BY_GROUP = COL_GROUP_ID + " ASC, " + SORT_ORDER_ITEM_NAME;
+	// TODO: SORT by group name not id!
+	// public static final String SORT_ORDER_BY_GROUP = COL_GROUP_ID + " ASC, "
+	// + SORT_ORDER_ITEM_NAME;
 
 	public static final int SELECTED_TRUE = 1;
 	public static final int SELECTED_FALSE = 0;
@@ -93,7 +95,7 @@ public class ItemsTable {
 	public static final int CHECKED_TRUE = 1;
 	public static final int CHECKED_FALSE = 0;
 
-	//private static final long milliSecondsPerDay = 1000;
+	// private static final long milliSecondsPerDay = 1000;
 	private static final long milliSecondsPerDay = 1000 * 60 * 60 * 24;
 
 	// Database creation SQL statements
@@ -103,10 +105,8 @@ public class ItemsTable {
 					+ COL_ITEM_ID + " integer primary key autoincrement, "
 					+ COL_ITEM_NAME + " text collate nocase, "
 					+ COL_ITEM_NOTE + " text collate nocase, "
-					+ COL_LIST_ID + " integer not null references "
-					+ ListsTable.TABLE_LISTS + " (" + ListsTable.COL_LIST_ID + ") default 1, "
-					+ COL_GROUP_ID + " integer not null references "
-					+ GroupsTable.TABLE_GROUPS + " (" + GroupsTable.COL_GROUP_ID + ") default 1, "
+					+ COL_LIST_ID + " integer not null references " + ListsTable.TABLE_LISTS + " (" + ListsTable.COL_LIST_ID + ") default 1, "
+					+ COL_GROUP_ID + " integer not null references " + GroupsTable.TABLE_GROUPS + " (" + GroupsTable.COL_GROUP_ID + ") default 1, "
 					+ COL_SELECTED + " integer default 0, "
 					+ COL_STRUCK_OUT + " integer default 0, "
 					+ COL_CHECKED + " integer default 0, "
@@ -118,29 +118,38 @@ public class ItemsTable {
 		database.execSQL(DATATABLE_CREATE);
 		MyLog.i("ItemsTable", "onCreate: " + TABLE_ITEMS + " created.");
 
-		/*		String insertProjection = "insert into "
-						+ TABLE_ITEMS
-						+ " ("
-						+ COL_ITEM_ID + ", "
-						+ COL_ITEM_NAME + ", "
-						+ COL_ITEM_NOTE + ", "
-						+ COL_LIST_ID + ", "
-						+ COL_SELECTED + ", "
-						+ COL_DATE_TIME_LAST_USED
-						+ ") VALUES ";*/
+		/*
+		 * String insertProjection = "insert into " + TABLE_ITEMS + " (" +
+		 * COL_ITEM_ID + ", " + COL_ITEM_NAME + ", " + COL_ITEM_NOTE + ", " +
+		 * COL_LIST_ID + ", " + COL_SELECTED + ", " + COL_DATE_TIME_LAST_USED +
+		 * ") VALUES ";
+		 */
 
 	}
 
 	public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-		MyLog.w(TABLE_ITEMS, "Upgrading database from version " + oldVersion + " to version " + newVersion
-				+ ". NO CHANGES REQUIRED.");
-		/*database.execSQL("DROP TABLE IF EXISTS " + TABLE_ITEMS);
-		onCreate(database);*/
+		MyLog.w(TABLE_ITEMS, "Upgrading database from version " + oldVersion + " to version " + newVersion);
+		int upgradeToVersion = oldVersion + 1;
+		switch (upgradeToVersion) {
+		// fall through each case to upgrade to the newVersion
+		case 2:
+		case 3:
+		case 4:
+			// No changes in TABLE_ITEMS
+			break;
+
+		default:
+			// upgrade version not found!
+			MyLog.e(TABLE_ITEMS, "Upgrade version " + newVersion + " not found!");
+			database.execSQL("DROP TABLE IF EXISTS " + TABLE_ITEMS);
+			onCreate(database);
+			break;
+		}
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Create Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * This method creates a new item in the provided list.
@@ -170,7 +179,8 @@ public class ItemsTable {
 					ContentValues values = new ContentValues();
 					values.put(COL_ITEM_NAME, itemName);
 					values.put(COL_LIST_ID, listID);
-					// Note: Content Provider inserts the current date/time when creating a new item
+					// Note: Content Provider inserts the current date/time when
+					// creating a new item
 					try {
 						Uri newListUri = cr.insert(uri, values);
 						if (newListUri != null) {
@@ -198,9 +208,9 @@ public class ItemsTable {
 		return newItemID;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Read Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static Cursor getItem(Context context, long itemID) {
 		Cursor cursor = null;
 		if (itemID > 0) {
@@ -354,11 +364,14 @@ public class ItemsTable {
 			String[] projection = PROJECTION_ALL;
 			String selection = COL_LIST_ID + " = ? AND " + COL_SELECTED + " = ?";
 			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(selectedValue) };
-			/*ContentResolver cr = context.getContentResolver();*/
+			/* ContentResolver cr = context.getContentResolver(); */
 			try {
 
 				cursorLoader = new CursorLoader(context, uri, projection, selection, selectionArgs, sortOrder);
-				/*				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);*/
+				/*
+				 * cursor = cr.query(uri, projection, selection, selectionArgs,
+				 * sortOrder);
+				 */
 			} catch (Exception e) {
 				MyLog.e("Exception error  in ItemsTable: getAllSelectedItemsInList. ", e.toString());
 			}
@@ -374,7 +387,8 @@ public class ItemsTable {
 			String[] projection = ItemsTable.PROJECTION_WITH_GROUP_NAME;
 			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
 					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";
-			//String selection = COL_LIST_ID + " = ? AND " + COL_SELECTED + " = ?";
+			// String selection = COL_LIST_ID + " = ? AND " + COL_SELECTED +
+			// " = ?";
 			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(selectedValue) };
 			String sortOrder = GroupsTable.SORT_ORDER_GROUP + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
 			try {
@@ -424,8 +438,11 @@ public class ItemsTable {
 
 			Uri uri = CONTENT_URI;
 			String[] projection = PROJECTION_ALL;
-			/*String selection = COL_LIST_ID + " = ? AND " + COL_STRUCK_OUT + " = ?";
-			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(struckOutValue) };*/
+			/*
+			 * String selection = COL_LIST_ID + " = ? AND " + COL_STRUCK_OUT +
+			 * " = ?"; String selectionArgs[] = new String[] {
+			 * String.valueOf(listID), String.valueOf(struckOutValue) };
+			 */
 
 			String selection = COL_LIST_ID + " = ? ";
 			String selectionArgs[] = { String.valueOf(listID) };
@@ -495,25 +512,18 @@ public class ItemsTable {
 	 * @param groupID
 	 * @return
 	 */
-	/*	public static Cursor getAllItemsInGroup(Context context, long groupID, String sortOrder) {
-			Cursor cursor = null;
-			if (groupID > 0) {
-				if (sortOrder == null) {
-					sortOrder = SORT_ORDER_ITEM_NAME;
-				}
-				Uri uri = CONTENT_URI;
-				String[] projection = PROJECTION_ALL;
-				String selection = COL_GROUP_ID + " = ?";
-				String[] selectionArgs = { String.valueOf(groupID) };
-				ContentResolver cr = context.getContentResolver();
-				try {
-					cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
-				} catch (Exception e) {
-					MyLog.e("Exception error in ItemsTable: getAllItemsInGroup. ", e.toString());
-				}
-			}
-			return cursor;
-		}*/
+	/*
+	 * public static Cursor getAllItemsInGroup(Context context, long groupID,
+	 * String sortOrder) { Cursor cursor = null; if (groupID > 0) { if
+	 * (sortOrder == null) { sortOrder = SORT_ORDER_ITEM_NAME; } Uri uri =
+	 * CONTENT_URI; String[] projection = PROJECTION_ALL; String selection =
+	 * COL_GROUP_ID + " = ?"; String[] selectionArgs = { String.valueOf(groupID)
+	 * }; ContentResolver cr = context.getContentResolver(); try { cursor =
+	 * cr.query(uri, projection, selection, selectionArgs, sortOrder); } catch
+	 * (Exception e) {
+	 * MyLog.e("Exception error in ItemsTable: getAllItemsInGroup. ",
+	 * e.toString()); } } return cursor; }
+	 */
 
 	/**
 	 * This method gets all items in the provided group that are selected (True)
@@ -545,9 +555,9 @@ public class ItemsTable {
 		return cursor;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Update Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public static int UpdateItemFieldValues(Context context, long itemID, ContentValues newFieldValues) {
 		int numberOfUpdatedRecords = -1;
@@ -559,61 +569,42 @@ public class ItemsTable {
 		return numberOfUpdatedRecords;
 	}
 
-	/*	public static int UpdateItemName(Context context, long itemID, String newItemName) {
-			int numberOfUpdatedRecords = -1;
-			if (itemID > 0) {
-				newItemName = newItemName.trim();
-				try {
-					ContentResolver cr = context.getContentResolver();
-					Uri uri = CONTENT_URI;
-					String where = COL_ITEM_ID + " = ?";
-					String[] whereArgs = { String.valueOf(itemID) };
-					ContentValues values = new ContentValues();
-					values.put(COL_ITEM_NAME, newItemName);
-					numberOfUpdatedRecords = cr.update(uri, values, where, whereArgs);
-				} catch (Exception e) {
-					MyLog.e("Exception error in UpdateItemName. ", e.toString());
-				}
-			}
-			return numberOfUpdatedRecords;
-		}
+	/*
+	 * public static int UpdateItemName(Context context, long itemID, String
+	 * newItemName) { int numberOfUpdatedRecords = -1; if (itemID > 0) {
+	 * newItemName = newItemName.trim(); try { ContentResolver cr =
+	 * context.getContentResolver(); Uri uri = CONTENT_URI; String where =
+	 * COL_ITEM_ID + " = ?"; String[] whereArgs = { String.valueOf(itemID) };
+	 * ContentValues values = new ContentValues(); values.put(COL_ITEM_NAME,
+	 * newItemName); numberOfUpdatedRecords = cr.update(uri, values, where,
+	 * whereArgs); } catch (Exception e) {
+	 * MyLog.e("Exception error in UpdateItemName. ", e.toString()); } } return
+	 * numberOfUpdatedRecords; }
+	 * 
+	 * public static int UpdateItemNote(Context context, long itemID, String
+	 * newItemNote) { int numberOfUpdatedRecords = -1; if (itemID > 0) {
+	 * newItemNote = newItemNote.trim(); try { ContentResolver cr =
+	 * context.getContentResolver(); Uri uri = CONTENT_URI; String where =
+	 * COL_ITEM_ID + " = ?"; String[] whereArgs = { String.valueOf(itemID) };
+	 * ContentValues values = new ContentValues(); values.put(COL_ITEM_NOTE,
+	 * newItemNote); numberOfUpdatedRecords = cr.update(uri, values, where,
+	 * whereArgs); } catch (Exception e) {
+	 * MyLog.e("Exception error in UpdateItemNote. ", e.toString()); } } return
+	 * numberOfUpdatedRecords; }
+	 */
 
-		public static int UpdateItemNote(Context context, long itemID, String newItemNote) {
-			int numberOfUpdatedRecords = -1;
-			if (itemID > 0) {
-				newItemNote = newItemNote.trim();
-				try {
-					ContentResolver cr = context.getContentResolver();
-					Uri uri = CONTENT_URI;
-					String where = COL_ITEM_ID + " = ?";
-					String[] whereArgs = { String.valueOf(itemID) };
-					ContentValues values = new ContentValues();
-					values.put(COL_ITEM_NOTE, newItemNote);
-					numberOfUpdatedRecords = cr.update(uri, values, where, whereArgs);
-				} catch (Exception e) {
-					MyLog.e("Exception error in UpdateItemNote. ", e.toString());
-				}
-			}
-			return numberOfUpdatedRecords;
-		}*/
-
-	/*	public static int ChangeGroupID(Context context, long itemID, long newGroupID) {
-			int numberOfUpdatedRecords = -1;
-			if (itemID > 0 && newGroupID > 0) {
-				try {
-					ContentResolver cr = context.getContentResolver();
-					Uri uri = CONTENT_URI;
-					String where = COL_ITEM_ID + " = ?";
-					String[] whereArgs = { String.valueOf(itemID) };
-					ContentValues values = new ContentValues();
-					values.put(COL_GROUP_ID, newGroupID);
-					numberOfUpdatedRecords = cr.update(uri, values, where, whereArgs);
-				} catch (Exception e) {
-					MyLog.e("Exception error in ChangeGroupID. ", e.toString());
-				}
-			}
-			return numberOfUpdatedRecords;
-		}*/
+	/*
+	 * public static int ChangeGroupID(Context context, long itemID, long
+	 * newGroupID) { int numberOfUpdatedRecords = -1; if (itemID > 0 &&
+	 * newGroupID > 0) { try { ContentResolver cr =
+	 * context.getContentResolver(); Uri uri = CONTENT_URI; String where =
+	 * COL_ITEM_ID + " = ?"; String[] whereArgs = { String.valueOf(itemID) };
+	 * ContentValues values = new ContentValues(); values.put(COL_GROUP_ID,
+	 * newGroupID); numberOfUpdatedRecords = cr.update(uri, values, where,
+	 * whereArgs); } catch (Exception e) {
+	 * MyLog.e("Exception error in ChangeGroupID. ", e.toString()); } } return
+	 * numberOfUpdatedRecords; }
+	 */
 
 	public static int UpdateItem(Context context, long itemID, String itemName, String itemNote, long itemGroupID) {
 		int numberOfUpdatedRecords = -1;
@@ -884,85 +875,64 @@ public class ItemsTable {
 		return numberOfCheckedItems;
 	}
 
-	/*	public static void TrialUsedTimes(Context context, long listID) {
-			Calendar now = Calendar.getInstance();
-			long minus91days = now.getTimeInMillis() - (91 * milliSecondsPerDay);
-			long minus181days = now.getTimeInMillis() - (181 * milliSecondsPerDay);
-			long minus366days = now.getTimeInMillis() - (366 * milliSecondsPerDay);
-			long minus91days = Long.valueOf(123456);
-			long minus181days = Long.valueOf(234567);
-			long minus366days = Long.valueOf(345678);
-
-			//Cursor cursor = getItems(context, listID);
-
-			//if (cursor != null) {
-			//cursor.moveToPosition(-1);
-
-			ContentValues values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus366days);
-			UpdateItemFieldValues(context, 1, values);
-
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus366days);
-			UpdateItemFieldValues(context, 2, values);
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus366days);
-			UpdateItemFieldValues(context, 3, values);
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus366days);
-			UpdateItemFieldValues(context, 4, values);
-
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus181days);
-			UpdateItemFieldValues(context, 5, values);
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus181days);
-			UpdateItemFieldValues(context, 6, values);
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus181days);
-			UpdateItemFieldValues(context, 7, values);
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus181days);
-			UpdateItemFieldValues(context, 8, values);
-
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus91days);
-			UpdateItemFieldValues(context, 9, values);
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus91days);
-			UpdateItemFieldValues(context, 10, values);
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus91days);
-			UpdateItemFieldValues(context, 11, values);
-			values = new ContentValues();
-			values.put(COL_DATE_TIME_LAST_USED, minus91days);
-			UpdateItemFieldValues(context, 12, values);
-
-						for (int i = 0; i < 4; i++) {
-							cursor.moveToNext();
-							long itemID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ITEM_ID));
-							UpdateItemFieldValues(context, itemID, values);
-						}
-
-						values = new ContentValues();
-						values.put(COL_DATE_TIME_LAST_USED, minus181days);
-						for (int i = 0; i < 4; i++) {
-							cursor.moveToNext();
-							long itemID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ITEM_ID));
-							UpdateItemFieldValues(context, itemID, values);
-						}
-
-						values = new ContentValues();
-						values.put(COL_DATE_TIME_LAST_USED, minus91days);
-						for (int i = 0; i < 4; i++) {
-							cursor.moveToNext();
-							long itemID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ITEM_ID));
-							UpdateItemFieldValues(context, itemID, values);
-						}
-			//cursor.close();
-			//}
-
-		}*/
+	/*
+	 * public static void TrialUsedTimes(Context context, long listID) {
+	 * Calendar now = Calendar.getInstance(); long minus91days =
+	 * now.getTimeInMillis() - (91 * milliSecondsPerDay); long minus181days =
+	 * now.getTimeInMillis() - (181 * milliSecondsPerDay); long minus366days =
+	 * now.getTimeInMillis() - (366 * milliSecondsPerDay); long minus91days =
+	 * Long.valueOf(123456); long minus181days = Long.valueOf(234567); long
+	 * minus366days = Long.valueOf(345678);
+	 * 
+	 * //Cursor cursor = getItems(context, listID);
+	 * 
+	 * //if (cursor != null) { //cursor.moveToPosition(-1);
+	 * 
+	 * ContentValues values = new ContentValues();
+	 * values.put(COL_DATE_TIME_LAST_USED, minus366days);
+	 * UpdateItemFieldValues(context, 1, values);
+	 * 
+	 * values = new ContentValues(); values.put(COL_DATE_TIME_LAST_USED,
+	 * minus366days); UpdateItemFieldValues(context, 2, values); values = new
+	 * ContentValues(); values.put(COL_DATE_TIME_LAST_USED, minus366days);
+	 * UpdateItemFieldValues(context, 3, values); values = new ContentValues();
+	 * values.put(COL_DATE_TIME_LAST_USED, minus366days);
+	 * UpdateItemFieldValues(context, 4, values);
+	 * 
+	 * values = new ContentValues(); values.put(COL_DATE_TIME_LAST_USED,
+	 * minus181days); UpdateItemFieldValues(context, 5, values); values = new
+	 * ContentValues(); values.put(COL_DATE_TIME_LAST_USED, minus181days);
+	 * UpdateItemFieldValues(context, 6, values); values = new ContentValues();
+	 * values.put(COL_DATE_TIME_LAST_USED, minus181days);
+	 * UpdateItemFieldValues(context, 7, values); values = new ContentValues();
+	 * values.put(COL_DATE_TIME_LAST_USED, minus181days);
+	 * UpdateItemFieldValues(context, 8, values);
+	 * 
+	 * values = new ContentValues(); values.put(COL_DATE_TIME_LAST_USED,
+	 * minus91days); UpdateItemFieldValues(context, 9, values); values = new
+	 * ContentValues(); values.put(COL_DATE_TIME_LAST_USED, minus91days);
+	 * UpdateItemFieldValues(context, 10, values); values = new ContentValues();
+	 * values.put(COL_DATE_TIME_LAST_USED, minus91days);
+	 * UpdateItemFieldValues(context, 11, values); values = new ContentValues();
+	 * values.put(COL_DATE_TIME_LAST_USED, minus91days);
+	 * UpdateItemFieldValues(context, 12, values);
+	 * 
+	 * for (int i = 0; i < 4; i++) { cursor.moveToNext(); long itemID =
+	 * cursor.getLong(cursor.getColumnIndexOrThrow(COL_ITEM_ID));
+	 * UpdateItemFieldValues(context, itemID, values); }
+	 * 
+	 * values = new ContentValues(); values.put(COL_DATE_TIME_LAST_USED,
+	 * minus181days); for (int i = 0; i < 4; i++) { cursor.moveToNext(); long
+	 * itemID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ITEM_ID));
+	 * UpdateItemFieldValues(context, itemID, values); }
+	 * 
+	 * values = new ContentValues(); values.put(COL_DATE_TIME_LAST_USED,
+	 * minus91days); for (int i = 0; i < 4; i++) { cursor.moveToNext(); long
+	 * itemID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ITEM_ID));
+	 * UpdateItemFieldValues(context, itemID, values); } //cursor.close(); //}
+	 * 
+	 * }
+	 */
 
 	public static int MoveItem(Context context, long itemID, long newListID) {
 		int numberOfUpdatedRecords = 0;
@@ -979,17 +949,20 @@ public class ItemsTable {
 					existingItemName = existingItemCursor
 							.getString(existingItemCursor.getColumnIndexOrThrow(COL_ITEM_NAME));
 
-					// verify that the item does not already exist in the new list
+					// verify that the item does not already exist in the new
+					// list
 					newListCursor = getItem(context, newListID, existingItemName);
 					if (newListCursor != null) {
 						if (newListCursor.getCount() == 0) {
-							// the item does not exists in the table ... so move it
+							// the item does not exists in the table ... so move
+							// it
 							// by changing the listID
 							numberOfUpdatedRecords = ChangeListID(context, itemID, newListID);
 
 						} else {
-							// the item exists in the new list ... so move it 
-							// by deleting it from the new list and changing the existing item's listID
+							// the item exists in the new list ... so move it
+							// by deleting it from the new list and changing the
+							// existing item's listID
 							long newListItemID = newListCursor
 									.getLong(newListCursor.getColumnIndexOrThrow(COL_ITEM_ID));
 							DeleteItem(context, newListItemID);
@@ -1093,9 +1066,9 @@ public class ItemsTable {
 		return manualSortOrder;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Delete Methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public static int DeleteItem(Context context, long itemID) {
 		int numberOfDeletedRecords = -1;
 		if (itemID > 0) {
