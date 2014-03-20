@@ -57,8 +57,7 @@ public class CheckItemsCursorAdaptor extends CursorAdapter {
 				if (mListSettings.getShowGroupsInMasterListFragment()) {
 					if (ShowSeparator(tvListItemSeparator, cursor)) {
 						try {
-							tvListItemSeparator.setText(cursor.getString(cursor
-									.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME)));
+							tvListItemSeparator.setText(cursor.getString(cursor.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME)));
 						} catch (IllegalArgumentException e) {
 							MyLog.e("IllegalArgumentException error in ItemsCursorAdaptor:bindView ", e.toString());
 						}
@@ -73,6 +72,7 @@ public class CheckItemsCursorAdaptor extends CursorAdapter {
 			CheckBox ckBox = (CheckBox) view.findViewById(R.id.ckBox);
 			if (ckBox != null) {
 				ckBox.setChecked(isChecked);
+				ckBox.setClickable(false);
 				ckBox.setTextColor(this.mListSettings.getItemNormalTextColor());
 				ckBox.setVisibility(View.VISIBLE);
 			}
@@ -96,23 +96,10 @@ public class CheckItemsCursorAdaptor extends CursorAdapter {
 					tvItemNote.setTextColor(this.mListSettings.getItemNormalTextColor());
 					tvItemNote.setVisibility(View.VISIBLE);
 				} else {
-					// no note exists ... 
+					// no note exists ...
 					tvItemNote.setVisibility(View.GONE);
 				}
 			}
-
-			/*			TextView tvItemGroup = (TextView) view.findViewById(R.id.tvItemGroup);
-						if (tvItemGroup != null) {
-							if (mListSettings.getShowGroupsInMasterListFragment()) {
-								long groupID = cursor.getLong(cursor.getColumnIndexOrThrow(ItemsTable.COL_GROUP_ID));
-								tvItemGroup.setText(GroupsTable.getGroupName(mAdaptorContext, groupID));
-								tvItemGroup.setTextColor(this.mListSettings.getItemNormalTextColor());
-								tvItemGroup.setVisibility(View.VISIBLE);
-							} else {
-								// no note exists ... 
-								tvItemGroup.setVisibility(View.GONE);
-							}
-						}*/
 		}
 	}
 

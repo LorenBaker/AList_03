@@ -23,6 +23,7 @@ import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.fragments.MasterListFragment;
+import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class MasterListActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -37,7 +38,8 @@ public class MasterListActivity extends FragmentActivity implements LoaderManage
 	private ListsSpinnerCursorAdapter mListsSpinnerCursorAdapter;
 	private LoaderManager mLoaderManager = null;
 	private LoaderManager.LoaderCallbacks<Cursor> mListsFragmentCallbacks;
-	private static final int LISTS_LOADER_ID = 1;
+
+	// private static final int LISTS_LOADER_ID = 1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +76,7 @@ public class MasterListActivity extends FragmentActivity implements LoaderManage
 		});
 		mListsFragmentCallbacks = this;
 		mLoaderManager = getSupportLoaderManager();
-		mLoaderManager.initLoader(LISTS_LOADER_ID, null, mListsFragmentCallbacks);
+		mLoaderManager.initLoader(AListUtilities.LISTS_LOADER_ID, null, mListsFragmentCallbacks);
 	}
 
 	private void LoadMasterListFragment() {

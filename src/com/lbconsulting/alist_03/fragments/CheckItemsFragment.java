@@ -43,9 +43,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class CheckItemsFragment extends Fragment
 		implements LoaderManager.LoaderCallbacks<Cursor> {
 
-	private long mActiveListID = -9999;
-	// private long mActiveItemID = -9999;
-	// private int mActivePosition = -9999;
+	private long mActiveListID = -1;
 
 	private ListSettings mListSettings;
 
@@ -68,14 +66,6 @@ public class CheckItemsFragment extends Fragment
 	public static final String CHECK_ITEMS_TAB_BROADCAST_KEY = "CheckItemsTabBroadcastKey";
 	private BroadcastReceiver mCheckItemsTabBroadcastReceiver;
 
-	public static final String RESART_GROUPS_LOADER_KEY = "CheckItemsFragment_RestartGroupsLoaderKey";
-	private BroadcastReceiver mRestartGroupsLoaderReceiver;
-
-	public static final String RESART_ITEMS_LOADER_KEY = "CheckItemsFragment_RestartItemsLoaderKey";
-	private BroadcastReceiver mRestartItemsLoaderReceiver;
-
-	private BroadcastReceiver mItemChangedReceiver;
-
 	public static final int CHECK_ITEMS_TAB_CULL_MOVE_ITEMS = 0;
 	public static final int CHECK_ITEMS_TAB_SET_GROUPS = 1;
 
@@ -94,17 +84,13 @@ public class CheckItemsFragment extends Fragment
 		if (newListID < 2) {
 			MyLog.e("CheckItemsFragment: newInstance; listID = " + newListID, " is less than 2!!!!");
 			return null;
-		} else {
-
-			CheckItemsFragment f = new CheckItemsFragment();
-
-			// Supply listID input as an argument.
-			Bundle args = new Bundle();
-			args.putLong("listID", newListID);
-			f.setArguments(args);
-
-			return f;
 		}
+		CheckItemsFragment f = new CheckItemsFragment();
+		// Supply listID input as an argument.
+		Bundle args = new Bundle();
+		args.putLong("listID", newListID);
+		f.setArguments(args);
+		return f;
 	}
 
 	@Override
@@ -171,17 +157,13 @@ public class CheckItemsFragment extends Fragment
 			@Override
 			public void onItemClick(AdapterView<?> parent, View onItemClickView, int position, long id) {
 				ItemsTable.ToggleCheckBox(getActivity(), id);
-				// TO DO figure out why the content provider does not restart loader
-				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
 			}
 		});
 
 		itemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
 			// edit item dialog
 			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View onItemLongClickView, int position,
-					long activeItemID) {
-				// mActiveItemID = id;
+			public boolean onItemLongClick(AdapterView<?> parent, View onItemLongClickView, int position, long activeItemID) {
 				FragmentManager fm = getFragmentManager();
 				Fragment prev = fm.findFragmentByTag("dialog_edit_item");
 				if (prev != null) {
@@ -202,7 +184,6 @@ public class CheckItemsFragment extends Fragment
 	protected void ApplyGroupsToCheckedItems() {
 		long groupID = spinGroups.getSelectedItemId();
 		ItemsTable.ApplyGroupToCheckedItems(getActivity(), mActiveListID, groupID);
-		mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
 	}
 
 	private void setFragmentColors() {
@@ -235,43 +216,10 @@ public class CheckItemsFragment extends Fragment
 			}
 		};
 
-		mRestartGroupsLoaderReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(AListUtilities.GROUPS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
-			}
-		};
-
-		mRestartItemsLoaderReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
-			}
-		};
-
-		mItemChangedReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mCheckItemsFragmentCallbacks);
-			}
-		};
-
 		// Register local broadcast receivers.
 		String applyCheckItemsTabPositionKey = String.valueOf(mActiveListID) + CHECK_ITEMS_TAB_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mCheckItemsTabBroadcastReceiver,
 				new IntentFilter(applyCheckItemsTabPositionKey));
-
-		String restartGroupsLoaderKey = String.valueOf(mActiveListID) + RESART_GROUPS_LOADER_KEY;
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartGroupsLoaderReceiver,
-				new IntentFilter(restartGroupsLoaderKey));
-
-		String restartItemsLoaderReceiver = String.valueOf(mActiveListID) + RESART_ITEMS_LOADER_KEY;
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartItemsLoaderReceiver,
-				new IntentFilter(restartItemsLoaderReceiver));
-
-		String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemChangedReceiver,
-				new IntentFilter(itemChangedReceiverKey));
 
 		super.onActivityCreated(savedInstanceState);
 	}
@@ -326,8 +274,7 @@ public class CheckItemsFragment extends Fragment
 		View v = itemsListView.getChildAt(0);
 		int ListViewTop = (v == null) ? 0 : v.getTop();
 		ContentValues newFieldValues = new ContentValues();
-		newFieldValues.put(ListsTable.COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION,
-				itemsListView.getFirstVisiblePosition());
+		newFieldValues.put(ListsTable.COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION, itemsListView.getFirstVisiblePosition());
 		newFieldValues.put(ListsTable.COL_MASTER_LISTVIEW_TOP, ListViewTop);
 		ListsTable.UpdateListsTableFieldValues(getActivity(), mActiveListID, newFieldValues);
 	}
@@ -350,10 +297,6 @@ public class CheckItemsFragment extends Fragment
 		MyLog.i("CheckItemsFragment", "onDestroy");
 		// Unregister local broadcast receivers
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mCheckItemsTabBroadcastReceiver);
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartGroupsLoaderReceiver);
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartItemsLoaderReceiver);
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemChangedReceiver);
-
 	}
 
 	@Override
@@ -380,38 +323,37 @@ public class CheckItemsFragment extends Fragment
 		case AListUtilities.ITEMS_LOADER_ID:
 			int masterListSortOrder = mListSettings.getMasterListSortOrder();
 			String sortOrder = "";
-			switch (masterListSortOrder) {
-			/*			case ListPreferencesFragment.ALPHABETICAL:
-							sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
-							break;
-
-						case ListPreferencesFragment.SELECTED_AT_TOP:
-							sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
-							break;
-
-						case ListPreferencesFragment.SELECTED_AT_BOTTOM:
-							sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
-							break;
-
-						case ListPreferencesFragment.LAST_USED:
-							sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
-							break;*/
-
-			default:
-				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
-				break;
-			}
 
 			try {
-				// if (mListSettings.getShowGroupsInMasterListFragment()) {
-				if (false) {
-					cursorLoader = ItemsTable.getAllItemsInListWithGroups(getActivity(), mActiveListID, null);
-
-					/*} else if (mListSettings.getShowStores()) {
-						cursorLoader = ItemsTable.getAllItemsInListWithLocations(getActivity(), mActiveListID);*/
-
-				} else {
+				switch (masterListSortOrder) {
+				case AListUtilities.MASTER_LIST_SORT_ALPHABETICAL:
+					sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
 					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_BY_GROUP:
+					cursorLoader = ItemsTable.getAllItemsInListWithGroups(getActivity(), mActiveListID, selection);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_BY_LAST_USED:
+					sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
+					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_SELECTED_AT_TOP:
+					sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
+					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_SELECTED_AT_BOTTOM:
+					sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
+					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+					break;
+
+				default:
+					sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+					break;
 				}
 
 			} catch (SQLiteException e) {

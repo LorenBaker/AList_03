@@ -99,6 +99,7 @@ public class MoveCheckedItemsDialogFragment extends DialogFragment implements Lo
 
 		btnApply = (Button) view.findViewById(R.id.btnApply);
 		btnApply.setOnClickListener(new OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				long selectedListID = spinLists.getSelectedItemId();
 				String key = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
@@ -112,6 +113,7 @@ public class MoveCheckedItemsDialogFragment extends DialogFragment implements Lo
 		btnCancel = (Button) view.findViewById(R.id.btnCancel);
 		if (btnCancel != null) {
 			btnCancel.setOnClickListener(new OnClickListener() {
+				@Override
 				public void onClick(View v) {
 					getDialog().dismiss();
 				}
@@ -126,7 +128,7 @@ public class MoveCheckedItemsDialogFragment extends DialogFragment implements Lo
 		sb.append(numberOfCheckedItemsFound);
 		sb.append("?");
 		/*sb.append(System.getProperty("line.separator"));*/
-		//sb.append(" Please select target the list.");
+		// sb.append(" Please select target the list.");
 		getDialog().setTitle(sb.toString());
 		return view;
 	}

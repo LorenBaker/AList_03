@@ -81,7 +81,7 @@ public class ItemsTable {
 	public static final String SORT_ORDER_MANUAL = COL_MANUAL_SORT_ORDER + " ASC";
 
 	public static final String ITEM_MOVE_BROADCAST_KEY = "itemMoved";
-	public static final String ITEM_CHANGED_BROADCAST_KEY = "itemChanged";
+	// public static final String ITEM_CHANGED_BROADCAST_KEY = "itemChanged";
 
 	// TODO: SORT by group name not id!
 	// public static final String SORT_ORDER_BY_GROUP = COL_GROUP_ID + " ASC, "

@@ -27,7 +27,6 @@ import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.dialogs.ListsDialogFragment;
 import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
-import com.lbconsulting.alist_03.fragments.ListsFragment;
 import com.lbconsulting.alist_03.fragments.MasterListFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
@@ -44,15 +43,10 @@ public class ListsActivity extends FragmentActivity {
 	private long mActiveListID = NO_ACTIVE_LIST_ID;
 	private long mActiveItemID;
 	private int mActiveListPosition = 0;
-	// private long mActiveStoreID = 0;
 	private ListSettings mListSettings;
 
 	private Cursor mAllListsCursor;
 	private BroadcastReceiver mListTableChanged;
-
-	String mRestartStoresLoaderKey = "";
-
-	// String mRestartItemsLoaderKey = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +57,6 @@ public class ListsActivity extends FragmentActivity {
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
 		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
 		mActiveItemID = storedStates.getLong("ActiveItemID", -1);
-		// TODO crate new field in ListsTable for the ActiveStoreID
-		// mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
 
 		mListTableChanged = new BroadcastReceiver() {
 
@@ -89,7 +81,6 @@ public class ListsActivity extends FragmentActivity {
 		LocalBroadcastManager.getInstance(this).registerReceiver(mListTableChanged, new IntentFilter(key));
 
 		if (mActiveListID < 2) {
-			// SetToFirstList();
 			return;
 		}
 
@@ -101,9 +92,6 @@ public class ListsActivity extends FragmentActivity {
 
 		mAllListsCursor = ListsTable.getAllLists(this);
 		mListSettings = new ListSettings(this, mActiveListID);
-
-		mRestartStoresLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_STORES_LOADER_KEY;
-		// mRestartItemsLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_ITEMS_LOADER_KEY;
 
 		mListsPagerAdapter = new ListsPagerAdapter(getSupportFragmentManager(), this);
 		mPager = (ViewPager) findViewById(R.id.listsPager);
@@ -142,10 +130,6 @@ public class ListsActivity extends FragmentActivity {
 				mAllListsCursor.moveToPosition(position);
 				mActiveListID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
 				mListSettings = new ListSettings(this, mActiveListID);
-
-				mRestartStoresLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_STORES_LOADER_KEY;
-				// mRestartItemsLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_ITEMS_LOADER_KEY;
-
 				mActiveListPosition = position;
 			} catch (Exception e) {
 				MyLog.d("Lists_ACTIVITY", "Exception in getlistID: " + e);
@@ -160,15 +144,13 @@ public class ListsActivity extends FragmentActivity {
 		// Register new receiver
 		String key = String.valueOf(mActiveListID) + ListPreferencesFragment.LIST_PREFERENCES_CHANGED_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(this).registerReceiver(mListTableChanged, new IntentFilter(key));
-
 	}
 
 	private void ReStartListsActivity() {
 		mAllListsCursor = ListsTable.getAllLists(this);
 		mActiveListPosition = AListUtilities.getListsCursorPositon(mAllListsCursor, mActiveListID);
 		Intent intent = new Intent(this, ListsActivity.class);
-		// prohibit the back button from displaying previous version of this
-		// ListPreferencesActivity
+		// prohibit the back button from displaying previous version of this ListPreferencesActivity
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivity(intent);
 	}
@@ -191,35 +173,16 @@ public class ListsActivity extends FragmentActivity {
 			mActiveListID = AListUtilities.getIdByPosition(mAllListsCursor, mActiveListPosition);
 		}
 		Intent intent = new Intent(this, ListsActivity.class);
-		// prohibit the back button from displaying previous version of this
-		// ListPreferencesActivity
+		// prohibit the back button from displaying previous version of this ListPreferencesActivity
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivity(intent);
 	}
-
-	/*	private void SetToFirstList() {
-			long firstListID = ListsTable.getFirstListID(this);
-			if (firstListID > 1) {
-				mActiveListID = firstListID;
-			} else {
-				CreatNewList();
-			}
-		}*/
 
 	private void StartMasterListActivity() {
 		Intent masterListActivityIntent = new Intent(this, MasterListActivity.class);
 		// masterListActivityIntent.putExtra("ActiveListID", mActiveListID);
 		startActivity(masterListActivityIntent);
 	}
-
-	/*
-	 * private void StartStoresActivity() { Intent intent = new Intent(this,
-	 * StoresActivity.class); intent.putExtra("listTitle",
-	 * mListSettings.getListTitle()); intent.putExtra("titleBackgroundColor",
-	 * mListSettings.getTitleBackgroundColor());
-	 * intent.putExtra("titleTextColor", mListSettings.getTitleTextColor());
-	 * startActivity(intent); }
-	 */
 
 	private void StartManageLocationsActivity() {
 		Intent intent = new Intent(this, ManageLocationsActivity.class);
@@ -240,14 +203,12 @@ public class ListsActivity extends FragmentActivity {
 	}
 
 	private void LoadMasterListFragment() {
-		mMasterListFragment = (MasterListFragment) this.getSupportFragmentManager()
-				.findFragmentByTag("MasterListFragment");
+		mMasterListFragment = (MasterListFragment) this.getSupportFragmentManager().findFragmentByTag("MasterListFragment");
 		if (mMasterListFragment == null) {
 			// create MasterListFragment
 			mMasterListFragment = MasterListFragment.newInstance(mActiveListID);
 
-			MyLog.i("Lists_ACTIVITY", "LoadMasterListFragment. New MasterListFragment created. ListID = "
-					+ mActiveListID);
+			MyLog.i("Lists_ACTIVITY", "LoadMasterListFragment. New MasterListFragment created. ListID = " + mActiveListID);
 			// add the fragment to the Activity
 			this.getSupportFragmentManager().beginTransaction()
 					.add(R.id.frag_masterList_placeholder, mMasterListFragment, "MasterListFragment")
@@ -258,8 +219,7 @@ public class ListsActivity extends FragmentActivity {
 			// MasterListFragment exists ... so replace it
 			mMasterListFragment = MasterListFragment.newInstance(mActiveListID);
 
-			MyLog.i("Lists_ACTIVITY", "LoadMasterListFragment. New MasterListFragment created. ListID = "
-					+ mActiveListID);
+			MyLog.i("Lists_ACTIVITY", "LoadMasterListFragment. New MasterListFragment created. ListID = " + mActiveListID);
 			// add the fragment to the Activity
 			this.getSupportFragmentManager().beginTransaction()
 					.replace(R.id.frag_masterList_placeholder, mMasterListFragment, "MasterListFragment")
@@ -267,7 +227,6 @@ public class ListsActivity extends FragmentActivity {
 					.commit();
 			MyLog.i("Lists_ACTIVITY", "LoadMasterListFragment. MasterListFragment REPLACE. ListID = " + mActiveListID);
 		}
-
 	}
 
 	@Override
@@ -302,7 +261,6 @@ public class ListsActivity extends FragmentActivity {
 		} else {
 			mPager.setCurrentItem(mActiveListPosition);
 		}
-
 		super.onResume();
 	}
 
@@ -332,7 +290,6 @@ public class ListsActivity extends FragmentActivity {
 		if (mAllListsCursor != null) {
 			mAllListsCursor.close();
 		}
-
 		// Unregister since the activity is about to be closed.
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mListTableChanged);
 		super.onDestroy();
@@ -378,10 +335,6 @@ public class ListsActivity extends FragmentActivity {
 
 		case R.id.action_deleteList:
 			DeleteList();
-			/*
-			 * Toast.makeText(this, "\"" + item.getTitle() + "\"" +
-			 * " is under construction.", Toast.LENGTH_SHORT).show();
-			 */
 			return true;
 
 		case R.id.action_manageLocations:
@@ -399,148 +352,7 @@ public class ListsActivity extends FragmentActivity {
 		default:
 			return super.onMenuItemSelected(featureId, item);
 		}
-
 	}
-
-	/*	private void SendRestartStoresLoaderBroadCast() {
-			Intent restartStoresLoaderIntent = new Intent(mRestartStoresLoaderKey);
-			LocalBroadcastManager.getInstance(this).sendBroadcast(restartStoresLoaderIntent);
-		}*/
-
-	/*	private void SendRestartItemsLoaderBroadCast() {
-			Intent restartItemsLoaderIntent = new Intent(mRestartItemsLoaderKey);
-			LocalBroadcastManager.getInstance(this).sendBroadcast(restartItemsLoaderIntent);
-		}*/
-
-	/*
-	 * private void CreateToDoList() { // create new list long todosListID =
-	 * ListsTable.CreateNewList(this, "To Do");
-	 * 
-	 * if (todosListID > 1) { ArrayList<Long> todoGroupIDs = new
-	 * ArrayList<Long>(); // create todo groups String[] todoGroups =
-	 * this.getResources().getStringArray(R.array.todo_groups); for (int i = 0;
-	 * i < todoGroups.length; i++) {
-	 * todoGroupIDs.add(GroupsTable.CreateNewGroup(this, todosListID,
-	 * todoGroups[i])); }
-	 * 
-	 * // create todo items String[] todoItems =
-	 * this.getResources().getStringArray(R.array.todo_items); for (int i = 0; i
-	 * < todoItems.length; i++) { ItemsTable.CreateNewItem(this, todosListID,
-	 * todoItems[i], todoGroupIDs.get(i)); }
-	 * 
-	 * mActiveListID = todosListID; ReStartListsActivity();
-	 * 
-	 * }
-	 * 
-	 * }
-	 */
-
-	/*
-	 * private void CreateGroceriesList() { // create new list
-	 * 
-	 * long groceriesListID = ListsTable.CreateNewList(this, "Groceries");
-	 * 
-	 * if (groceriesListID > 1) {
-	 * 
-	 * Hashtable<String, Long> groceryGroupsHashTable = new Hashtable<String,
-	 * Long>();
-	 * 
-	 * groceryGroupsHashTable.put("[No Group]", (long) 1); // create grocery
-	 * groups String[] groceryGroups =
-	 * this.getResources().getStringArray(R.array.grocery_groups); for (int i =
-	 * 0; i < groceryGroups.length; i++) { long groupID =
-	 * GroupsTable.CreateNewGroup(this, groceriesListID, groceryGroups[i]);
-	 * groceryGroupsHashTable.put(groceryGroups[i], groupID); }
-	 * 
-	 * // create grocery items // NOTE: this only works if R.array.grocery_items
-	 * and // R.array.grocery_items_groups // are in the proper order!!!!!!
-	 * String[] groceryItems =
-	 * this.getResources().getStringArray(R.array.grocery_items); String[]
-	 * groceryItemGroups =
-	 * this.getResources().getStringArray(R.array.grocery_items_groups);
-	 * 
-	 * for (int i = 0; i < groceryItems.length; i++) { long groupID =
-	 * groceryGroupsHashTable.get(groceryItemGroups[i]);
-	 * ItemsTable.CreateNewItem(this, groceriesListID, groceryItems[i],
-	 * groupID); }
-	 * 
-	 * // create grocery stores Hashtable<String, Long> storesHashTable = new
-	 * Hashtable<String, Long>(); String[] groceryStores =
-	 * this.getResources().getStringArray(R.array.grocery_stores); for (int i =
-	 * 0; i < groceryStores.length; i++) { long storeID =
-	 * StoresTable.CreateNewStore(this, groceriesListID, groceryStores[i]);
-	 * storesHashTable.put(groceryStores[i], storeID); }
-	 * 
-	 * // create locations Hashtable<String, Long> locationsHashTable = new
-	 * Hashtable<String, Long>(); String[] storeLocations =
-	 * this.getResources().getStringArray(R.array.locations); for (int i = 0; i
-	 * < storeLocations.length; i++) { long locationID =
-	 * LocationsTable.CreateNewLocation(this, groceriesListID,
-	 * storeLocations[i]); locationsHashTable.put(storeLocations[i],
-	 * locationID); }
-	 * 
-	 * // create Bridge table long locationID = -1; long groupID = -1; String[]
-	 * Albertons =
-	 * this.getResources().getStringArray(R.array.Albertsons_Eastgate_Locations
-	 * ); long storeID = storesHashTable.get(groceryStores[0]); for (int i = 0;
-	 * i < Albertons.length; i++) { String groupLocation = Albertons[i]; if
-	 * (groupLocation.equals("[No LOCATION]")) { locationID = 1; } else {
-	 * locationID = locationsHashTable.get(Albertons[i]); } if (i == 0) {
-	 * groupID = 1; } else { groupID =
-	 * groceryGroupsHashTable.get(groceryGroups[i - 1]); }
-	 * 
-	 * BridgeTable.CreateNewBridgeRow(this, groceriesListID, storeID, groupID,
-	 * locationID); }
-	 * 
-	 * String[] QFC =
-	 * this.getResources().getStringArray(R.array.QFC_Factoria_Locations);
-	 * storeID = storesHashTable.get(groceryStores[1]); for (int i = 0; i <
-	 * QFC.length; i++) { String groupLocation = QFC[i]; if
-	 * (groupLocation.equals("[No LOCATION]")) { locationID = 1; } else {
-	 * locationID = locationsHashTable.get(QFC[i]); } if (i == 0) { groupID = 1;
-	 * } else { groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]); }
-	 * BridgeTable.CreateNewBridgeRow(this, groceriesListID, storeID, groupID,
-	 * locationID); }
-	 * 
-	 * String[] sw_belfair =
-	 * this.getResources().getStringArray(R.array.Safeway_Belfair_Locations);
-	 * storeID = storesHashTable.get(groceryStores[2]); for (int i = 0; i <
-	 * sw_belfair.length; i++) { String groupLocation = sw_belfair[i]; if
-	 * (groupLocation.equals("[No LOCATION]")) { locationID = 1; } else {
-	 * locationID = locationsHashTable.get(sw_belfair[i]); } if (i == 0) {
-	 * groupID = 1; } else { groupID =
-	 * groceryGroupsHashTable.get(groceryGroups[i - 1]); }
-	 * BridgeTable.CreateNewBridgeRow(this, groceriesListID, storeID, groupID,
-	 * locationID); }
-	 * 
-	 * String[] sw_evergreen = this.getResources().getStringArray(R.array.
-	 * Safeway_Evergreen_Village_Locations); storeID =
-	 * storesHashTable.get(groceryStores[3]); for (int i = 0; i <
-	 * sw_evergreen.length; i++) { String groupLocation = sw_evergreen[i]; if
-	 * (groupLocation.equals("[No LOCATION]")) { locationID = 1; } else {
-	 * locationID = locationsHashTable.get(sw_evergreen[i]); } if (i == 0) {
-	 * groupID = 1; } else { groupID =
-	 * groceryGroupsHashTable.get(groceryGroups[i - 1]); }
-	 * BridgeTable.CreateNewBridgeRow(this, groceriesListID, storeID, groupID,
-	 * locationID); }
-	 * 
-	 * String[] sw_Issaquah =
-	 * this.getResources().getStringArray(R.array.Safeway_Issaquah_Locations);
-	 * storeID = storesHashTable.get(groceryStores[4]); for (int i = 0; i <
-	 * sw_Issaquah.length; i++) { String groupLocation = sw_Issaquah[i]; if
-	 * (groupLocation.equals("[No LOCATION]")) { locationID = 1; } else {
-	 * locationID = locationsHashTable.get(sw_Issaquah[i]); } if (i == 0) {
-	 * groupID = 1; } else { groupID =
-	 * groceryGroupsHashTable.get(groceryGroups[i - 1]); }
-	 * BridgeTable.CreateNewBridgeRow(this, groceriesListID, storeID, groupID,
-	 * locationID); }
-	 * 
-	 * mActiveListID = groceriesListID; ReStartListsActivity();
-	 * 
-	 * }
-	 * 
-	 * }
-	 */
 
 	private void DeleteList() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -589,7 +401,6 @@ public class ListsActivity extends FragmentActivity {
 		ListsDialogFragment editListTitleDialog = ListsDialogFragment
 				.newInstance(mActiveListID, ListsDialogFragment.NEW_LIST);
 		editListTitleDialog.show(fm, "dialog_lists_table_update");
-
 	}
 
 	private void EditListTitle() {

@@ -1,11 +1,7 @@
 package com.lbconsulting.alist_03.fragments;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
@@ -15,7 +11,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,42 +33,23 @@ import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
-/* import android.app.Fragment; */
+public class ListsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-public class ListsFragment extends Fragment
-		implements LoaderManager.LoaderCallbacks<Cursor> {
-
-	// OnListItemLongClickListener mListItemLongClickCallback;
-
-	// Container Activity must implement this interface
-	public interface OnListItemLongClickListener {
-		public void onListItemLongClick(int position, long itemID);
-	}
-
-	private long mActiveListID = -9999;
-	// private long mActiveItemID = -9999;
+	private long mActiveListID = -1;
 
 	private ListSettings mListSettings;
 
-	// private Cursor mList;
 	private TextView mListTitle;
 	private ListView mItemsListView;
 	private Spinner mStoreSpinner;
 
-	public static final String RESART_STORES_LOADER_KEY = "RestartStoresLoaderKey";
-	private BroadcastReceiver mRestartStoresLoaderReceiver;
-
-	// public static final String RESART_ITEMS_LOADER_KEY = "RestartItemsLoaderKey";
-	// private BroadcastReceiver mRestartItemsLoaderReceiver;
-
-	private BroadcastReceiver mItemChangedReceiver;
+	// private BroadcastReceiver mItemChangedReceiver;
 
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
 	private LoaderManager.LoaderCallbacks<Cursor> mListsFragmentCallbacks;
 	private ItemsCursorAdaptor mItemsCursorAdaptor;
 	private StoresSpinnerCursorAdapter mStoresSpinnerCursorAdapter;
-	// private GroupsSpinnerCursorAdapter mGroupsSpinnerCursorAdapter;
 
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
 
@@ -155,7 +131,6 @@ public class ListsFragment extends Fragment
 			} else {
 				mStoreSpinner.setVisibility(View.GONE);
 			}
-
 		}
 
 		mItemsListView = (ListView) view.findViewById(R.id.itemsListView);
@@ -191,7 +166,6 @@ public class ListsFragment extends Fragment
 
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long activeItemID) {
-				// mActiveItemID = activeItemID;
 				FragmentManager fm = getFragmentManager();
 				Fragment prev = fm.findFragmentByTag("dialog_edit_item");
 				if (prev != null) {
@@ -212,7 +186,6 @@ public class ListsFragment extends Fragment
 	private void setViewColors() {
 		mListTitle.setBackgroundColor(this.mListSettings.getTitleBackgroundColor());
 		mListTitle.setTextColor(this.mListSettings.getTitleTextColor());
-		// mStoreSpinner.setBackgroundColor(this.mListSettings.getTitleBackgroundColor());
 		mItemsListView.setBackgroundColor(this.mListSettings.getListBackgroundColor());
 	}
 
@@ -220,39 +193,15 @@ public class ListsFragment extends Fragment
 	public void onActivityCreated(Bundle savedInstanceState) {
 		MyLog.i("ListsFragment", "onActivityCreated");
 
-		mRestartStoresLoaderReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-			}
-		};
-
-		/*		mRestartItemsLoaderReceiver = new BroadcastReceiver() {
+		/*		mItemChangedReceiver = new BroadcastReceiver() {
 					@Override
 					public void onReceive(Context context, Intent intent) {
+
 					}
 				};*/
 
-		mItemChangedReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				// mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID,
-				// null, mListsFragmentCallbacks);
-			}
-		};
-
-		// Register local broadcast receivers.
-
-		String restartGroupsLoaderKey = String.valueOf(mActiveListID) + RESART_STORES_LOADER_KEY;
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartStoresLoaderReceiver,
-				new IntentFilter(restartGroupsLoaderKey));
-
-		/*String restartItemsLoaderReceiver = String.valueOf(mActiveListID) + RESART_ITEMS_LOADER_KEY;*/
-		/*LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartItemsLoaderReceiver,
-				new IntentFilter(restartItemsLoaderReceiver));*/
-
-		String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemChangedReceiver,
-				new IntentFilter(itemChangedReceiverKey));
+		// String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
+		// LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemChangedReceiver, new IntentFilter(itemChangedReceiverKey));
 
 		mLoaderManager = getLoaderManager();
 		mLoaderManager.initLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
@@ -322,12 +271,11 @@ public class ListsFragment extends Fragment
 	public void onDestroy() {
 		MyLog.i("ListsFragment", "onDestroy");
 		// Unregister local broadcast receivers
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartStoresLoaderReceiver);
+		// LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartStoresLoaderReceiver);
 		// LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartItemsLoaderReceiver);
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemChangedReceiver);
+		// LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemChangedReceiver);
 
 		super.onDestroy();
-
 	}
 
 	@Override
@@ -413,7 +361,6 @@ public class ListsFragment extends Fragment
 		default:
 			break;
 		}
-
 		return cursorLoader;
 	}
 
@@ -442,7 +389,6 @@ public class ListsFragment extends Fragment
 		default:
 			break;
 		}
-
 	}
 
 	@Override
@@ -462,6 +408,5 @@ public class ListsFragment extends Fragment
 		default:
 			break;
 		}
-
 	}
 }

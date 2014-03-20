@@ -26,7 +26,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.CheckItemsPagerAdapter;
-import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.dialogs.MoveCheckedItemsDialogFragment;
@@ -38,9 +37,8 @@ public class CheckItemsActivity extends FragmentActivity {
 	private ViewPager mPager;
 
 	private long mActiveListID = -1;
-	//private long mActiveItemID = -1;
 	private int mActiveListPosition = -1;
-	private ListSettings mListSettings;
+	// private ListSettings mListSettings;
 	private Cursor mAllListsCursor;
 	private BroadcastReceiver mItemsMovedReceiver;
 	private long mSelectedListID = -1;
@@ -52,8 +50,8 @@ public class CheckItemsActivity extends FragmentActivity {
 	private Menu mCheckItemsMenu;
 	private BroadcastReceiver mRequestCheckItemsTabPositionReceiver;
 
-	String mRestartGroupsLoaderKey = "";
-	String mRestartItemsLoaderKey = "";
+	// String mRestartGroupsLoaderKey = "";
+	// String mRestartItemsLoaderKey = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -64,24 +62,17 @@ public class CheckItemsActivity extends FragmentActivity {
 
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
-		//mActiveItemID = storedStates.getLong("ActiveItemID", -1);
 		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
 
-		mApplyCheckItemsTabPositionKey = String.valueOf(mActiveListID)
-				+ CheckItemsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
-
-		mRestartGroupsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_GROUPS_LOADER_KEY;
-		mRestartItemsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_ITEMS_LOADER_KEY;
-
+		mApplyCheckItemsTabPositionKey = String.valueOf(mActiveListID) + CheckItemsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
 		mItemsMovedReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				if (intent.hasExtra("selectedListID")) {
 					// the new list ID has been selected ...
 					mSelectedListID = intent.getLongExtra("selectedListID", -1);
-					int numberOfItemsMoved = ItemsTable.MoveAllCheckedItemsInList(CheckItemsActivity.this,
-							mActiveListID, mSelectedListID);
-					SendRestartItemsLoaderBroadCast();
+					int numberOfItemsMoved = ItemsTable.MoveAllCheckedItemsInList(CheckItemsActivity.this, mActiveListID, mSelectedListID);
+					// SendRestartItemsLoaderBroadCast();
 
 					AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
 					// set title
@@ -106,7 +97,6 @@ public class CheckItemsActivity extends FragmentActivity {
 					AlertDialog alertDialog = builder.create();
 					// show it
 					alertDialog.show();
-
 				}
 			}
 		};
@@ -117,7 +107,7 @@ public class CheckItemsActivity extends FragmentActivity {
 
 		// add a tabs to the action bar.
 		actionBar.addTab(actionBar.newTab()
-				//.setText(R.string.actionBar_tab_color_presets)
+				// .setText(R.string.actionBar_tab_color_presets)
 				.setText(R.string.actionBar_tab_cull_or_move_items)
 				.setTabListener(new TabListener() {
 
@@ -135,7 +125,7 @@ public class CheckItemsActivity extends FragmentActivity {
 
 					@Override
 					public void onTabUnselected(Tab tab, android.app.FragmentTransaction ft) {
-						// Do nothing					
+						// Do nothing
 					}
 				})
 				);
@@ -180,7 +170,7 @@ public class CheckItemsActivity extends FragmentActivity {
 				new IntentFilter(requestCheckItemsTabPositionReceiverKey));
 
 		mAllListsCursor = ListsTable.getAllLists(this);
-		mListSettings = new ListSettings(this, mActiveListID);
+		// mListSettings = new ListSettings(this, mActiveListID);
 
 		mCheckItemsPagerAdapter = new CheckItemsPagerAdapter(getSupportFragmentManager(), this);
 		mPager = (ViewPager) findViewById(R.id.checkItemsPager);
@@ -202,36 +192,31 @@ public class CheckItemsActivity extends FragmentActivity {
 				SetActiveListBroadcastReceivers();
 
 				Intent applyCheckItemsTabPositionIntent = new Intent(mApplyCheckItemsTabPositionKey);
-				applyCheckItemsTabPositionIntent.putExtra("checkItemsTabPosition",
-						mCheckItemsActivitySelectedNavigationIndex);
-				LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(
-						applyCheckItemsTabPositionIntent);
+				applyCheckItemsTabPositionIntent.putExtra("checkItemsTabPosition", mCheckItemsActivitySelectedNavigationIndex);
+				LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(applyCheckItemsTabPositionIntent);
 
-				SendRestartItemsLoaderBroadCast();
+				// SendRestartItemsLoaderBroadCast();
 
-				MyLog.d("CheckItems_ACTIVITY", "onPageSelected() - position = " + position + " ; listID = "
-						+ mActiveListID);
+				MyLog.d("CheckItems_ACTIVITY", "onPageSelected() - position = " + position + " ; listID = " + mActiveListID);
 			}
 		});
 	}
 
 	private void SendApplyCheckItemsTabPositionBroadCast() {
 		Intent applyCheckItemsTabPositionIntent = new Intent(mApplyCheckItemsTabPositionKey);
-		applyCheckItemsTabPositionIntent.putExtra("checkItemsTabPosition",
-				mCheckItemsActivitySelectedNavigationIndex);
-		LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(
-				applyCheckItemsTabPositionIntent);
+		applyCheckItemsTabPositionIntent.putExtra("checkItemsTabPosition", mCheckItemsActivitySelectedNavigationIndex);
+		LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(applyCheckItemsTabPositionIntent);
 	}
 
-	private void SendRestartGroupsLoaderBroadCast() {
-		Intent restartGroupsLoaderIntent = new Intent(mRestartGroupsLoaderKey);
-		LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(restartGroupsLoaderIntent);
-	}
+	/*	private void SendRestartGroupsLoaderBroadCast() {
+			Intent restartGroupsLoaderIntent = new Intent(mRestartGroupsLoaderKey);
+			LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(restartGroupsLoaderIntent);
+		}*/
 
-	private void SendRestartItemsLoaderBroadCast() {
-		Intent restartItemsLoaderIntent = new Intent(mRestartItemsLoaderKey);
-		LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(restartItemsLoaderIntent);
-	}
+	/*	private void SendRestartItemsLoaderBroadCast() {
+			Intent restartItemsLoaderIntent = new Intent(mRestartItemsLoaderKey);
+			LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(restartItemsLoaderIntent);
+		}*/
 
 	private void SetActiveListBroadcastReceivers() {
 		// Unregister old receivers
@@ -317,7 +302,7 @@ public class CheckItemsActivity extends FragmentActivity {
 
 		case R.id.action_moveCheckedItmes:
 			MoveCheckedItems();
-			//Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
 		case R.id.action_checkUnused90:
@@ -333,7 +318,7 @@ public class CheckItemsActivity extends FragmentActivity {
 			return true;
 
 		case R.id.action_sortOrder:
-			//ChangeSortOrder();
+			// ChangeSortOrder();
 			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
@@ -347,12 +332,11 @@ public class CheckItemsActivity extends FragmentActivity {
 			try {
 				mAllListsCursor.moveToPosition(position);
 				mActiveListID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
-				mListSettings = new ListSettings(this, mActiveListID);
+				// mListSettings = new ListSettings(this, mActiveListID);
 
-				mApplyCheckItemsTabPositionKey = String.valueOf(mActiveListID)
-						+ CheckItemsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
-				mRestartGroupsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_GROUPS_LOADER_KEY;
-				mRestartItemsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_ITEMS_LOADER_KEY;
+				mApplyCheckItemsTabPositionKey = String.valueOf(mActiveListID) + CheckItemsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
+				/*				mRestartGroupsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_GROUPS_LOADER_KEY;
+								mRestartItemsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_ITEMS_LOADER_KEY;*/
 
 				mActiveListPosition = position;
 			} catch (Exception e) {
@@ -380,7 +364,7 @@ public class CheckItemsActivity extends FragmentActivity {
 						public void onClick(DialogInterface dialog, int id) {
 							// delete all checked items
 							ItemsTable.DeleteAllCheckedItemsInList(CheckItemsActivity.this, mActiveListID);
-							SendRestartItemsLoaderBroadCast();
+							// SendRestartItemsLoaderBroadCast();
 						}
 					})
 					.setNegativeButton(R.string.btn_no_text, new DialogInterface.OnClickListener() {
@@ -418,7 +402,7 @@ public class CheckItemsActivity extends FragmentActivity {
 
 	private void ClearAllCheckedItems() {
 		ItemsTable.UnCheckAllItemsInList(CheckItemsActivity.this, mActiveListID);
-		SendRestartItemsLoaderBroadCast();
+		// SendRestartItemsLoaderBroadCast();
 	}
 
 	private void MoveCheckedItems() {
@@ -433,8 +417,8 @@ public class CheckItemsActivity extends FragmentActivity {
 			}
 			int numberOfCheckedItems = ItemsTable.getNumberOfCheckedItmes(this, mActiveListID);
 			if (numberOfCheckedItems > 0) {
-				MoveCheckedItemsDialogFragment moveCheckedItemsDialog = MoveCheckedItemsDialogFragment.newInstance(
-						mActiveListID, numberOfCheckedItems);
+				MoveCheckedItemsDialogFragment moveCheckedItemsDialog =
+						MoveCheckedItemsDialogFragment.newInstance(mActiveListID, numberOfCheckedItems);
 				moveCheckedItemsDialog.show(fm, "dialog_move_checked_items");
 			} else {
 				AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);

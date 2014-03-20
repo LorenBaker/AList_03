@@ -3,7 +3,6 @@ package com.lbconsulting.alist_03.dialogs;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
@@ -11,7 +10,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,7 +29,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class EditItemDialogFragment extends DialogFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-	//private EditItemDialogListener mFinishEditItemDialogCallback;
+	// private EditItemDialogListener mFinishEditItemDialogCallback;
 
 	private EditText txtEditItemName;
 	private EditText txtEditItemNote;
@@ -111,6 +109,7 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 
 		btnApply = (Button) view.findViewById(R.id.btnApply);
 		btnApply.setOnClickListener(new OnClickListener() {
+			@Override
 			public void onClick(View v) {
 
 				String newItemName = txtEditItemName.getText().toString().trim();
@@ -119,10 +118,10 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 
 				ItemsTable.UpdateItem(getActivity(), mActiveItemID, newItemName, newItemNote, newItemGroupID);
 
-				String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
-				Intent intent = new Intent(itemChangedReceiverKey);
-				intent.putExtra("itemID", mActiveItemID);
-				LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+				/*				String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
+								Intent intent = new Intent(itemChangedReceiverKey);
+								intent.putExtra("itemID", mActiveItemID);
+								LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);*/
 
 				getDialog().dismiss();
 			}
@@ -131,6 +130,7 @@ public class EditItemDialogFragment extends DialogFragment implements LoaderMana
 		btnCancel = (Button) view.findViewById(R.id.btnCancel);
 		if (btnCancel != null) {
 			btnCancel.setOnClickListener(new OnClickListener() {
+				@Override
 				public void onClick(View v) {
 					getDialog().dismiss();
 				}

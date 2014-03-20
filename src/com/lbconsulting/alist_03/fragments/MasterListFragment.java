@@ -2,11 +2,7 @@ package com.lbconsulting.alist_03.fragments;
 
 import android.app.Activity;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
@@ -16,7 +12,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -55,7 +50,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 
 	private long mActiveListID;
 	// private long mActiveItemID;
-	private BroadcastReceiver mItemChangedReceiver;
+	// private BroadcastReceiver mItemChangedReceiver;
 
 	private ListSettings listSettings;
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
@@ -161,7 +156,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 
 		lvItemsListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 				// mActiveItemID = id;
 				ItemsTable.ToggleSelection(getActivity(), id);
 				txtItemName.setText("");
@@ -239,16 +234,16 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 
 		});
 
-		mItemChangedReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
-			}
-		};
+		/*		mItemChangedReceiver = new BroadcastReceiver() {
+					@Override
+					public void onReceive(Context context, Intent intent) {
+						mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
+					}
+				};
 
-		String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemChangedReceiver,
-				new IntentFilter(itemChangedReceiverKey));
+				String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
+				LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemChangedReceiver,
+						new IntentFilter(itemChangedReceiverKey));*/
 
 		MyLog.i("MasterListFragment", "onActivityCreated");
 		mLoaderManager = getLoaderManager();
@@ -276,6 +271,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 
 		txtItemName.post(new Runnable()
 		{
+			@Override
 			public void run()
 			{
 				txtItemName.requestFocus();
@@ -331,7 +327,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 	@Override
 	public void onDestroyView() {
 		MyLog.i("MasterListFragment", "onDestroyView");
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemChangedReceiver);
+		// LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemChangedReceiver);
 		super.onDestroyView();
 	}
 
