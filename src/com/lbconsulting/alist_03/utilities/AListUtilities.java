@@ -25,6 +25,17 @@ public class AListUtilities {
 	public static final int GROUPS_LOADER_ID = 4;
 	public static final int LOCATIONS_LOADER_ID = 5;
 
+	public final static int LIST_SORT_ALPHABETICAL = 0;
+	public final static int LIST_SORT_BY_GROUP = 1;
+	public final static int LIST_SORT_MANUAL = 2;
+	public final static int LIST_SORT_BY_STORE_LOCATION = 3;
+
+	public final static int MASTER_LIST_SORT_ALPHABETICAL = 0;
+	public final static int MASTER_LIST_SORT_BY_GROUP = 1;
+	public final static int MASTER_LIST_SORT_BY_LAST_USED = 2;
+	public final static int MASTER_LIST_SORT_SELECTED_AT_TOP = 3;
+	public final static int MASTER_LIST_SORT_SELECTED_AT_BOTTOM = 4;
+
 	/*public static final int CHECK_ITEMS_FRAGMENT = 1;
 	public static final int COLORS_PREVIEW_FRAGMENT = 2;
 	public static final int CULL_ITEMS_FRAGMENT = 3;
@@ -64,10 +75,8 @@ public class AListUtilities {
 	/**
 	 * Execute all of the SQL statements in the ArrayList<String>.
 	 * 
-	 * @param db
-	 *            The database on which to execute the statements.
-	 * @param sqlStatements
-	 *            An array of SQL statements to execute.
+	 * @param db The database on which to execute the statements.
+	 * @param sqlStatements An array of SQL statements to execute.
 	 */
 	public static void execMultipleSQL(SQLiteDatabase db,
 			ArrayList<String> sqlStatements) {

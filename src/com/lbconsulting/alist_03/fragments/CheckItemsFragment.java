@@ -44,8 +44,8 @@ public class CheckItemsFragment extends Fragment
 		implements LoaderManager.LoaderCallbacks<Cursor> {
 
 	private long mActiveListID = -9999;
-	//private long mActiveItemID = -9999;
-	//private int mActivePosition = -9999;
+	// private long mActiveItemID = -9999;
+	// private int mActivePosition = -9999;
 
 	private ListSettings mListSettings;
 
@@ -181,7 +181,7 @@ public class CheckItemsFragment extends Fragment
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View onItemLongClickView, int position,
 					long activeItemID) {
-				//mActiveItemID = id;
+				// mActiveItemID = id;
 				FragmentManager fm = getFragmentManager();
 				Fragment prev = fm.findFragmentByTag("dialog_edit_item");
 				if (prev != null) {
@@ -381,21 +381,21 @@ public class CheckItemsFragment extends Fragment
 			int masterListSortOrder = mListSettings.getMasterListSortOrder();
 			String sortOrder = "";
 			switch (masterListSortOrder) {
-			case ListPreferencesFragment.ALPHABETICAL:
-				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
-				break;
+			/*			case ListPreferencesFragment.ALPHABETICAL:
+							sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+							break;
 
-			case ListPreferencesFragment.SELECTED_AT_TOP:
-				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
-				break;
+						case ListPreferencesFragment.SELECTED_AT_TOP:
+							sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
+							break;
 
-			case ListPreferencesFragment.SELECTED_AT_BOTTOM:
-				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
-				break;
+						case ListPreferencesFragment.SELECTED_AT_BOTTOM:
+							sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
+							break;
 
-			case ListPreferencesFragment.LAST_USED:
-				sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
-				break;
+						case ListPreferencesFragment.LAST_USED:
+							sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
+							break;*/
 
 			default:
 				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
@@ -403,7 +403,8 @@ public class CheckItemsFragment extends Fragment
 			}
 
 			try {
-				if (mListSettings.getShowGroupsInMasterListFragment()) {
+				// if (mListSettings.getShowGroupsInMasterListFragment()) {
+				if (false) {
 					cursorLoader = ItemsTable.getAllItemsInListWithGroups(getActivity(), mActiveListID, null);
 
 					/*} else if (mListSettings.getShowStores()) {
@@ -449,7 +450,7 @@ public class CheckItemsFragment extends Fragment
 	public void onLoadFinished(Loader<Cursor> loader, Cursor newCursor) {
 		int id = loader.getId();
 		MyLog.i("CheckItemsFragment: onLoadFinished; id = " + id, "; listID = " + mActiveListID);
-		// The asynchronous load is complete and the newCursor is now available for use. 
+		// The asynchronous load is complete and the newCursor is now available for use.
 		// Update the adapter to show the changed data.
 		switch (loader.getId()) {
 		case AListUtilities.ITEMS_LOADER_ID:

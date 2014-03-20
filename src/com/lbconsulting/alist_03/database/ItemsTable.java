@@ -78,6 +78,7 @@ public class ItemsTable {
 	public static final String SORT_ORDER_SELECTED_AT_TOP = COL_SELECTED + " DESC, " + SORT_ORDER_ITEM_NAME;
 	public static final String SORT_ORDER_SELECTED_AT_BOTTOM = COL_SELECTED + " ASC, " + SORT_ORDER_ITEM_NAME;
 	public static final String SORT_ORDER_LAST_USED = COL_DATE_TIME_LAST_USED + " DESC, " + SORT_ORDER_ITEM_NAME;
+	public static final String SORT_ORDER_MANUAL = COL_MANUAL_SORT_ORDER + " ASC";
 
 	public static final String ITEM_MOVE_BROADCAST_KEY = "itemMoved";
 	public static final String ITEM_CHANGED_BROADCAST_KEY = "itemChanged";
@@ -344,8 +345,7 @@ public class ItemsTable {
 	}
 
 	/**
-	 * This method gets all items in the provided list that are selected (True)
-	 * or not selected (False)
+	 * This method gets all items in the provided list that are selected (True) or not selected (False)
 	 * 
 	 * @param context
 	 * @param listID
@@ -423,8 +423,7 @@ public class ItemsTable {
 	}
 
 	/**
-	 * This method gets all items in the provided list that are struck out
-	 * (True) or not struck out (False)
+	 * This method gets all items in the provided list that are struck out (True) or not struck out (False)
 	 * 
 	 * @param context
 	 * @param listID
@@ -526,8 +525,7 @@ public class ItemsTable {
 	 */
 
 	/**
-	 * This method gets all items in the provided group that are selected (True)
-	 * or not selected (False).
+	 * This method gets all items in the provided group that are selected (True) or not selected (False).
 	 * 
 	 * @param context
 	 * @param groupID

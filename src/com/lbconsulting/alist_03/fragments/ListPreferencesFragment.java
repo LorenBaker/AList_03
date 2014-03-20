@@ -17,6 +17,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,18 +29,17 @@ import com.lbconsulting.alist_03.ListPreferencesActivity;
 import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ListsTable;
-import com.lbconsulting.alist_03.dialogs.ListsDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ListPreferencesFragment extends Fragment {
 
-	public static final int ALPHABETICAL = 0;
-	//public static final int BY_GROUP = 1;
-	public static final int MANUAL = 1;
-	public static final int SELECTED_AT_TOP = 2;
-	public static final int SELECTED_AT_BOTTOM = 3;
-	public static final int LAST_USED = 4;
+	/*	public static final int ALPHABETICAL = 0;
+		public static final int BY_GROUP = 1;
+		public static final int MANUAL = 1;
+		public static final int SELECTED_AT_TOP = 2;
+		public static final int SELECTED_AT_BOTTOM = 3;
+		public static final int LAST_USED = 4;*/
 
 	private long mActiveListID;
 	private ListSettings listSettings;
@@ -48,15 +50,24 @@ public class ListPreferencesFragment extends Fragment {
 	private TextView tvListTitle;
 
 	private Button btnEditListTitle;
-	private Button btnListSortOrder;
-	private Button btnMasterListSortOrder;
-	private Button btnColors;
-	private Button btnMakeDefaultPreferences;
 
-	private Switch swShowGroupsInListsView;
-	private Switch swShowGroupsInMasterListView;
-	private Switch swShowStores;
+	private RadioButton rbListsViewAlphabetical;
+	private RadioButton rbListsViewGroup;
+	private RadioButton rbListsViewManual;
+	private RadioButton rbListsViewStoreLocation;
+
 	private Switch swDeleteNoteUponClearingItem;
+
+	private RadioGroup rbGroupListsView;
+	private RadioGroup rbGroupMasterListsView;
+
+	private RadioButton rbMasterListViewAlphabetical;
+	private RadioButton rbMasterListViewGroup;
+	private RadioButton rbMasterListViewLastUsed;
+	private RadioButton rbMasterListViewSelectedAtTop;
+	private RadioButton rbMasterListViewSelectedAtBottom;
+
+	private Button btnColors;
 
 	public ListPreferencesFragment() {
 		// Empty constructor
@@ -66,15 +77,15 @@ public class ListPreferencesFragment extends Fragment {
 		if (newListID < 2) {
 			MyLog.e("ListPreferencesFragment: newInstance; listID = " + newListID, " is less than 2!!!!");
 			return null;
-
-		} else {
-			ListPreferencesFragment f = new ListPreferencesFragment();
-			// Supply listID input as an argument.
-			Bundle args = new Bundle();
-			args.putLong("listID", newListID);
-			f.setArguments(args);
-			return f;
 		}
+
+		ListPreferencesFragment f = new ListPreferencesFragment();
+		// Supply listID input as an argument.
+		Bundle args = new Bundle();
+		args.putLong("listID", newListID);
+		f.setArguments(args);
+		return f;
+
 	}
 
 	private boolean checkListID(String method) {
@@ -121,20 +132,27 @@ public class ListPreferencesFragment extends Fragment {
 			listSettings = new ListSettings(getActivity(), mActiveListID);
 
 			llFragListPreferences = (LinearLayout) view.findViewById(R.id.llFragListPreferences);
-
 			tvListTitle = (TextView) view.findViewById(R.id.tvListTitle);
 
 			btnEditListTitle = (Button) view.findViewById(R.id.btnEditListTitle);
-			btnListSortOrder = (Button) view.findViewById(R.id.btnListSortOrder);
-			btnMasterListSortOrder = (Button) view.findViewById(R.id.btnMasterListSortOrder);
-			btnColors = (Button) view.findViewById(R.id.btnColors);
-			btnMakeDefaultPreferences = (Button) view.findViewById(R.id.btnMakeDefaultPreferences);
 
-			swShowGroupsInListsView = (Switch) view.findViewById(R.id.swShowGroupsInListsView);
-			swShowGroupsInMasterListView = (Switch) view.findViewById(R.id.swShowGroupsInMasterListView);
-			swShowStores = (Switch) view.findViewById(R.id.swShowStores);
+			rbGroupListsView = (RadioGroup) view.findViewById(R.id.rbGroupListsView);
+			rbGroupMasterListsView = (RadioGroup) view.findViewById(R.id.rbGroupMasterListsView);
+
+			rbListsViewAlphabetical = (RadioButton) view.findViewById(R.id.rbListsViewAlphabetical);
+			rbListsViewGroup = (RadioButton) view.findViewById(R.id.rbListsViewGroup);
+			rbListsViewManual = (RadioButton) view.findViewById(R.id.rbListsViewManual);
+			rbListsViewStoreLocation = (RadioButton) view.findViewById(R.id.rbListsViewStoreLocation);
+
 			swDeleteNoteUponClearingItem = (Switch) view.findViewById(R.id.swDeleteNoteUponClearingItem);
 
+			rbMasterListViewAlphabetical = (RadioButton) view.findViewById(R.id.rbMasterListViewAlphabetical);
+			rbMasterListViewGroup = (RadioButton) view.findViewById(R.id.rbMasterListViewGroup);
+			rbMasterListViewLastUsed = (RadioButton) view.findViewById(R.id.rbMasterListViewLastUsed);
+			rbMasterListViewSelectedAtTop = (RadioButton) view.findViewById(R.id.rbMasterListViewSelectedAtTop);
+			rbMasterListViewSelectedAtBottom = (RadioButton) view.findViewById(R.id.rbMasterListViewSelectedAtBottom);
+
+			btnColors = (Button) view.findViewById(R.id.btnColors);
 			fillListPreferencesViews();
 
 		} else {
@@ -150,14 +168,8 @@ public class ListPreferencesFragment extends Fragment {
 		checkListID("onActivityCreated");
 
 		btnEditListTitle.setOnClickListener(buttonClick);
-		btnListSortOrder.setOnClickListener(buttonClick);
-		btnMasterListSortOrder.setOnClickListener(buttonClick);
 		btnColors.setOnClickListener(buttonClick);
-		btnMakeDefaultPreferences.setOnClickListener(buttonClick);
 
-		swShowGroupsInListsView.setOnCheckedChangeListener(switchOnCheckedChanged);
-		swShowGroupsInMasterListView.setOnCheckedChangeListener(switchOnCheckedChanged);
-		swShowStores.setOnCheckedChangeListener(switchOnCheckedChanged);
 		swDeleteNoteUponClearingItem.setOnCheckedChangeListener(switchOnCheckedChanged);
 
 		getActivity().getActionBar().setTitle("List Preferences");
@@ -168,7 +180,7 @@ public class ListPreferencesFragment extends Fragment {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				// there has been a changed in the ListsTable ... 
+				// there has been a changed in the ListsTable ...
 				// so refresh listSettings
 				listSettings.RefreshListSettings();
 
@@ -181,14 +193,14 @@ public class ListPreferencesFragment extends Fragment {
 					Intent intentForActivity = new Intent(key);
 					LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intentForActivity);
 				}
-				if (intent.hasExtra("newListSortOrder")) {
-					int newListSortOrder = intent.getIntExtra("newListSortOrder", 0);
-					setListSortOrder(newListSortOrder);
-				}
-				if (intent.hasExtra("newMasterListSortOrder")) {
-					int newMasterListSortOrder = intent.getIntExtra("newMasterListSortOrder", 0);
-					setMasterListSortOrder(newMasterListSortOrder);
-				}
+				/*				if (intent.hasExtra("newListSortOrder")) {
+									int newListSortOrder = intent.getIntExtra("newListSortOrder", 0);
+									setListSortOrder(newListSortOrder);
+								}
+								if (intent.hasExtra("newMasterListSortOrder")) {
+									int newMasterListSortOrder = intent.getIntExtra("newMasterListSortOrder", 0);
+									setMasterListSortOrder(newMasterListSortOrder);
+								}*/
 			}
 		};
 
@@ -198,6 +210,77 @@ public class ListPreferencesFragment extends Fragment {
 		String key = String.valueOf(mActiveListID) + LIST_PREFERENCES_CHANGED_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mPreferencesChangedBroadcastReceiver,
 				new IntentFilter(key));
+
+		rbGroupListsView.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+			@Override
+			public void onCheckedChanged(RadioGroup group, int checkedId) {
+				ContentValues newFieldValues = new ContentValues();
+
+				switch (checkedId) {
+				case R.id.rbListsViewAlphabetical:
+					newFieldValues.put(ListsTable.COL_LIST_SORT_ORDER, AListUtilities.LIST_SORT_ALPHABETICAL);
+					listSettings.updateListsTableFieldValues(newFieldValues);
+					break;
+
+				case R.id.rbListsViewGroup:
+					newFieldValues.put(ListsTable.COL_LIST_SORT_ORDER, AListUtilities.LIST_SORT_BY_GROUP);
+					listSettings.updateListsTableFieldValues(newFieldValues);
+					break;
+
+				case R.id.rbListsViewManual:
+					newFieldValues.put(ListsTable.COL_LIST_SORT_ORDER, AListUtilities.LIST_SORT_MANUAL);
+					listSettings.updateListsTableFieldValues(newFieldValues);
+					break;
+
+				case R.id.rbListsViewStoreLocation:
+					newFieldValues.put(ListsTable.COL_LIST_SORT_ORDER, AListUtilities.LIST_SORT_BY_STORE_LOCATION);
+					listSettings.updateListsTableFieldValues(newFieldValues);
+					break;
+
+				default:
+					break;
+				}
+			}
+		});
+
+		rbGroupMasterListsView.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+			@Override
+			public void onCheckedChanged(RadioGroup group, int checkedId) {
+				ContentValues newFieldValues = new ContentValues();
+
+				switch (checkedId) {
+				case R.id.rbMasterListViewAlphabetical:
+					newFieldValues.put(ListsTable.COL_MASTER_LIST_SORT_ORDER, AListUtilities.MASTER_LIST_SORT_ALPHABETICAL);
+					listSettings.updateListsTableFieldValues(newFieldValues);
+					break;
+
+				case R.id.rbMasterListViewGroup:
+					newFieldValues.put(ListsTable.COL_MASTER_LIST_SORT_ORDER, AListUtilities.MASTER_LIST_SORT_BY_GROUP);
+					listSettings.updateListsTableFieldValues(newFieldValues);
+					break;
+
+				case R.id.rbMasterListViewLastUsed:
+					newFieldValues.put(ListsTable.COL_MASTER_LIST_SORT_ORDER, AListUtilities.MASTER_LIST_SORT_BY_LAST_USED);
+					listSettings.updateListsTableFieldValues(newFieldValues);
+					break;
+
+				case R.id.rbMasterListViewSelectedAtTop:
+					newFieldValues.put(ListsTable.COL_MASTER_LIST_SORT_ORDER, AListUtilities.MASTER_LIST_SORT_SELECTED_AT_TOP);
+					listSettings.updateListsTableFieldValues(newFieldValues);
+					break;
+
+				case R.id.rbMasterListViewSelectedAtBottom:
+					newFieldValues.put(ListsTable.COL_MASTER_LIST_SORT_ORDER, AListUtilities.MASTER_LIST_SORT_SELECTED_AT_BOTTOM);
+					listSettings.updateListsTableFieldValues(newFieldValues);
+					break;
+
+				default:
+					break;
+				}
+			}
+		});
 
 		super.onActivityCreated(savedInstanceState);
 	}
@@ -215,38 +298,14 @@ public class ListPreferencesFragment extends Fragment {
 			}
 			switch (v.getId()) {
 			case R.id.btnEditListTitle:
-				ListsDialogFragment editListTitleDialog = ListsDialogFragment
-						.newInstance(mActiveListID, ListsDialogFragment.EDIT_LIST_TITLE);
-				editListTitleDialog.show(fm, "dialog_lists_table_update");
-				break;
-
-			case R.id.btnListSortOrder:
-				ListsDialogFragment editListSortOrderDialog = ListsDialogFragment
-						.newInstance(mActiveListID, ListsDialogFragment.LIST_SORT_ORDER);
-				editListSortOrderDialog.show(fm, "dialog_lists_table_update");
-
-				/*Toast.makeText(getActivity(), "\"" + "btnListSortOrder" + "\"" + " is under construction.",
-						Toast.LENGTH_SHORT).show();*/
-				break;
-
-			case R.id.btnMasterListSortOrder:
-				ListsDialogFragment editMasterListSortOrderDialog = ListsDialogFragment
-						.newInstance(mActiveListID, ListsDialogFragment.MASTER_LIST_SORT_ORDER);
-				editMasterListSortOrderDialog.show(fm, "dialog_lists_table_update");
-
-				/*Toast.makeText(getActivity(), "\"" + "btnMasterListSortOrder" + "\"" + " is under construction.",
-						Toast.LENGTH_SHORT).show();*/
+				Toast.makeText(getActivity(), "\"" + "btnEditListTitle" + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+				/*				ListsDialogFragment editListTitleDialog = ListsDialogFragment.newInstance(mActiveListID, ListsDialogFragment.EDIT_LIST_TITLE);
+								editListTitleDialog.show(fm, "dialog_lists_table_update");*/
 				break;
 
 			case R.id.btnColors:
-				StartColorsActivity();
-				/*				Toast.makeText(getActivity(), "\"" + "btnColors" + "\"" + " is under construction.", Toast.LENGTH_SHORT)
-										.show();*/
-				break;
-
-			case R.id.btnMakeDefaultPreferences:
-				Toast.makeText(getActivity(), "\"" + "btnMakeDefaultPreferences" + "\"" + " is under construction.",
-						Toast.LENGTH_SHORT).show();
+				// StartColorsActivity();
+				Toast.makeText(getActivity(), "\"" + "btnColors" + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 				break;
 
 			default:
@@ -262,17 +321,6 @@ public class ListPreferencesFragment extends Fragment {
 			ContentValues newFieldValues = new ContentValues();
 			int checkedValue = AListUtilities.boolToInt(isChecked);
 			switch (buttonView.getId()) {
-			case R.id.swShowGroupsInListsView:
-				newFieldValues.put(ListsTable.COL_SHOW_GROUPS_IN_LISTS_FRAGMENT, checkedValue);
-				break;
-
-			case R.id.swShowGroupsInMasterListView:
-				newFieldValues.put(ListsTable.COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT, checkedValue);
-				break;
-
-			case R.id.swShowStores:
-				newFieldValues.put(ListsTable.COL_SHOW_STORES, checkedValue);
-				break;
 
 			case R.id.swDeleteNoteUponClearingItem:
 				newFieldValues.put(ListsTable.COL_DELETE_NOTE_UPON_DESELECTING_ITEM, checkedValue);
@@ -305,38 +353,63 @@ public class ListPreferencesFragment extends Fragment {
 				tvListTitle.setTextColor(listSettings.getTitleTextColor());
 			}
 
-			if (swShowGroupsInListsView != null) {
-				boolean checkedValue = listSettings.getShowGroupsInListsFragment();
-				swShowGroupsInListsView.setChecked(listSettings.getShowGroupsInListsFragment());
-				swShowGroupsInListsView.setTextColor(listSettings.getItemNormalTextColor());
-			}
-
-			if (swShowGroupsInMasterListView != null) {
-				boolean checkedValue = listSettings.getShowGroupsInMasterListFragment();
-				swShowGroupsInMasterListView.setChecked(listSettings.getShowGroupsInMasterListFragment());
-				swShowGroupsInMasterListView.setTextColor(listSettings.getItemNormalTextColor());
-			}
-
-			if (swShowStores != null) {
-				boolean checkedValue = listSettings.getShowStores();
-				swShowStores.setChecked(listSettings.getShowStores());
-				swShowStores.setTextColor(listSettings.getItemNormalTextColor());
-			}
-
 			if (swDeleteNoteUponClearingItem != null) {
-				boolean checkedValue = listSettings.getDeleteNoteUponDeselectingItem();
+				// boolean checkedValue = listSettings.getDeleteNoteUponDeselectingItem();
 				swDeleteNoteUponClearingItem.setChecked(listSettings.getDeleteNoteUponDeselectingItem());
 				swDeleteNoteUponClearingItem.setTextColor(listSettings.getItemNormalTextColor());
 			}
+			if (rbGroupListsView != null) {
+				rbGroupListsView.setBackgroundColor(listSettings.getListBackgroundColor());
+				int postition = listSettings.getListSortOrder();
+				switch (postition) {
+				case AListUtilities.LIST_SORT_ALPHABETICAL:
+					rbListsViewAlphabetical.setChecked(true);
+					break;
 
-			if (btnListSortOrder != null) {
-				setListSortOrder(listSettings.getListSortOrder());
-				btnListSortOrder.setTextColor(listSettings.getItemNormalTextColor());
+				case AListUtilities.LIST_SORT_BY_GROUP:
+					rbListsViewGroup.setChecked(true);
+					break;
+
+				case AListUtilities.LIST_SORT_MANUAL:
+					rbListsViewManual.setChecked(true);
+					break;
+
+				case AListUtilities.LIST_SORT_BY_STORE_LOCATION:
+					rbListsViewStoreLocation.setChecked(true);
+					break;
+
+				default:
+					break;
+				}
 			}
 
-			if (btnMasterListSortOrder != null) {
-				setMasterListSortOrder(listSettings.getMasterListSortOrder());
-				btnMasterListSortOrder.setTextColor(listSettings.getItemNormalTextColor());
+			if (rbGroupMasterListsView != null) {
+				rbGroupMasterListsView.setBackgroundColor(listSettings.getListBackgroundColor());
+				int postition = listSettings.getMasterListSortOrder();
+				switch (postition) {
+				case AListUtilities.MASTER_LIST_SORT_ALPHABETICAL:
+					rbMasterListViewAlphabetical.setChecked(true);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_BY_GROUP:
+					rbMasterListViewGroup.setChecked(true);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_BY_LAST_USED:
+					rbMasterListViewLastUsed.setChecked(true);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_SELECTED_AT_TOP:
+					rbMasterListViewSelectedAtTop.setChecked(true);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_SELECTED_AT_BOTTOM:
+					rbMasterListViewSelectedAtBottom.setChecked(true);
+					break;
+
+				default:
+					break;
+				}
 			}
 
 			if (btnEditListTitle != null) {
@@ -345,10 +418,6 @@ public class ListPreferencesFragment extends Fragment {
 
 			if (btnColors != null) {
 				btnColors.setTextColor(listSettings.getItemNormalTextColor());
-			}
-
-			if (btnMakeDefaultPreferences != null) {
-				btnMakeDefaultPreferences.setTextColor(listSettings.getItemNormalTextColor());
 			}
 		}
 	}
@@ -359,56 +428,56 @@ public class ListPreferencesFragment extends Fragment {
 		}
 	}
 
-	private void setListSortOrder(int newListSortOrder) {
-		if (btnListSortOrder != null) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("List Sort Order (");
-			switch (newListSortOrder) {
-			/*			case BY_GROUP:
-							sb.append("By Group)");
-							break;*/
+	/*	private void setListSortOrder(int newListSortOrder) {
+			if (btnListSortOrder != null) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("List Sort Order (");
+				switch (newListSortOrder) {
+							case BY_GROUP:
+								sb.append("By Group)");
+								break;
 
-			case MANUAL:
-				sb.append("Manual)");
-				break;
-			default:
-				//ALPHABETICAL_LIST_SORT_ORDER
-				sb.append("Alphabetical)");
-				break;
+				case MANUAL:
+					sb.append("Manual)");
+					break;
+				default:
+					// ALPHABETICAL_LIST_SORT_ORDER
+					sb.append("Alphabetical)");
+					break;
+				}
+				btnListSortOrder.setText(sb.toString());
 			}
-			btnListSortOrder.setText(sb.toString());
-		}
-	}
+		}*/
 
-	private void setMasterListSortOrder(int newMasterListSortOrder) {
-		if (btnMasterListSortOrder != null) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("Master List Sort Order (");
-			switch (newMasterListSortOrder) {
-			/*			case BY_GROUP:
-							sb.append("By Group)");
-							break;*/
+	/*	private void setMasterListSortOrder(int newMasterListSortOrder) {
+			if (btnMasterListSortOrder != null) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("Master List Sort Order (");
+				switch (newMasterListSortOrder) {
+							case BY_GROUP:
+								sb.append("By Group)");
+								break;
 
-			case SELECTED_AT_TOP:
-				sb.append("Selected at Top)");
-				break;
+				case SELECTED_AT_TOP:
+					sb.append("Selected at Top)");
+					break;
 
-			case SELECTED_AT_BOTTOM:
-				sb.append("Selected at Bottom)");
-				break;
+				case SELECTED_AT_BOTTOM:
+					sb.append("Selected at Bottom)");
+					break;
 
-			case LAST_USED:
-				sb.append("Last Used)");
-				break;
+				case LAST_USED:
+					sb.append("Last Used)");
+					break;
 
-			default:
-				//ALPHABETICAL_LIST_SORT_ORDER
-				sb.append("Alphabetical)");
-				break;
+				default:
+					// ALPHABETICAL_LIST_SORT_ORDER
+					sb.append("Alphabetical)");
+					break;
+				}
+				btnMasterListSortOrder.setText(sb.toString());
 			}
-			btnMasterListSortOrder.setText(sb.toString());
-		}
-	}
+		}*/
 
 	@Override
 	public void onStart() {

@@ -11,30 +11,30 @@ import com.lbconsulting.alist_03.utilities.AListUtilities;
 
 public class ListSettings {
 
-	private Context context;
+	private Context mContext;
 	private long mListID;
 	private Cursor mListCursor;
 
 	public ListSettings(Context context, long listID) {
-		this.context = context;
+		this.mContext = context;
 		this.mListID = listID;
 		this.RefreshListSettings();
 		if (this.getTitleBackgroundColor() == -1) {
 			SetDefaultColors();
-			ListsTable.setListPreferencesDefaults(context, listID);
+			ListsTable.setListPreferencesDefaults(mContext, listID);
 			this.RefreshListSettings();
 		}
 	}
 
 	public void RefreshListSettings() {
-		this.mListCursor = ListsTable.getList(context, mListID);
+		this.mListCursor = ListsTable.getList(mContext, mListID);
 		if (mListCursor != null) {
 			this.mListCursor.moveToFirst();
 		}
 	}
 
 	private void SetDefaultColors() {
-		Resources res = context.getResources();
+		Resources res = mContext.getResources();
 		if (mListID > 0) {
 			// select the new list title's colors
 			ContentValues newDefaultValues = new ContentValues();
@@ -65,7 +65,7 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset0_separator_text));
 
-				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(mContext, mListID, newDefaultValues);
 
 				break;
 
@@ -94,7 +94,7 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset1_separator_text));
 
-				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(mContext, mListID, newDefaultValues);
 				break;
 
 			case 2:
@@ -123,7 +123,7 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset2_separator_text));
 
-				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(mContext, mListID, newDefaultValues);
 				break;
 
 			case 3:
@@ -151,7 +151,7 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset3_separator_text));
 
-				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(mContext, mListID, newDefaultValues);
 
 				break;
 
@@ -180,7 +180,7 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset4_separator_text));
 
-				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(mContext, mListID, newDefaultValues);
 				break;
 
 			case 5:
@@ -208,7 +208,7 @@ public class ListSettings {
 				newDefaultValues
 						.put(ListsTable.COL_SEPARATOR_TEXT_COLOR, res.getColor(R.color.preset5_separator_text));
 
-				ListsTable.UpdateListsTableFieldValues(context, mListID, newDefaultValues);
+				ListsTable.UpdateListsTableFieldValues(mContext, mListID, newDefaultValues);
 
 				break;
 
@@ -250,24 +250,23 @@ public class ListSettings {
 		return mListCursor.getString(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_TITLE));
 	}
 
-	public long getStoreID() {
-		return mListCursor.getLong(mListCursor.getColumnIndexOrThrow(ListsTable.COL_STORE_ID));
+	public long getActiveStoreID() {
+		return mListCursor.getLong(mListCursor.getColumnIndexOrThrow(ListsTable.COL_ACTIVE_STORE_ID));
 	}
 
 	public boolean getShowGroupsInListsFragment() {
-		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_SHOW_GROUPS_IN_LISTS_FRAGMENT));
-		return AListUtilities.intToBoolean(value);
+		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_SORT_ORDER));
+		return value == AListUtilities.LIST_SORT_BY_GROUP;
 	}
 
 	public boolean getShowGroupsInMasterListFragment() {
-		int value = mListCursor.getInt(mListCursor
-				.getColumnIndexOrThrow(ListsTable.COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT));
-		return AListUtilities.intToBoolean(value);
+		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_MASTER_LIST_SORT_ORDER));
+		return value == AListUtilities.MASTER_LIST_SORT_BY_GROUP;
 	}
 
 	public boolean getShowStores() {
-		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_SHOW_STORES));
-		return AListUtilities.intToBoolean(value);
+		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_SORT_ORDER));
+		return value == AListUtilities.LIST_SORT_BY_STORE_LOCATION;
 	}
 
 	public boolean getDeleteNoteUponDeselectingItem() {
@@ -343,10 +342,11 @@ public class ListSettings {
 	}
 
 	public void updateListsTableFieldValues(ContentValues newFieldValues) {
-		ListsTable.UpdateListsTableFieldValues(context, mListID, newFieldValues);
+		ListsTable.UpdateListsTableFieldValues(mContext, mListID, newFieldValues);
 		this.RefreshListSettings();
 	}
 
+	@Override
 	protected void finalize() {
 		if (this.mListCursor != null) {
 			this.mListCursor.close();

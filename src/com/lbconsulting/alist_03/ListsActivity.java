@@ -44,14 +44,15 @@ public class ListsActivity extends FragmentActivity {
 	private long mActiveListID = NO_ACTIVE_LIST_ID;
 	private long mActiveItemID;
 	private int mActiveListPosition = 0;
-	private long mActiveStoreID = 0;
+	// private long mActiveStoreID = 0;
 	private ListSettings mListSettings;
 
 	private Cursor mAllListsCursor;
 	private BroadcastReceiver mListTableChanged;
 
 	String mRestartStoresLoaderKey = "";
-	String mRestartItemsLoaderKey = "";
+
+	// String mRestartItemsLoaderKey = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +103,7 @@ public class ListsActivity extends FragmentActivity {
 		mListSettings = new ListSettings(this, mActiveListID);
 
 		mRestartStoresLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_STORES_LOADER_KEY;
-		mRestartItemsLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_ITEMS_LOADER_KEY;
+		// mRestartItemsLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_ITEMS_LOADER_KEY;
 
 		mListsPagerAdapter = new ListsPagerAdapter(getSupportFragmentManager(), this);
 		mPager = (ViewPager) findViewById(R.id.listsPager);
@@ -143,7 +144,7 @@ public class ListsActivity extends FragmentActivity {
 				mListSettings = new ListSettings(this, mActiveListID);
 
 				mRestartStoresLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_STORES_LOADER_KEY;
-				mRestartItemsLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_ITEMS_LOADER_KEY;
+				// mRestartItemsLoaderKey = String.valueOf(mActiveListID) + ListsFragment.RESART_ITEMS_LOADER_KEY;
 
 				mActiveListPosition = position;
 			} catch (Exception e) {
@@ -196,14 +197,14 @@ public class ListsActivity extends FragmentActivity {
 		startActivity(intent);
 	}
 
-	private void SetToFirstList() {
-		long firstListID = ListsTable.getFirstListID(this);
-		if (firstListID > 1) {
-			mActiveListID = firstListID;
-		} else {
-			CreatNewList();
-		}
-	}
+	/*	private void SetToFirstList() {
+			long firstListID = ListsTable.getFirstListID(this);
+			if (firstListID > 1) {
+				mActiveListID = firstListID;
+			} else {
+				CreatNewList();
+			}
+		}*/
 
 	private void StartMasterListActivity() {
 		Intent masterListActivityIntent = new Intent(this, MasterListActivity.class);
@@ -328,7 +329,10 @@ public class ListsActivity extends FragmentActivity {
 	@Override
 	protected void onDestroy() {
 		MyLog.i("Lists_ACTIVITY", "onDestroy");
-		mAllListsCursor.close();
+		if (mAllListsCursor != null) {
+			mAllListsCursor.close();
+		}
+
 		// Unregister since the activity is about to be closed.
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mListTableChanged);
 		super.onDestroy();
@@ -348,7 +352,7 @@ public class ListsActivity extends FragmentActivity {
 		case R.id.action_removeStruckOffItems:
 			ItemsTable.UnStrikeAndDeselectAllStruckOutItems(this, mActiveListID,
 					mListSettings.getDeleteNoteUponDeselectingItem());
-			SendRestartItemsLoaderBroadCast();
+			// SendRestartItemsLoaderBroadCast();
 			return true;
 
 		case R.id.action_addItem:
@@ -398,15 +402,15 @@ public class ListsActivity extends FragmentActivity {
 
 	}
 
-	private void SendRestartStoresLoaderBroadCast() {
-		Intent restartStoresLoaderIntent = new Intent(mRestartStoresLoaderKey);
-		LocalBroadcastManager.getInstance(this).sendBroadcast(restartStoresLoaderIntent);
-	}
+	/*	private void SendRestartStoresLoaderBroadCast() {
+			Intent restartStoresLoaderIntent = new Intent(mRestartStoresLoaderKey);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(restartStoresLoaderIntent);
+		}*/
 
-	private void SendRestartItemsLoaderBroadCast() {
-		Intent restartItemsLoaderIntent = new Intent(mRestartItemsLoaderKey);
-		LocalBroadcastManager.getInstance(this).sendBroadcast(restartItemsLoaderIntent);
-	}
+	/*	private void SendRestartItemsLoaderBroadCast() {
+			Intent restartItemsLoaderIntent = new Intent(mRestartItemsLoaderKey);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(restartItemsLoaderIntent);
+		}*/
 
 	/*
 	 * private void CreateToDoList() { // create new list long todosListID =
@@ -549,6 +553,7 @@ public class ListsActivity extends FragmentActivity {
 				.setMessage(msg)
 				.setCancelable(false)
 				.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+					@Override
 					public void onClick(DialogInterface dialog, int id) {
 						ListsTable.DeleteList(ListsActivity.this, mActiveListID);
 						ReStartListsActivity(mActiveListPosition);
@@ -556,6 +561,7 @@ public class ListsActivity extends FragmentActivity {
 					}
 				})
 				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					@Override
 					public void onClick(DialogInterface dialog, int id) {
 						// if this button is clicked, just close
 						// the dialog box and do nothing

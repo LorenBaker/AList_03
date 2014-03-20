@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="action_about">About</string>
     <string name="action_addItem">Add Item</string>
     <string name="action_bar_title_manage_items">Manage Items</string>
@@ -46,7 +45,7 @@
     <string name="createNewListDialogTitle">Create New List</string>
     <string name="dialog_edit_list_title">Edit List Title</string>
     <string name="dialog_message_permanently_delete_all_items_in">"Permanently delete ALL items in "</string>
-    <string name="dialog_new_list_title">New List Title</string>
+    <string name="dialog_title_create_new_list">Create New List</string>
     <string name="dialog_title_colors_applied">Colors Applied</string>
     <string name="dialog_title_delete_all_checked_items">Delete All Checked Items</string>
     <string name="dialog_title_delete_all_items">Delete All Items</string>
@@ -58,11 +57,14 @@
     <string name="editListTitleDialogTitle">Edit Item</string>
     <string name="list_title_groceries">Groceries</string>
     <string name="sort_option_alphabetical">Alphabetical</string>
-    <string name="sort_option_by_group">By Group</string>
+    <string name="sort_option_by_group">Group</string>
     <string name="sort_option_last_used">Last used</string>
     <string name="sort_option_manual">Manual</string>
+    <string name="sort_option_store_location">Store Location</string>
     <string name="sort_option_selected_items_at_bottom">Selected Items At Bottom</string>
     <string name="sort_option_selected_items_at_top">Selected Items At Top</string>
+    <string name="lists_view_sorting"><u><b><i>Lists View Sorting:</i></b></u></string>
+    <string name="master_list_view_sorting"><u><b><i>Master List View Sorting:</i></b></u></string>
     <string name="stores">Stores</string>
     <string name="tvItemGroup_Text">[Item Group]</string>
     <string name="tvListItemName_Text">List Item</string>
@@ -89,5 +91,5 @@
     <string name="dialog_lists_groceries_list_text">Groceries List</string>
     <string name="dialog_lists_to_do_list_text">To Do List</string>
     <string name="dialog_lists_new_list_text">New List</string>
-
+    <string name="delete_note_upon_clearing_item">Delete note upon clearing item</string>
 </resources>

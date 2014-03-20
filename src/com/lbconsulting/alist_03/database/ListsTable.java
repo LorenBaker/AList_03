@@ -21,12 +21,12 @@ public class ListsTable {
 	public static final String TABLE_LISTS = "tblLists";
 	public static final String COL_LIST_ID = "_id";// 0
 	public static final String COL_LIST_TITLE = "listTitle";// 1
-	public static final String COL_STORE_ID = "storeID";// 2
+	public static final String COL_ACTIVE_STORE_ID = "activeStoreID";// 2
 	// List Settings
-	public static final String COL_SHOW_GROUPS_IN_LISTS_FRAGMENT = "showGroupsInListsFragment";// 3
-	public static final String COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT = "showGroupsInMasterListFragment";// 4
-	public static final String COL_SHOW_STORES = "showStores";// 5
-
+	/*	public static final String COL_SHOW_GROUPS_IN_LISTS_FRAGMENT = "showGroupsInListsFragment";// 3
+		public static final String COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT = "showGroupsInMasterListFragment";// 4
+		public static final String COL_SHOW_STORES = "showStores";// 5
+	*/
 	public static final String COL_DELETE_NOTE_UPON_DESELECTING_ITEM = "deleteNoteUponDeslectingItem";// 6
 
 	public static final String COL_LIST_SORT_ORDER = "listSortOrder";// 7
@@ -52,8 +52,7 @@ public class ListsTable {
 	public static final String COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION = "masterListViewFirstVisiblePosition";// 21
 	public static final String COL_MASTER_LISTVIEW_TOP = "masterListViewTop";// 22
 
-	public static final String[] PROJECTION_ALL = { COL_LIST_ID, COL_LIST_TITLE, COL_STORE_ID,
-			COL_SHOW_GROUPS_IN_LISTS_FRAGMENT, COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT, COL_SHOW_STORES,
+	public static final String[] PROJECTION_ALL = { COL_LIST_ID, COL_LIST_TITLE, COL_ACTIVE_STORE_ID,
 			COL_DELETE_NOTE_UPON_DESELECTING_ITEM,
 			COL_LIST_SORT_ORDER, COL_MASTER_LIST_SORT_ORDER,
 			COL_TITLE_BACKGROUND_COLOR, COL_TITLE_TEXT_COLOR,
@@ -82,25 +81,15 @@ public class ListsTable {
 			+ " ("
 			+ COL_LIST_ID + " integer primary key autoincrement, "
 			+ COL_LIST_TITLE + " text collate nocase, "
-			+ COL_STORE_ID + " integer not null references "
-			+ StoresTable.TABLE_STORES + " (" + StoresTable.COL_STORE_ID + ") default 1, " // default
-																							// [No
-																							// Store]
+			+ COL_ACTIVE_STORE_ID + " integer not null references "
+			+ StoresTable.TABLE_STORES + " (" + StoresTable.COL_STORE_ID + ") default 1, " // default [No Store]
 
 			// List Settings
-			+ COL_SHOW_GROUPS_IN_LISTS_FRAGMENT + " integer  default 0, " // default
-																			// false=0
-			+ COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT + " integer  default 0, " // default
-																				// false=0
-			+ COL_SHOW_STORES + " integer  default 0, " // default false=0
 
-			+ COL_DELETE_NOTE_UPON_DESELECTING_ITEM + " integer default 1, " // default
-																				// true=1
+			+ COL_DELETE_NOTE_UPON_DESELECTING_ITEM + " integer default 1, " // default true=1
 
-			+ COL_LIST_SORT_ORDER + " integer default 0, " // default
-															// Alphabetically=0
-			+ COL_MASTER_LIST_SORT_ORDER + " integer default 0, " // default
-																	// Alphabetically=0
+			+ COL_LIST_SORT_ORDER + " integer default 0, " // default Alphabetically=0
+			+ COL_MASTER_LIST_SORT_ORDER + " integer default 0, " // default Alphabetically=0
 
 			+ COL_TITLE_BACKGROUND_COLOR + " integer default -1, "
 			+ COL_TITLE_TEXT_COLOR + " integer default -1, "
@@ -292,8 +281,7 @@ public class ListsTable {
 	}
 
 	/**
-	 * Returns a CursorLoader with all lists excluding the default list and the
-	 * provided active list.
+	 * Returns a CursorLoader with all lists excluding the default list and the provided active list.
 	 * 
 	 * @param context
 	 * @param activeListID
@@ -367,17 +355,17 @@ public class ListsTable {
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// List Preferences Getters and Setters
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public static boolean getGroupsAreShownInListsFragment(Context context, long listID) {
-		boolean results = false;
-		Cursor cursor = getList(context, listID);
-		if (cursor != null) {
-			cursor.moveToFirst();
-			int value = cursor.getInt(cursor.getColumnIndexOrThrow(COL_SHOW_GROUPS_IN_LISTS_FRAGMENT));
-			results = AListUtilities.intToBoolean(value);
-			cursor.close();
-		}
-		return results;
-	}
+	/*	public static boolean getGroupsAreShownInListsFragment(Context context, long listID) {
+			boolean results = false;
+			Cursor cursor = getList(context, listID);
+			if (cursor != null) {
+				cursor.moveToFirst();
+				int value = cursor.getInt(cursor.getColumnIndexOrThrow(COL_SHOW_GROUPS_IN_LISTS_FRAGMENT));
+				results = AListUtilities.intToBoolean(value);
+				cursor.close();
+			}
+			return results;
+		}*/
 
 	/*
 	 * public static void setGroupsAreShownInListsFragment(Context context, long
@@ -394,17 +382,17 @@ public class ListsTable {
 	 * "The number of ListTitle records updated does not equal 1!"); } }
 	 */
 
-	public static boolean getGroupsAreShownInMasterListFragment(Context context, long listID) {
-		boolean results = false;
-		Cursor cursor = getList(context, listID);
-		if (cursor != null) {
-			cursor.moveToFirst();
-			int value = cursor.getInt(cursor.getColumnIndexOrThrow(COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT));
-			results = AListUtilities.intToBoolean(value);
-			cursor.close();
-		}
-		return results;
-	}
+	/*	public static boolean getGroupsAreShownInMasterListFragment(Context context, long listID) {
+			boolean results = false;
+			Cursor cursor = getList(context, listID);
+			if (cursor != null) {
+				cursor.moveToFirst();
+				int value = cursor.getInt(cursor.getColumnIndexOrThrow(COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT));
+				results = AListUtilities.intToBoolean(value);
+				cursor.close();
+			}
+			return results;
+		}*/
 
 	/*
 	 * public static void setGroupsAreShownInMasterListFragment(Context context,
@@ -421,17 +409,17 @@ public class ListsTable {
 	 * "The number of ListTitle records updated does not equal 1!"); } }
 	 */
 
-	public static boolean getStoresAreShown(Context context, long listID) {
-		boolean results = false;
-		Cursor cursor = getList(context, listID);
-		if (cursor != null) {
-			cursor.moveToFirst();
-			int value = cursor.getInt(cursor.getColumnIndexOrThrow(COL_SHOW_STORES));
-			results = AListUtilities.intToBoolean(value);
-			cursor.close();
-		}
-		return results;
-	}
+	/*	public static boolean getStoresAreShown(Context context, long listID) {
+			boolean results = false;
+			Cursor cursor = getList(context, listID);
+			if (cursor != null) {
+				cursor.moveToFirst();
+				int value = cursor.getInt(cursor.getColumnIndexOrThrow(COL_SHOW_STORES));
+				results = AListUtilities.intToBoolean(value);
+				cursor.close();
+			}
+			return results;
+		}*/
 
 	/*
 	 * public static void setStoresAreShown(Context context, long listID,
@@ -473,38 +461,38 @@ public class ListsTable {
 	 * "The number of ListTitle records updated does not equal 1!"); } }
 	 */
 
-	public static int getListPreference(Context context, long listID, String ColumnName) {
-		int intResult = -1;
-		Cursor cursor = getList(context, listID);
-		if (cursor != null) {
-			cursor.moveToFirst();
-			int position = cursor.getColumnIndexOrThrow(ColumnName);
+	/*	public static int getListPreference(Context context, long listID, String ColumnName) {
+			int intResult = -1;
+			Cursor cursor = getList(context, listID);
+			if (cursor != null) {
+				cursor.moveToFirst();
+				int position = cursor.getColumnIndexOrThrow(ColumnName);
 
-			switch (position) {
-			case 7:
-			case 8:
-			case 9:
-			case 10:
-			case 11:
-			case 12:
-			case 13:
-			case 14:
-			case 15:
-			case 16:
-			case 17:
-			case 18:
-			case 19:
-			case 20:
-				intResult = cursor.getInt(position);
-				break;
+				switch (position) {
+				case 7:
+				case 8:
+				case 9:
+				case 10:
+				case 11:
+				case 12:
+				case 13:
+				case 14:
+				case 15:
+				case 16:
+				case 17:
+				case 18:
+				case 19:
+				case 20:
+					intResult = cursor.getInt(position);
+					break;
 
-			default:
-				break;
+				default:
+					break;
+				}
+				cursor.close();
 			}
-			cursor.close();
-		}
-		return intResult;
-	}
+			return intResult;
+		}*/
 
 	/*
 	 * public static void setListPreference(Context context, long listID, String
@@ -546,38 +534,32 @@ public class ListsTable {
 	 * "The number of records does not equal 1!"); } }
 	 */
 
-	public static void UpdateDefaultListPreferences(Context context, long listID) {
-		ContentResolver cr = context.getContentResolver();
+	/*	public static void UpdateDefaultListPreferences(Context context, long listID) {
+			ContentResolver cr = context.getContentResolver();
 
-		Cursor listCursor = getList(context, listID);
-		if (listCursor != null) {
-			listCursor.moveToFirst();
-			ContentValues newDefaultValues = new ContentValues();
+			Cursor listCursor = getList(context, listID);
+			if (listCursor != null) {
+				listCursor.moveToFirst();
+				ContentValues newDefaultValues = new ContentValues();
 
-			newDefaultValues.put(COL_SHOW_GROUPS_IN_LISTS_FRAGMENT,
-					listCursor.getInt(listCursor.getColumnIndexOrThrow(COL_SHOW_GROUPS_IN_LISTS_FRAGMENT)));
-			newDefaultValues.put(COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT,
-					listCursor.getInt(listCursor.getColumnIndexOrThrow(COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT)));
-			newDefaultValues.put(COL_SHOW_STORES, listCursor.getInt(listCursor.getColumnIndexOrThrow(COL_SHOW_STORES)));
+				newDefaultValues.put(COL_DELETE_NOTE_UPON_DESELECTING_ITEM,
+						listCursor.getInt(listCursor.getColumnIndexOrThrow(COL_DELETE_NOTE_UPON_DESELECTING_ITEM)));
 
-			newDefaultValues.put(COL_DELETE_NOTE_UPON_DESELECTING_ITEM,
-					listCursor.getInt(listCursor.getColumnIndexOrThrow(COL_DELETE_NOTE_UPON_DESELECTING_ITEM)));
+				newDefaultValues.put(COL_LIST_SORT_ORDER,
+						listCursor.getInt(listCursor.getColumnIndexOrThrow(COL_LIST_SORT_ORDER)));
+				newDefaultValues.put(COL_MASTER_LIST_SORT_ORDER,
+						listCursor.getInt(listCursor.getColumnIndexOrThrow(COL_MASTER_LIST_SORT_ORDER)));
 
-			newDefaultValues.put(COL_LIST_SORT_ORDER,
-					listCursor.getInt(listCursor.getColumnIndexOrThrow(COL_LIST_SORT_ORDER)));
-			newDefaultValues.put(COL_MASTER_LIST_SORT_ORDER,
-					listCursor.getInt(listCursor.getColumnIndexOrThrow(COL_MASTER_LIST_SORT_ORDER)));
-
-			Uri defaultUri = Uri.withAppendedPath(CONTENT_URI, String.valueOf(1));
-			String selection = null;
-			String[] selectionArgs = null;
-			int numberOfUpdatedRecords = cr.update(defaultUri, newDefaultValues, selection, selectionArgs);
-			if (numberOfUpdatedRecords != 1) {
-				MyLog.e("ListTitlesTable: UpdateDefaultListPreferences", "The number of records does not equal 1!");
+				Uri defaultUri = Uri.withAppendedPath(CONTENT_URI, String.valueOf(1));
+				String selection = null;
+				String[] selectionArgs = null;
+				int numberOfUpdatedRecords = cr.update(defaultUri, newDefaultValues, selection, selectionArgs);
+				if (numberOfUpdatedRecords != 1) {
+					MyLog.e("ListTitlesTable: UpdateDefaultListPreferences", "The number of records does not equal 1!");
+				}
+				listCursor.close();
 			}
-			listCursor.close();
-		}
-	}
+		}*/
 
 	public static int UpdateListsTableFieldValues(Context context, long listID, ContentValues newFieldValues) {
 		int numberOfUpdatedRecords = -1;
@@ -598,15 +580,6 @@ public class ListsTable {
 		if (defaultCursor != null) {
 			defaultCursor.moveToFirst();
 			ContentValues newListValues = new ContentValues();
-
-			newListValues.put(COL_SHOW_GROUPS_IN_LISTS_FRAGMENT,
-					defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(COL_SHOW_GROUPS_IN_LISTS_FRAGMENT)));
-
-			newListValues.put(COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT,
-					defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT)));
-
-			newListValues.put(COL_SHOW_STORES,
-					defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(COL_SHOW_STORES)));
 
 			newListValues.put(COL_DELETE_NOTE_UPON_DESELECTING_ITEM,
 					defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(COL_DELETE_NOTE_UPON_DESELECTING_ITEM)));

@@ -44,7 +44,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class MasterListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-	//OnMasterListItemLongClickListener mMasterListItemLongClickCallback;
+	// OnMasterListItemLongClickListener mMasterListItemLongClickCallback;
 
 	// Container Activity must implement this interface
 	public interface OnMasterListItemLongClickListener {
@@ -54,7 +54,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 	private String[] loaderNames = { "Lists_Loader", "Items_Loader", "Stores_Loader", "Groups_Loader" };
 
 	private long mActiveListID;
-	private long mActiveItemID;
+	// private long mActiveItemID;
 	private BroadcastReceiver mItemChangedReceiver;
 
 	private ListSettings listSettings;
@@ -94,14 +94,6 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 	public void onAttach(Activity activity) {
 		MyLog.i("MasterListFragment", "onAttach");
 		super.onAttach(activity);
-		// This makes sure that the container activity has implemented
-		// the callback interface. If not, it throws an exception
-		/*		try {
-					//mMasterListItemLongClickCallback = (OnMasterListItemLongClickListener) activity;
-				} catch (ClassCastException e) {
-					throw new ClassCastException(activity.toString()
-							+ " must implement OnMasterListItemLongClickListener");
-				}*/
 	}
 
 	@Override
@@ -170,7 +162,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 		lvItemsListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				mActiveItemID = id;
+				// mActiveItemID = id;
 				ItemsTable.ToggleSelection(getActivity(), id);
 				txtItemName.setText("");
 				txtItemNote.setText("");
@@ -182,7 +174,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View listView, int position, long itemID) {
-				mActiveItemID = itemID;
+				// mActiveItemID = itemID;
 				FragmentManager fm = getFragmentManager();
 				Fragment prev = fm.findFragmentByTag("dialog_edit_item");
 				if (prev != null) {
@@ -212,7 +204,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 						&& (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.FLAG_EDITOR_ACTION || keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
 
 					SelectItemForList();
-					//getActivity().getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+					// getActivity().getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 					result = true;
 				}
 				return result;
@@ -272,12 +264,12 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 			ItemsTable.SelectItem(getActivity(), newItemNameID, true);
 
 			String newItemNote = txtItemNote.getText().toString().trim();
-			//if (!newItemNote.isEmpty()) {
+			// if (!newItemNote.isEmpty()) {
 			ContentValues newFieldValues = new ContentValues();
 			newFieldValues.put(ItemsTable.COL_ITEM_NOTE, newItemNote);
 			ItemsTable.UpdateItemFieldValues(getActivity(), newItemNameID, newFieldValues);
-			//mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
-			//}
+			// mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
+			// }
 		}
 		txtItemNote.setText("");
 		txtItemName.setText("");
@@ -376,47 +368,45 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 		switch (id) {
 
 		case AListUtilities.ITEMS_LOADER_ID:
-
-			int masterListSortOrder = listSettings.getMasterListSortOrder();
-			String sortOrder = "";
-			switch (masterListSortOrder) {
-			case ListPreferencesFragment.ALPHABETICAL:
-				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
-				break;
-
-			/*			case ListPreferencesFragment.BY_GROUP:
-							sortOrder = ItemsTable.SORT_ORDER_BY_GROUP;
-							break;*/
-
-			case ListPreferencesFragment.SELECTED_AT_TOP:
-				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
-				break;
-
-			case ListPreferencesFragment.SELECTED_AT_BOTTOM:
-				sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
-				break;
-
-			case ListPreferencesFragment.LAST_USED:
-				sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
-				break;
-
-			default:
-				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
-				break;
-			}
-
 			// filter the cursor based on user typed text in txtListItem and the activeListTypeID
 			String itemNameText = txtItemName.getText().toString().trim();
 			String selection = null;
 			if (!itemNameText.isEmpty()) {
 				selection = ItemsTable.COL_ITEM_NAME + " Like '%" + itemNameText + "%'";
 			}
-			try {
-				if (listSettings.getShowGroupsInMasterListFragment()) {
-					cursorLoader = ItemsTable.getAllItemsInListWithGroups(getActivity(), mActiveListID, selection);
 
-				} else {
+			int masterListSortOrder = listSettings.getMasterListSortOrder();
+			String sortOrder = "";
+			try {
+				switch (masterListSortOrder) {
+				case AListUtilities.MASTER_LIST_SORT_ALPHABETICAL:
+					sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
 					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_BY_GROUP:
+					cursorLoader = ItemsTable.getAllItemsInListWithGroups(getActivity(), mActiveListID, selection);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_BY_LAST_USED:
+					sortOrder = ItemsTable.SORT_ORDER_LAST_USED;
+					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_SELECTED_AT_TOP:
+					sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_TOP;
+					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+					break;
+
+				case AListUtilities.MASTER_LIST_SORT_SELECTED_AT_BOTTOM:
+					sortOrder = ItemsTable.SORT_ORDER_SELECTED_AT_BOTTOM;
+					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+					break;
+
+				default:
+					sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+					cursorLoader = ItemsTable.getAllItemsInList(getActivity(), mActiveListID, selection, sortOrder);
+					break;
 				}
 
 			} catch (SQLiteException e) {
@@ -429,23 +419,8 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 			}
 			break;
 
-		/*		case GROUPS_LOADER_ID:
-					try {
-						cursorLoader = GroupsTable.getAllGroupsInList(getActivity(), mActiveListID,
-								GroupsTable.SORT_ORDER_GROUP);
-
-					} catch (SQLiteException e) {
-						MyLog.e("MasterListFragment: onCreateLoader SQLiteException: ", e.toString());
-						return null;
-
-					} catch (IllegalArgumentException e) {
-						MyLog.e("MasterListFragment: onCreateLoader IllegalArgumentException: ", e.toString());
-						return null;
-					}
-					break;*/
-
 		default:
-			return null;
+			break;
 		}
 		return cursorLoader;
 	}
@@ -456,7 +431,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 		String loaderName = loaderNames[id - 1];
 		MyLog.i("MasterListFragment: onLoadFinished; " + loaderName, "; listID = " + mActiveListID + "; text = "
 				+ txtItemName.getText().toString());
-		// The asynchronous load is complete and the newCursor is now available for use. 
+		// The asynchronous load is complete and the newCursor is now available for use.
 		// Update the masterListAdapter to show the changed data.
 		switch (loader.getId()) {
 		case AListUtilities.ITEMS_LOADER_ID:
