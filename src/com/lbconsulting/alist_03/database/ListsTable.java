@@ -29,6 +29,8 @@ public class ListsTable {
 	public static final String COL_LIST_SORT_ORDER = "listSortOrder";
 	public static final String COL_MASTER_LIST_SORT_ORDER = "masterListSortOrder";
 
+	public static final String COL_ALLOW_GROUP_ADDITIONS = "allowGroupAdditions";
+
 	public static final String COL_TITLE_BACKGROUND_COLOR = "titleBackgroundColor";
 	public static final String COL_TITLE_TEXT_COLOR = "titleTextColor";
 
@@ -52,6 +54,7 @@ public class ListsTable {
 	public static final String[] PROJECTION_ALL = { COL_LIST_ID, COL_LIST_TITLE, COL_ACTIVE_STORE_ID,
 			COL_DELETE_NOTE_UPON_DESELECTING_ITEM,
 			COL_LIST_SORT_ORDER, COL_MASTER_LIST_SORT_ORDER,
+			COL_ALLOW_GROUP_ADDITIONS,
 			COL_TITLE_BACKGROUND_COLOR, COL_TITLE_TEXT_COLOR,
 			COL_SEPARATOR_BACKGROUND_COLOR, COL_SEPARATOR_TEXT_COLOR,
 			COL_LIST_BACKGROUND_COLOR, COL_ITEM_NORMAL_TEXT_COLOR, COL_ITEM_STRIKEOUT_TEXT_COLOR,
@@ -83,10 +86,12 @@ public class ListsTable {
 
 			// List Settings
 
-			+ COL_DELETE_NOTE_UPON_DESELECTING_ITEM + " integer default 1, " // default true=1
+			+ COL_DELETE_NOTE_UPON_DESELECTING_ITEM + " integer default 1, " // default true = 1
 
-			+ COL_LIST_SORT_ORDER + " integer default 0, " // default Alphabetically=0
-			+ COL_MASTER_LIST_SORT_ORDER + " integer default 0, " // default Alphabetically=0
+			+ COL_LIST_SORT_ORDER + " integer default 0, " // default Alphabetically = 0
+			+ COL_MASTER_LIST_SORT_ORDER + " integer default 0, " // default Alphabetically = 0
+
+			+ COL_ALLOW_GROUP_ADDITIONS + " integer default 1, " // default true = 1
 
 			+ COL_TITLE_BACKGROUND_COLOR + " integer default -1, "
 			+ COL_TITLE_TEXT_COLOR + " integer default -1, "
@@ -338,6 +343,7 @@ public class ListsTable {
 		return cursor;
 	}
 
+	@SuppressWarnings("resource")
 	public static long getFirstListID(Context context) {
 		long firstListID = -1;
 		Cursor allListsCursor = getAllLists(context);
@@ -347,6 +353,18 @@ public class ListsTable {
 			allListsCursor.close();
 		}
 		return firstListID;
+	}
+
+	public static boolean isGroupAdditonAllowed(Context context, long listID) {
+		boolean result = true;
+		Cursor cursor = getList(context, listID);
+		if (cursor != null) {
+			cursor.moveToFirst();
+			int value = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ALLOW_GROUP_ADDITIONS));
+			result = value == 1;
+			cursor.close();
+		}
+		return result;
 	}
 
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////

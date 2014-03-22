@@ -1,9 +1,13 @@
 package com.lbconsulting.alist_03.adapters;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,19 +21,38 @@ import com.lbconsulting.alist_03.database.BridgeTable;
 import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.LocationsTable;
+import com.lbconsulting.alist_03.fragments.ColorsPreviewFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ItemsCursorAdaptor extends CursorAdapter implements DynamicListView.SwappableListAdapter {
 	private ListSettings mListSettings;
 	private final int INVALID_ID = -1;
+	private BroadcastReceiver mListColorsChanged;
 
-	// private Context mContext;
+	private Context mContext;
 
-	public ItemsCursorAdaptor(Context context, Cursor c, int flags, ListSettings listSettings) {
-		super(context, c, flags);
+	public ItemsCursorAdaptor(Context context1, Cursor c, int flags, ListSettings listSettings) {
+		super(context1, c, flags);
 		this.mListSettings = listSettings;
-		// this.mContext = context;
+		this.mContext = context1;
 		MyLog.i("ItemsCursorAdaptor", "ItemsCursorAdaptor constructor.");
+
+		mListColorsChanged = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context2, Intent intent) {
+				mListSettings.RefreshListSettings();
+			}
+		};
+		// Register to receive messages.
+		String key = String.valueOf(mListSettings.getListID()) + ColorsPreviewFragment.APPLY_PRESET_COLORS_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(context1).registerReceiver(mListColorsChanged, new IntentFilter(key));
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mListColorsChanged);
+		super.finalize();
 	}
 
 	private boolean ShowGroupSeparator(TextView tv, Cursor listCursor) {

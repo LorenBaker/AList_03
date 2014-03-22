@@ -167,6 +167,10 @@ public class MasterListActivity extends FragmentActivity implements LoaderManage
 			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
 			return true;
 
+		case R.id.action_Preferences:
+			StartListPreferencesActivity();
+			return true;
+
 		case R.id.action_about:
 			StartAboutActivity();
 			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
@@ -180,6 +184,11 @@ public class MasterListActivity extends FragmentActivity implements LoaderManage
 	private void StartCheckItemsActivity() {
 		Intent checkItemsActivityIntent = new Intent(this, CheckItemsActivity.class);
 		startActivity(checkItemsActivityIntent);
+	}
+
+	private void StartListPreferencesActivity() {
+		Intent intent = new Intent(this, ListPreferencesActivity.class);
+		startActivity(intent);
 	}
 
 	private void StartAboutActivity() {

@@ -52,7 +52,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 	// private long mActiveItemID;
 	// private BroadcastReceiver mItemChangedReceiver;
 
-	private ListSettings listSettings;
+	private ListSettings mListSettings;
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
 
 	private EditText txtItemName;
@@ -119,7 +119,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 
 		View view = inflater.inflate(R.layout.frag_master_list, container, false);
 
-		listSettings = new ListSettings(getActivity(), mActiveListID);
+		mListSettings = new ListSettings(getActivity(), mActiveListID);
 
 		txtItemName = (EditText) view.findViewById(R.id.txtItemName);
 		btnAddToMasterList = (Button) view.findViewById(R.id.btnAddToMasterList);
@@ -148,9 +148,9 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 		txtItemNote = (EditText) view.findViewById(R.id.txtItemNote);
 
 		lvItemsListView = (ListView) view.findViewById(R.id.lvItemsListView);
-		mMasterListCursorAdaptor = new MasterListCursorAdaptor(getActivity(), null, 0, listSettings);
+		mMasterListCursorAdaptor = new MasterListCursorAdaptor(getActivity(), null, 0, mListSettings);
 		lvItemsListView.setAdapter(mMasterListCursorAdaptor);
-		lvItemsListView.setBackgroundColor(this.listSettings.getMasterListBackgroundColor());
+		setViewColors();
 
 		mMasterListFragmentCallbacks = this;
 
@@ -185,6 +185,10 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 		});
 
 		return view;
+	}
+
+	private void setViewColors() {
+		lvItemsListView.setBackgroundColor(this.mListSettings.getMasterListBackgroundColor());
 	}
 
 	@Override
@@ -300,7 +304,20 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 	public void onResume() {
 		MyLog.i("MasterListFragment", "onResume");
 		super.onResume();
+
+		Bundle bundle = this.getArguments();
+		if (bundle != null) {
+			mActiveListID = bundle.getLong("listID", 0);
+		}
+
+		// mListSettings = new ListSettings(getActivity(), mActiveListID);
+		mListSettings.RefreshListSettings();
+		MasterListCursorAdaptor.RefreshListSettings();
+		setViewColors();
+
+		// Set onResume flags
 		flag_FirstTimeLoadingItemDataSinceOnResume = true;
+		mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mMasterListFragmentCallbacks);
 	}
 
 	@Override
@@ -371,7 +388,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 				selection = ItemsTable.COL_ITEM_NAME + " Like '%" + itemNameText + "%'";
 			}
 
-			int masterListSortOrder = listSettings.getMasterListSortOrder();
+			int masterListSortOrder = mListSettings.getMasterListSortOrder();
 			String sortOrder = "";
 			try {
 				switch (masterListSortOrder) {
@@ -434,7 +451,7 @@ public class MasterListFragment extends Fragment implements LoaderManager.Loader
 			mMasterListCursorAdaptor.swapCursor(newCursor);
 			if (flag_FirstTimeLoadingItemDataSinceOnResume) {
 				lvItemsListView.setSelectionFromTop(
-						listSettings.getMasterListViewFirstVisiblePosition(), listSettings.getMasterListViewTop());
+						mListSettings.getMasterListViewFirstVisiblePosition(), mListSettings.getMasterListViewTop());
 				flag_FirstTimeLoadingItemDataSinceOnResume = false;
 			}
 			if (newCursor != null && newCursor.getCount() == 1) {

@@ -17,13 +17,17 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class MasterListCursorAdaptor extends CursorAdapter {
 	Context mAdaptorContext;
-	ListSettings mListSettings;
+	static ListSettings mListSettings;
 
 	public MasterListCursorAdaptor(Context context, Cursor c, int flags, ListSettings listSettings) {
 		super(context, c, flags);
 		this.mAdaptorContext = context;
 		this.mListSettings = listSettings;
 		MyLog.i("MasterListCursorAdaptor", "MasterListCursorAdaptor constructor.");
+	}
+
+	public static void RefreshListSettings() {
+		mListSettings.RefreshListSettings();
 	}
 
 	private boolean ShowSeparator(TextView tv, Cursor listCursor) {
@@ -106,7 +110,7 @@ public class MasterListCursorAdaptor extends CursorAdapter {
 					}
 					tvItemNote.setVisibility(View.VISIBLE);
 				} else {
-					// no note exists ... 
+					// no note exists ...
 					tvItemNote.setVisibility(View.GONE);
 				}
 			}

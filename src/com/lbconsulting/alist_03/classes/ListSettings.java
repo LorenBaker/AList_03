@@ -259,6 +259,11 @@ public class ListSettings {
 		return value == AListUtilities.LIST_SORT_MANUAL;
 	}
 
+	public boolean isGroupAdditonAllowed() {
+		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_ALLOW_GROUP_ADDITIONS));
+		return value == 1.;
+	}
+
 	public boolean getShowGroupsInListsFragment() {
 		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_SORT_ORDER));
 		return value == AListUtilities.LIST_SORT_BY_GROUP;

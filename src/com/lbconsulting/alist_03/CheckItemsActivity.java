@@ -5,7 +5,6 @@ import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,8 +25,10 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.CheckItemsPagerAdapter;
+import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
+import com.lbconsulting.alist_03.dialogs.GroupsDialogFragment;
 import com.lbconsulting.alist_03.dialogs.MoveCheckedItemsDialogFragment;
 import com.lbconsulting.alist_03.fragments.CheckItemsFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
@@ -38,9 +39,10 @@ public class CheckItemsActivity extends FragmentActivity {
 
 	private long mActiveListID = -1;
 	private int mActiveListPosition = -1;
-	// private ListSettings mListSettings;
+	private long mActiveGroupID = -1;
+	private ListSettings mListSettings;
 	private Cursor mAllListsCursor;
-	private BroadcastReceiver mItemsMovedReceiver;
+
 	private long mSelectedListID = -1;
 
 	private int mCheckItemsActivitySelectedNavigationIndex = 0;
@@ -48,7 +50,10 @@ public class CheckItemsActivity extends FragmentActivity {
 
 	private static boolean isTAB_MoveORCullItemsSelected = true;
 	private Menu mCheckItemsMenu;
+
+	private BroadcastReceiver mItemsMovedReceiver;
 	private BroadcastReceiver mRequestCheckItemsTabPositionReceiver;
+	private BroadcastReceiver mActiveGroupIdReceiver;
 
 	// String mRestartGroupsLoaderKey = "";
 	// String mRestartItemsLoaderKey = "";
@@ -72,7 +77,6 @@ public class CheckItemsActivity extends FragmentActivity {
 					// the new list ID has been selected ...
 					mSelectedListID = intent.getLongExtra("selectedListID", -1);
 					int numberOfItemsMoved = ItemsTable.MoveAllCheckedItemsInList(CheckItemsActivity.this, mActiveListID, mSelectedListID);
-					// SendRestartItemsLoaderBroadCast();
 
 					AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
 					// set title
@@ -107,7 +111,6 @@ public class CheckItemsActivity extends FragmentActivity {
 
 		// add a tabs to the action bar.
 		actionBar.addTab(actionBar.newTab()
-				// .setText(R.string.actionBar_tab_color_presets)
 				.setText(R.string.actionBar_tab_cull_or_move_items)
 				.setTabListener(new TabListener() {
 
@@ -160,17 +163,29 @@ public class CheckItemsActivity extends FragmentActivity {
 			}
 		};
 
+		mActiveGroupIdReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				if (intent.hasExtra("ActiveGroupID")) {
+					mActiveGroupID = intent.getLongExtra("ActiveGroupID", -1);
+				}
+			}
+		};
+
 		// Register local broadcast receivers.
 		String itemsMovedKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(this).registerReceiver(mItemsMovedReceiver, new IntentFilter(itemsMovedKey));
 
-		String requestCheckItemsTabPositionReceiverKey = String.valueOf(mActiveListID)
-				+ CheckItemsFragment.REQUEST_CHECK_ITEMS_TAB_POSITION_BROADCAST_KEY;
+		String requestCheckItemsTabPositionReceiverKey = String.valueOf(mActiveListID) + CheckItemsFragment.REQUEST_CHECK_ITEMS_TAB_POSITION_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(this).registerReceiver(mRequestCheckItemsTabPositionReceiver,
 				new IntentFilter(requestCheckItemsTabPositionReceiverKey));
 
+		String activeGroupIdReceiverKey = String.valueOf(mActiveListID) + CheckItemsFragment.ACTIVE_GROUP_ID_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mActiveGroupIdReceiver, new IntentFilter(activeGroupIdReceiverKey));
+
 		mAllListsCursor = ListsTable.getAllLists(this);
-		// mListSettings = new ListSettings(this, mActiveListID);
+		mListSettings = new ListSettings(this, mActiveListID);
 
 		mCheckItemsPagerAdapter = new CheckItemsPagerAdapter(getSupportFragmentManager(), this);
 		mPager = (ViewPager) findViewById(R.id.checkItemsPager);
@@ -208,20 +223,17 @@ public class CheckItemsActivity extends FragmentActivity {
 		LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(applyCheckItemsTabPositionIntent);
 	}
 
-	/*	private void SendRestartGroupsLoaderBroadCast() {
-			Intent restartGroupsLoaderIntent = new Intent(mRestartGroupsLoaderKey);
-			LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(restartGroupsLoaderIntent);
-		}*/
-
-	/*	private void SendRestartItemsLoaderBroadCast() {
-			Intent restartItemsLoaderIntent = new Intent(mRestartItemsLoaderKey);
-			LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(restartItemsLoaderIntent);
-		}*/
+	private void SendGroupIDRequest() {
+		String requestActiveGroupIdBroadcastKey = String.valueOf(mActiveListID) + CheckItemsFragment.REQUEST_ACTIVE_GROUP_ID_BROADCAST_KEY;
+		Intent requestActiveGroupIdBroadcastIntent = new Intent(requestActiveGroupIdBroadcastKey);
+		LocalBroadcastManager.getInstance(CheckItemsActivity.this).sendBroadcast(requestActiveGroupIdBroadcastIntent);
+	}
 
 	private void SetActiveListBroadcastReceivers() {
 		// Unregister old receivers
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mItemsMovedReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mRequestCheckItemsTabPositionReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mActiveGroupIdReceiver);
 
 		// Register new receivers
 		String itemsMovedKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_MOVE_BROADCAST_KEY;
@@ -231,6 +243,9 @@ public class CheckItemsActivity extends FragmentActivity {
 				+ CheckItemsFragment.REQUEST_CHECK_ITEMS_TAB_POSITION_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(this).registerReceiver(mRequestCheckItemsTabPositionReceiver,
 				new IntentFilter(requestCheckItemsTabPositionReceiverKey));
+
+		String activeGroupIdReceiverKey = String.valueOf(mActiveListID) + CheckItemsFragment.ACTIVE_GROUP_ID_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mActiveGroupIdReceiver, new IntentFilter(activeGroupIdReceiverKey));
 	}
 
 	@Override
@@ -317,6 +332,16 @@ public class CheckItemsActivity extends FragmentActivity {
 			CheckUnused(365);
 			return true;
 
+		case R.id.action_editGroupName:
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			EditGroupName();
+			return true;
+
+		case R.id.action_addNewGroup:
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			AddNewGroup();
+			return true;
+
 		case R.id.action_sortOrder:
 			// ChangeSortOrder();
 			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
@@ -327,16 +352,45 @@ public class CheckItemsActivity extends FragmentActivity {
 		}
 	}
 
+	private void EditGroupName() {
+		FragmentManager fm = this.getSupportFragmentManager();
+		// Remove any currently showing dialog
+		Fragment prev = fm.findFragmentByTag("dialog_group_create_edit");
+		if (prev != null) {
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.remove(prev);
+			ft.commit();
+		}
+
+		SendGroupIDRequest();
+		if (mActiveGroupID > 1) {
+			// can't edit the default group
+			GroupsDialogFragment editListTitleDialog = GroupsDialogFragment.newInstance(mActiveListID, mActiveGroupID, GroupsDialogFragment.EDIT_GROUP_NAME);
+			editListTitleDialog.show(fm, "dialog_group_create_edit");
+		}
+	}
+
+	private void AddNewGroup() {
+		FragmentManager fm = this.getSupportFragmentManager();
+		// Remove any currently showing dialog
+		Fragment prev = fm.findFragmentByTag("dialog_group_create_edit");
+		if (prev != null) {
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.remove(prev);
+			ft.commit();
+		}
+		GroupsDialogFragment editListTitleDialog = GroupsDialogFragment.newInstance(mActiveListID, mActiveGroupID, GroupsDialogFragment.NEW_GROUP);
+		editListTitleDialog.show(fm, "dialog_group_create_edit");
+	}
+
 	private void SetActiveListID(int position) {
 		if (mAllListsCursor != null) {
 			try {
 				mAllListsCursor.moveToPosition(position);
 				mActiveListID = mAllListsCursor.getLong(mAllListsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
-				// mListSettings = new ListSettings(this, mActiveListID);
+				mListSettings = new ListSettings(this, mActiveListID);
 
 				mApplyCheckItemsTabPositionKey = String.valueOf(mActiveListID) + CheckItemsFragment.CHECK_ITEMS_TAB_BROADCAST_KEY;
-				/*				mRestartGroupsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_GROUPS_LOADER_KEY;
-								mRestartItemsLoaderKey = String.valueOf(mActiveListID) + CheckItemsFragment.RESART_ITEMS_LOADER_KEY;*/
 
 				mActiveListPosition = position;
 			} catch (Exception e) {
@@ -361,13 +415,14 @@ public class CheckItemsActivity extends FragmentActivity {
 					.setMessage(msg)
 					.setCancelable(false)
 					.setPositiveButton(R.string.btn_yes_text, new DialogInterface.OnClickListener() {
+						@Override
 						public void onClick(DialogInterface dialog, int id) {
 							// delete all checked items
 							ItemsTable.DeleteAllCheckedItemsInList(CheckItemsActivity.this, mActiveListID);
-							// SendRestartItemsLoaderBroadCast();
 						}
 					})
 					.setNegativeButton(R.string.btn_no_text, new DialogInterface.OnClickListener() {
+						@Override
 						public void onClick(DialogInterface dialog, int id) {
 							// close the dialog box and do nothing
 							dialog.cancel();
@@ -379,7 +434,6 @@ public class CheckItemsActivity extends FragmentActivity {
 			// show it
 			alertDialog.show();
 		} else {
-			// number of checked items == 0
 			AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
 			// set title and message
 			builder.setTitle("Unable to delete items.");
@@ -397,12 +451,13 @@ public class CheckItemsActivity extends FragmentActivity {
 			AlertDialog alertDialog = builder.create();
 			// show it
 			alertDialog.show();
+
 		}
+
 	}
 
 	private void ClearAllCheckedItems() {
 		ItemsTable.UnCheckAllItemsInList(CheckItemsActivity.this, mActiveListID);
-		// SendRestartItemsLoaderBroadCast();
 	}
 
 	private void MoveCheckedItems() {
@@ -464,40 +519,40 @@ public class CheckItemsActivity extends FragmentActivity {
 		ItemsTable.CheckItemsUnused(this, mActiveListID, numberOfDays);
 	}
 
-	private void ResetManualSortOrderToIDs() {
-		// TODO Auto-generated method stub
-		int numberOfItmesProcessed = 0;
-		Cursor cursor = ItemsTable.getAllItems(this);
-		if (cursor != null) {
-			long itemID = -1;
-			cursor.moveToPosition(-1);
-			while (cursor.moveToNext()) {
-				itemID = cursor.getLong(cursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_ID));
-				ContentValues values = new ContentValues();
-				values.put(ItemsTable.COL_MANUAL_SORT_ORDER, itemID);
-				numberOfItmesProcessed += ItemsTable.UpdateItemFieldValues(this, itemID, values);
-			}
-			cursor.close();
-
-			AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
-			// set title and message
-			builder.setTitle(numberOfItmesProcessed + " items updated.");
-			builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
-
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					// close the dialog box and do nothing
-					dialog.cancel();
+	/*	private void ResetManualSortOrderToIDs() {
+			// TODO Auto-generated method stub
+			int numberOfItmesProcessed = 0;
+			Cursor cursor = ItemsTable.getAllItems(this);
+			if (cursor != null) {
+				long itemID = -1;
+				cursor.moveToPosition(-1);
+				while (cursor.moveToNext()) {
+					itemID = cursor.getLong(cursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_ID));
+					ContentValues values = new ContentValues();
+					values.put(ItemsTable.COL_MANUAL_SORT_ORDER, itemID);
+					numberOfItmesProcessed += ItemsTable.UpdateItemFieldValues(this, itemID, values);
 				}
-			});
+				cursor.close();
 
-			// create alert dialog
-			AlertDialog alertDialog = builder.create();
-			// show it
-			alertDialog.show();
-		}
+				AlertDialog.Builder builder = new AlertDialog.Builder(CheckItemsActivity.this);
+				// set title and message
+				builder.setTitle(numberOfItmesProcessed + " items updated.");
+				builder.setPositiveButton(R.string.btn_ok_text, new DialogInterface.OnClickListener() {
 
-	}
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// close the dialog box and do nothing
+						dialog.cancel();
+					}
+				});
+
+				// create alert dialog
+				AlertDialog alertDialog = builder.create();
+				// show it
+				alertDialog.show();
+			}
+
+		}*/
 
 	@Override
 	protected void onDestroy() {
@@ -508,10 +563,11 @@ public class CheckItemsActivity extends FragmentActivity {
 		// Unregister since the activity is about to be closed.
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mItemsMovedReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mRequestCheckItemsTabPositionReceiver);
-
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mActiveGroupIdReceiver);
 		super.onDestroy();
 	}
 
+	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		isTAB_MoveORCullItemsSelected = mCheckItemsActivitySelectedNavigationIndex == 0;
 		if (menu != null) {
@@ -526,6 +582,18 @@ public class CheckItemsActivity extends FragmentActivity {
 			action_checkUnused90.setVisible(isTAB_MoveORCullItemsSelected);
 			action_checkUnused180.setVisible(isTAB_MoveORCullItemsSelected);
 			action_checkUnused365.setVisible(isTAB_MoveORCullItemsSelected);
+
+			MenuItem action_editGroupName = menu.findItem(R.id.action_editGroupName);
+			MenuItem action_addNewGroup = menu.findItem(R.id.action_addNewGroup);
+			if (mListSettings.isGroupAdditonAllowed()) {
+				action_editGroupName.setVisible(!isTAB_MoveORCullItemsSelected);
+				action_addNewGroup.setVisible(!isTAB_MoveORCullItemsSelected);
+			} else {
+				// not allowed to edit groups
+				action_editGroupName.setVisible(false);
+				action_addNewGroup.setVisible(!false);
+			}
+
 		}
 		return true;
 	}

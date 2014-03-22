@@ -72,7 +72,6 @@ public class CheckItemsCursorAdaptor extends CursorAdapter {
 			CheckBox ckBox = (CheckBox) view.findViewById(R.id.ckBox);
 			if (ckBox != null) {
 				ckBox.setChecked(isChecked);
-				ckBox.setClickable(false);
 				ckBox.setTextColor(this.mListSettings.getItemNormalTextColor());
 				ckBox.setVisibility(View.VISIBLE);
 			}

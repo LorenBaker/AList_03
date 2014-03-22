@@ -90,17 +90,13 @@ public class ColorsPreviewFragment extends Fragment {
 		if (newListID < 2) {
 			MyLog.e("ColorsPreviewFragment: newInstance; listID = " + newListID, " is less than 2!!!!");
 			return null;
-		} else {
-
-			ColorsPreviewFragment f = new ColorsPreviewFragment();
-
-			// Supply listID input as an argument.
-			Bundle args = new Bundle();
-			args.putLong("listID", newListID);
-			f.setArguments(args);
-
-			return f;
 		}
+		ColorsPreviewFragment f = new ColorsPreviewFragment();
+		// Supply listID input as an argument.
+		Bundle args = new Bundle();
+		args.putLong("listID", newListID);
+		f.setArguments(args);
+		return f;
 	}
 
 	@Override
@@ -141,8 +137,7 @@ public class ColorsPreviewFragment extends Fragment {
 
 			setListSettingsColors();
 
-			colorsPreviewFragmentLinearLayout = (LinearLayout) view
-					.findViewById(R.id.colorsPreviewFragmentLinearLayout);
+			colorsPreviewFragmentLinearLayout = (LinearLayout) view.findViewById(R.id.colorsPreviewFragmentLinearLayout);
 
 			tvListTitle = (TextView) view.findViewById(R.id.tvListTitle);
 			if (tvListTitle != null) {
@@ -459,7 +454,7 @@ public class ColorsPreviewFragment extends Fragment {
 		super.onViewCreated(view, savedInstanceState);
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	private void setAllColors() {
 		setPreviewFragmentLinearLayoutBackgroundColor();

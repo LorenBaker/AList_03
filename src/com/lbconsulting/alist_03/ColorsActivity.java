@@ -23,7 +23,7 @@ import android.widget.ScrollView;
 
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.ColorPicker.OnColorChangedListener;
-import com.larswerkman.holocolorpicker.OpacityBar;
+import com.larswerkman.holocolorpicker.SVBar;
 import com.larswerkman.holocolorpicker.SaturationBar;
 import com.lbconsulting.alist_03.adapters.ColorsPreviewPagerAdapter;
 import com.lbconsulting.alist_03.classes.ListSettings;
@@ -65,7 +65,7 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 
 	private ColorPicker picker;
 	private SaturationBar saturationBar;
-	private OpacityBar opacityBar;
+	private SVBar sVBar;
 	private BroadcastReceiver mPickerInitialColor;
 
 	@Override
@@ -84,10 +84,10 @@ public class ColorsActivity extends FragmentActivity implements View.OnClickList
 
 		picker = (ColorPicker) findViewById(R.id.picker);
 		saturationBar = (SaturationBar) findViewById(R.id.saturationBar);
-		opacityBar = (OpacityBar) findViewById(R.id.opacityBar);
+		sVBar = (SVBar) findViewById(R.id.SVBar);
 
 		picker.addSaturationBar(saturationBar);
-		picker.addOpacityBar(opacityBar);
+		picker.addSVBar(sVBar);
 		picker.setOnColorChangedListener(this);
 
 		mPickerInitialColor = new BroadcastReceiver() {

@@ -294,24 +294,24 @@ public class GroupsTable {
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Update Methods
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public static int UpdateGroupName(Context context, long groupID, String groupName) {
-		int numberOfUpdatedRecords = -1;
-		// cannot update the default group with ID=1
-		if (groupID > 1) {
-			Uri uri = CONTENT_URI;
-			String selection = COL_LIST_ID + " = ?";
-			String selectionArgs[] = new String[] { String.valueOf(groupID) };
-			ContentResolver cr = context.getContentResolver();
+	/*	public static int UpdateGroupName(Context context, long groupID, String groupName) {
+			int numberOfUpdatedRecords = -1;
+			// cannot update the default group with ID=1
+			if (groupID > 1) {
+				Uri uri = CONTENT_URI;
+				String selection = COL_LIST_ID + " = ?";
+				String selectionArgs[] = new String[] { String.valueOf(groupID) };
+				ContentResolver cr = context.getContentResolver();
 
-			ContentValues values = new ContentValues();
-			values.put(COL_GROUP_NAME, groupName.trim());
-			numberOfUpdatedRecords = cr.update(uri, values, selection, selectionArgs);
-			if (numberOfUpdatedRecords != 1) {
-				MyLog.e("GroupsTable: UpdateGroupName", "The number of records updated does not equal 1!");
+				ContentValues values = new ContentValues();
+				values.put(COL_GROUP_NAME, groupName.trim());
+				numberOfUpdatedRecords = cr.update(uri, values, selection, selectionArgs);
+				if (numberOfUpdatedRecords != 1) {
+					MyLog.e("GroupsTable: UpdateGroupName", "The number of records updated does not equal 1!");
+				}
 			}
-		}
-		return numberOfUpdatedRecords;
-	}
+			return numberOfUpdatedRecords;
+		}*/
 
 	public static int UnCheckAllCheckedGroups(Context context, long listID) {
 		int numberOfUpdatedRecords = -1;
@@ -357,6 +357,18 @@ public class GroupsTable {
 			} catch (Exception e) {
 				MyLog.e("Exception error in GroupsTable: CheckItem. ", e.toString());
 			}
+		}
+		return numberOfUpdatedRecords;
+	}
+
+	public static int UpdateGroupTableFieldValues(Context context, long groupID, ContentValues newFieldValues) {
+		int numberOfUpdatedRecords = -1;
+		if (groupID > 1) {
+			ContentResolver cr = context.getContentResolver();
+			Uri defaultUri = Uri.withAppendedPath(CONTENT_URI, String.valueOf(groupID));
+			String selection = null;
+			String[] selectionArgs = null;
+			numberOfUpdatedRecords = cr.update(defaultUri, newFieldValues, selection, selectionArgs);
 		}
 		return numberOfUpdatedRecords;
 	}

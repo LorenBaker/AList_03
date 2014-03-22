@@ -1,5 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
     <item
         android:id="@+id/action_deleteCheckedItems"
         android:icon="@drawable/ic_action_discard"
@@ -32,9 +31,18 @@
         android:showAsAction="never"
         android:title="Check unused over 365 days"/>
     <item
+        android:id="@+id/action_editGroupName"
+        android:orderInCategory="53"
+        android:showAsAction="never"
+        android:title="Edit selected group name"/>
+    <item
+        android:id="@+id/action_addNewGroup"
+        android:orderInCategory="55"
+        android:showAsAction="never"
+        android:title="Add new group"/>
+    <item
         android:id="@+id/action_sortOrder"
         android:orderInCategory="60"
         android:showAsAction="never"
         android:title="Sort order"/>
-
 </menu>

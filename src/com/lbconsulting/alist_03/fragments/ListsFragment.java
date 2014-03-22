@@ -248,13 +248,12 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 			mActiveListID = bundle.getLong("listID", 0);
 		}
 
-		mListSettings = new ListSettings(getActivity(), mActiveListID);
+		mListSettings.RefreshListSettings();
 		setViewColors();
 
 		// Set onResume flags
 		flag_FirstTimeLoadingItemDataSinceOnResume = true;
 		mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
-
 	}
 
 	@Override

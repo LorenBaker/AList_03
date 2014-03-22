@@ -22,13 +22,13 @@ import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.lbconsulting.alist_03.ColorsActivity;
 import com.lbconsulting.alist_03.ListPreferencesActivity;
 import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ListsTable;
+import com.lbconsulting.alist_03.dialogs.ListsDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -44,6 +44,8 @@ public class ListPreferencesFragment extends Fragment {
 	private long mActiveListID;
 	private ListSettings listSettings;
 	public static final String LIST_PREFERENCES_CHANGED_BROADCAST_KEY = "list_preferences_changed";
+	// public static final String LIST_COLORS_CHANGED_BROADCAST_KEY = "list_preferences_colors_changed";
+
 	private BroadcastReceiver mPreferencesChangedBroadcastReceiver;
 
 	private LinearLayout llFragListPreferences;
@@ -286,6 +288,7 @@ public class ListPreferencesFragment extends Fragment {
 	}
 
 	View.OnClickListener buttonClick = new View.OnClickListener() {
+		@Override
 		public void onClick(View v) {
 
 			FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -298,14 +301,14 @@ public class ListPreferencesFragment extends Fragment {
 			}
 			switch (v.getId()) {
 			case R.id.btnEditListTitle:
-				Toast.makeText(getActivity(), "\"" + "btnEditListTitle" + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
-				/*				ListsDialogFragment editListTitleDialog = ListsDialogFragment.newInstance(mActiveListID, ListsDialogFragment.EDIT_LIST_TITLE);
-								editListTitleDialog.show(fm, "dialog_lists_table_update");*/
+				// Toast.makeText(getActivity(), "\"" + "btnEditListTitle" + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+				ListsDialogFragment editListTitleDialog = ListsDialogFragment.newInstance(mActiveListID, ListsDialogFragment.EDIT_LIST_TITLE);
+				editListTitleDialog.show(fm, "dialog_lists_table_update");
 				break;
 
 			case R.id.btnColors:
-				// StartColorsActivity();
-				Toast.makeText(getActivity(), "\"" + "btnColors" + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+				StartColorsActivity();
+				// Toast.makeText(getActivity(), "\"" + "btnColors" + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 				break;
 
 			default:

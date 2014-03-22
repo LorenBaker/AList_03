@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -62,9 +63,13 @@ public class CheckItemsFragment extends Fragment
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
 
 	public static final String REQUEST_CHECK_ITEMS_TAB_POSITION_BROADCAST_KEY = "requestCheckItemsTabPosition";
-
 	public static final String CHECK_ITEMS_TAB_BROADCAST_KEY = "CheckItemsTabBroadcastKey";
+
+	public static final String ACTIVE_GROUP_ID_BROADCAST_KEY = "activeGroupIdBroadcastKey";
+	public static final String REQUEST_ACTIVE_GROUP_ID_BROADCAST_KEY = "requestActiveGroupIdBroadcastKey";
+
 	private BroadcastReceiver mCheckItemsTabBroadcastReceiver;
+	private BroadcastReceiver mRequestActiveGroupIdBroadcastReceiver;
 
 	public static final int CHECK_ITEMS_TAB_CULL_MOVE_ITEMS = 0;
 	public static final int CHECK_ITEMS_TAB_SET_GROUPS = 1;
@@ -136,6 +141,22 @@ public class CheckItemsFragment extends Fragment
 		mGroupsSpinnerCursorAdapter = new GroupsSpinnerCursorAdapter(getActivity(), null, 0);
 		spinGroups = (Spinner) view.findViewById(R.id.spinGroups);
 		spinGroups.setAdapter(mGroupsSpinnerCursorAdapter);
+		spinGroups.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				SendActiveGroupID();
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+				String activeGroupIdReceiverKey = String.valueOf(mActiveListID) + CheckItemsFragment.ACTIVE_GROUP_ID_BROADCAST_KEY;
+				Intent activeGroupIdReceiverIntent = new Intent(activeGroupIdReceiverKey);
+				activeGroupIdReceiverIntent.putExtra("ActiveGroupID", -1);
+				LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(activeGroupIdReceiverIntent);
+			}
+
+		});
 
 		btnApplyGroup = (Button) view.findViewById(R.id.btnApplyGroup);
 		btnApplyGroup.setOnClickListener(new OnClickListener() {
@@ -181,6 +202,13 @@ public class CheckItemsFragment extends Fragment
 		return view;
 	}
 
+	protected void SendActiveGroupID() {
+		String activeGroupIdReceiverKey = String.valueOf(mActiveListID) + CheckItemsFragment.ACTIVE_GROUP_ID_BROADCAST_KEY;
+		Intent activeGroupIdReceiverIntent = new Intent(activeGroupIdReceiverKey);
+		activeGroupIdReceiverIntent.putExtra("ActiveGroupID", spinGroups.getSelectedItemId());
+		LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(activeGroupIdReceiverIntent);
+	}
+
 	protected void ApplyGroupsToCheckedItems() {
 		long groupID = spinGroups.getSelectedItemId();
 		ItemsTable.ApplyGroupToCheckedItems(getActivity(), mActiveListID, groupID);
@@ -216,10 +244,22 @@ public class CheckItemsFragment extends Fragment
 			}
 		};
 
+		mRequestActiveGroupIdBroadcastReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				SendActiveGroupID();
+			}
+		};
+
 		// Register local broadcast receivers.
 		String applyCheckItemsTabPositionKey = String.valueOf(mActiveListID) + CHECK_ITEMS_TAB_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mCheckItemsTabBroadcastReceiver,
 				new IntentFilter(applyCheckItemsTabPositionKey));
+
+		String requestActiveGroupIdBroadcastKey = String.valueOf(mActiveListID) + REQUEST_ACTIVE_GROUP_ID_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRequestActiveGroupIdBroadcastReceiver,
+				new IntentFilter(requestActiveGroupIdBroadcastKey));
 
 		super.onActivityCreated(savedInstanceState);
 	}
@@ -297,6 +337,8 @@ public class CheckItemsFragment extends Fragment
 		MyLog.i("CheckItemsFragment", "onDestroy");
 		// Unregister local broadcast receivers
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mCheckItemsTabBroadcastReceiver);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRequestActiveGroupIdBroadcastReceiver);
+
 	}
 
 	@Override
