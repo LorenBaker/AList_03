@@ -139,7 +139,6 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 		if (mItemsListView != null) {
 			mItemsCursorAdaptor = new ItemsCursorAdaptor(getActivity(), null, 0, mListSettings);
 			mItemsListView.setAdapter(mItemsCursorAdaptor);
-			DynamicListView.setManualSort(mListSettings.isManualSort());
 		}
 		setViewColors();
 
@@ -155,8 +154,11 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 		mStoreSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+			public void onItemSelected(AdapterView<?> parent, View v, int position, long storeID) {
 				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+				ContentValues newFieldValues = new ContentValues();
+				newFieldValues.put(ListsTable.COL_ACTIVE_STORE_ID, storeID);
+				mListSettings.updateListsTableFieldValues(newFieldValues);
 			}
 
 			@Override

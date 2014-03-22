@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -19,12 +20,15 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.ListsPagerAdapter;
+import com.lbconsulting.alist_03.classes.DynamicListView;
 import com.lbconsulting.alist_03.classes.ListSettings;
+import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
+import com.lbconsulting.alist_03.database.LocationsTable;
+import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.dialogs.ListsDialogFragment;
 import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
 import com.lbconsulting.alist_03.fragments.MasterListFragment;
@@ -43,6 +47,8 @@ public class ListsActivity extends FragmentActivity {
 	private long mActiveListID = NO_ACTIVE_LIST_ID;
 	private long mActiveItemID;
 	private int mActiveListPosition = 0;
+	// private long mActiveStoreID = -1;
+
 	private ListSettings mListSettings;
 
 	private Cursor mAllListsCursor;
@@ -57,6 +63,7 @@ public class ListsActivity extends FragmentActivity {
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
 		mActiveListPosition = storedStates.getInt("ActiveListPosition", -1);
 		mActiveItemID = storedStates.getLong("ActiveItemID", -1);
+		// mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
 
 		mListTableChanged = new BroadcastReceiver() {
 
@@ -92,6 +99,7 @@ public class ListsActivity extends FragmentActivity {
 
 		mAllListsCursor = ListsTable.getAllLists(this);
 		mListSettings = new ListSettings(this, mActiveListID);
+		DynamicListView.setManualSort(mListSettings.isManualSort());
 
 		mListsPagerAdapter = new ListsPagerAdapter(getSupportFragmentManager(), this);
 		mPager = (ViewPager) findViewById(R.id.listsPager);
@@ -111,6 +119,7 @@ public class ListsActivity extends FragmentActivity {
 				// A list page has been selected
 				SetActiveListID(position);
 				SetActiveListBroadcastReceivers();
+				DynamicListView.setManualSort(mListSettings.isManualSort());
 				MyLog.d("Lists_ACTIVITY", "onPageSelected() - position = " + position + " ; listID = " + mActiveListID);
 
 				if (mTwoFragmentLayout) {
@@ -274,6 +283,8 @@ public class ListsActivity extends FragmentActivity {
 		applicationStates.putLong("ActiveListID", mActiveListID);
 		applicationStates.putLong("ActiveItemID", mActiveItemID);
 		applicationStates.putInt("ActiveListPosition", mActiveListPosition);
+		// applicationStates.putLong("ActiveStoreID", mActiveStoreID);
+
 		applicationStates.commit();
 		super.onPause();
 	}
@@ -326,7 +337,8 @@ public class ListsActivity extends FragmentActivity {
 			return true;
 
 		case R.id.action_emailList:
-			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			EmailList();
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
 			return true;
 
 		case R.id.action_editListTitle:
@@ -352,6 +364,155 @@ public class ListsActivity extends FragmentActivity {
 		default:
 			return super.onMenuItemSelected(featureId, item);
 		}
+	}
+
+	private void EmailList() {
+		Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+
+		String listName = ListsTable.getListTitle(this, mActiveListID);
+		emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "AList: " + listName);
+
+		emailIntent.setType("plain/text");
+		StringBuilder sb = getList(mActiveListID, mListSettings.getListSortOrder());
+
+		emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, sb.toString());
+
+		startActivity(Intent.createChooser(emailIntent, "Send your email using:"));
+
+	}
+
+	private StringBuilder getList(long listID, int listSortOrder) {
+		String sortOrder = "";
+		Cursor listCursor = null;
+		StringBuilder sb = null;
+
+		try {
+			switch (listSortOrder) {
+			case AListUtilities.LIST_SORT_ALPHABETICAL:
+				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+				listCursor = ItemsTable.getAllSelectedItems(this, mActiveListID, true, sortOrder);
+				sb = getListAsString(listCursor);
+				break;
+
+			case AListUtilities.LIST_SORT_BY_GROUP:
+				listCursor = ItemsTable.getAllSelectedItemsWithGroups(this, mActiveListID, true);
+				sb = getListAsStringWithGroups(listCursor);
+				break;
+
+			case AListUtilities.LIST_SORT_MANUAL:
+				sortOrder = ItemsTable.SORT_ORDER_MANUAL;
+				listCursor = ItemsTable.getAllSelectedItems(this, mActiveListID, true, sortOrder);
+				sb = getListAsString(listCursor);
+				break;
+
+			case AListUtilities.LIST_SORT_BY_STORE_LOCATION:
+				mListSettings.RefreshListSettings();
+				long selectedStoreID = mListSettings.getActiveStoreID();
+				String storeName = StoresTable.getStoreDisplayName(this, selectedStoreID);
+				listCursor = ItemsTable.getAllSelectedItemsWithLocations(this, mActiveListID, selectedStoreID, true);
+				sb = getListAsStringWithLocations(listCursor, storeName);
+				break;
+
+			default:
+				sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME;
+				listCursor = ItemsTable.getAllSelectedItems(this, mActiveListID, true, sortOrder);
+				sb = getListAsString(listCursor);
+				break;
+			}
+
+		} catch (SQLiteException e) {
+			MyLog.e("Lists_ACTIVITY: getList SQLiteException: ", e.toString());
+			if (listCursor != null) {
+				listCursor.close();
+			}
+			return null;
+
+		} catch (IllegalArgumentException e) {
+			MyLog.e("Lists_ACTIVITY: getList IllegalArgumentException: ", e.toString());
+			if (listCursor != null) {
+				listCursor.close();
+			}
+			return null;
+		}
+		if (listCursor != null) {
+			listCursor.close();
+		}
+		return sb;
+	}
+
+	private StringBuilder getListAsStringWithLocations(Cursor listCursor, String storeName) {
+		StringBuilder sb = new StringBuilder();
+		if (listCursor != null) {
+
+			sb.append("List sorted for:").append(System.getProperty("line.separator"));
+			sb.append(storeName).append(System.getProperty("line.separator"));
+			sb.append(System.getProperty("line.separator"));
+
+			String locationName = "";
+			String previousLocationName = "";
+			String itemName = "";
+
+			listCursor.moveToFirst();
+			locationName = listCursor.getString(listCursor.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_NAME));
+			sb.append(locationName).append(System.getProperty("line.separator"));
+			previousLocationName = locationName;
+			itemName = listCursor.getString(listCursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_NAME));
+			sb.append("   ").append(itemName).append(System.getProperty("line.separator"));
+
+			while (listCursor.moveToNext()) {
+				locationName = listCursor.getString(listCursor.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_NAME));
+				if (!locationName.equals(previousLocationName)) {
+					sb.append(System.getProperty("line.separator"));
+					sb.append(locationName).append(System.getProperty("line.separator"));
+					previousLocationName = locationName;
+				}
+				itemName = listCursor.getString(listCursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_NAME));
+				sb.append("   ").append(itemName).append(System.getProperty("line.separator"));
+			}
+		}
+		return sb;
+	}
+
+	private StringBuilder getListAsStringWithGroups(Cursor listCursor) {
+		StringBuilder sb = new StringBuilder();
+		if (listCursor != null) {
+
+			String groupTitle = "";
+			String previousGroupTitle = "";
+			String itemName = "";
+
+			listCursor.moveToFirst();
+			groupTitle = listCursor.getString(listCursor.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME));
+			sb.append(groupTitle).append(System.getProperty("line.separator"));
+			previousGroupTitle = groupTitle;
+			itemName = listCursor.getString(listCursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_NAME));
+			sb.append("   ").append(itemName).append(System.getProperty("line.separator"));
+
+			while (listCursor.moveToNext()) {
+				groupTitle = listCursor.getString(listCursor.getColumnIndexOrThrow(GroupsTable.COL_GROUP_NAME));
+				if (!groupTitle.equals(previousGroupTitle)) {
+					sb.append(System.getProperty("line.separator"));
+					sb.append(groupTitle).append(System.getProperty("line.separator"));
+					previousGroupTitle = groupTitle;
+				}
+				itemName = listCursor.getString(listCursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_NAME));
+				sb.append("   ").append(itemName).append(System.getProperty("line.separator"));
+			}
+		}
+		return sb;
+	}
+
+	private StringBuilder getListAsString(Cursor listCursor) {
+		StringBuilder sb = new StringBuilder();
+		if (listCursor != null) {
+			listCursor.moveToPosition(-1);
+			String itemName = "";
+			while (listCursor.moveToNext()) {
+				itemName = listCursor.getString(listCursor.getColumnIndexOrThrow(ItemsTable.COL_ITEM_NAME));
+				sb.append(itemName).append(System.getProperty("line.separator"));
+			}
+		}
+		return sb;
 	}
 
 	private void DeleteList() {

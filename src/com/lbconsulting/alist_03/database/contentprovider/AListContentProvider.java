@@ -52,6 +52,12 @@ public class AListContentProvider extends ContentProvider {
 	private static final int ITEMS_WITH_LOCATIONS = 71;
 	private static final int GROUPS_WITH_LOCATIONS = 72;
 
+	private static boolean mSuppressChangeNotification = false;
+
+	public static void SuppressChangeNotification(boolean supressChanges) {
+		mSuppressChangeNotification = supressChanges;
+	}
+
 	public static final String AUTHORITY = "com.lbconsulting.alist_03.contentprovider";
 
 	private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -211,13 +217,14 @@ public class AListContentProvider extends ContentProvider {
 		default:
 			throw new IllegalArgumentException("Method delete: Unknown URI: " + uri);
 		}
+		if (!mSuppressChangeNotification) {
+			// Notify and observers of the change in the database.
+			getContext().getContentResolver().notifyChange(uri, null);
 
-		// Notify and observers of the change in the database.
-		getContext().getContentResolver().notifyChange(uri, null);
-
-		getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
-		getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
-		getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+			getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+			getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+			getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+		}
 		return deleteCount;
 	}
 
@@ -279,16 +286,18 @@ public class AListContentProvider extends ContentProvider {
 			if (newRowId > 0) {
 				// Construct and return the URI of the newly inserted row.
 				Uri newRowUri = ContentUris.withAppendedId(ItemsTable.CONTENT_URI, newRowId);
-				// Notify and observers of the change in the database.
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI, null);
 
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
-				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+				if (!mSuppressChangeNotification) {
+					// Notify and observers of the change in the database.
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI, null);
+
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+					getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+				}
 				return newRowUri;
-			} else {
-				return null;
 			}
+			return null;
 
 		case ITEMS_SINGLE_ROW:
 			throw new IllegalArgumentException(
@@ -299,17 +308,17 @@ public class AListContentProvider extends ContentProvider {
 			if (newRowId > 0) {
 				// Construct and return the URI of the newly inserted row.
 				Uri newRowUri = ContentUris.withAppendedId(ListsTable.CONTENT_URI, newRowId);
-				// Notify and observers of the change in the database.
-				getContext().getContentResolver().notifyChange(ListsTable.CONTENT_URI, null);
+				if (!mSuppressChangeNotification) {
+					// Notify and observers of the change in the database.
+					getContext().getContentResolver().notifyChange(ListsTable.CONTENT_URI, null);
 
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
-				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
-
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+					getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+				}
 				return newRowUri;
-			} else {
-				return null;
 			}
+			return null;
 
 		case LIST_SINGLE_ROW:
 			throw new IllegalArgumentException(
@@ -320,16 +329,17 @@ public class AListContentProvider extends ContentProvider {
 			if (newRowId > 0) {
 				// Construct and return the URI of the newly inserted row.
 				Uri newRowUri = ContentUris.withAppendedId(GroupsTable.CONTENT_URI, newRowId);
-				// Notify and observers of the change in the database.
-				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI, null);
+				if (!mSuppressChangeNotification) {
+					// Notify and observers of the change in the database.
+					getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI, null);
 
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
-				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+					getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+				}
 				return newRowUri;
-			} else {
-				return null;
 			}
+			return null;
 
 		case GROUPS_SINGLE_ROW:
 			throw new IllegalArgumentException(
@@ -340,12 +350,13 @@ public class AListContentProvider extends ContentProvider {
 			if (newRowId > 0) {
 				// Construct and return the URI of the newly inserted row.
 				Uri newRowUri = ContentUris.withAppendedId(StoresTable.CONTENT_URI, newRowId);
-				// Notify and observers of the change in the database.
-				getContext().getContentResolver().notifyChange(StoresTable.CONTENT_URI, null);
+				if (!mSuppressChangeNotification) {
+					// Notify and observers of the change in the database.
+					getContext().getContentResolver().notifyChange(StoresTable.CONTENT_URI, null);
+				}
 				return newRowUri;
-			} else {
-				return null;
 			}
+			return null;
 
 		case STORES_SINGLE_ROW:
 			throw new IllegalArgumentException(
@@ -356,16 +367,17 @@ public class AListContentProvider extends ContentProvider {
 			if (newRowId > 0) {
 				// Construct and return the URI of the newly inserted row.
 				Uri newRowUri = ContentUris.withAppendedId(LocationsTable.CONTENT_URI, newRowId);
-				// Notify and observers of the change in the database.
-				getContext().getContentResolver().notifyChange(LocationsTable.CONTENT_URI, null);
+				if (!mSuppressChangeNotification) {
+					// Notify and observers of the change in the database.
+					getContext().getContentResolver().notifyChange(LocationsTable.CONTENT_URI, null);
 
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
-				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+					getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+				}
 				return newRowUri;
-			} else {
-				return null;
 			}
+			return null;
 
 		case LOCATIONS_SINGLE_ROW:
 			throw new IllegalArgumentException(
@@ -376,16 +388,17 @@ public class AListContentProvider extends ContentProvider {
 			if (newRowId > 0) {
 				// Construct and return the URI of the newly inserted row.
 				Uri newRowUri = ContentUris.withAppendedId(BridgeTable.CONTENT_URI, newRowId);
-				// Notify and observers of the change in the database.
-				getContext().getContentResolver().notifyChange(BridgeTable.CONTENT_URI, null);
+				if (!mSuppressChangeNotification) {
+					// Notify and observers of the change in the database.
+					getContext().getContentResolver().notifyChange(BridgeTable.CONTENT_URI, null);
 
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
-				getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
-				getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+					getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+					getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+				}
 				return newRowUri;
-			} else {
-				return null;
 			}
+			return null;
 
 		case BRIDGE_SINGLE_ROW:
 			throw new IllegalArgumentException(
@@ -472,9 +485,6 @@ public class AListContentProvider extends ContentProvider {
 			break;
 
 		case ITEMS_WITH_GROUPS:
-			// TODO #*#*#*#*#*#*#*# cursor.setNotificationUri(getContext().getContentResolver(), uri); #*#*#*#*#*#*#*#
-			// does not seem to work with this JOIN query.  Works fine with other single table queries.
-
 			/*SELECT tblItems._id, tblItems.itemName, tblItems.groupID, tblGroups.groupName 
 			FROM tblItems 
 			JOIN tblGroups ON tblItems.groupID = tblGroups._id
@@ -560,15 +570,14 @@ public class AListContentProvider extends ContentProvider {
 			}
 
 			if (null != cursor) {
-				// TO DO: verify that the proper update happens with the Joined table query.
 				cursor.setNotificationUri(getContext().getContentResolver(), uri);
 			}
 			return cursor;
-		} else {
-			return null;
 		}
+		return null;
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 		String rowID = null;
@@ -681,13 +690,14 @@ public class AListContentProvider extends ContentProvider {
 		default:
 			throw new IllegalArgumentException("Method update: Unknown URI: " + uri);
 		}
+		if (!mSuppressChangeNotification) {
+			// Notify any observers of the change in the database.
+			getContext().getContentResolver().notifyChange(uri, null);
 
-		// Notify any observers of the change in the database.
-		getContext().getContentResolver().notifyChange(uri, null);
-
-		getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
-		getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
-		getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+			getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_GROUPS, null);
+			getContext().getContentResolver().notifyChange(ItemsTable.CONTENT_URI_ITEMS_WITH_LOCATIONS, null);
+			getContext().getContentResolver().notifyChange(GroupsTable.CONTENT_URI_GROUPS_WITH_LOCATIONS, null);
+		}
 		return updateCount;
 	}
 
@@ -804,11 +814,9 @@ public class AListContentProvider extends ContentProvider {
 	}
 
 	/**
-	 * A test package can call this to get a handle to the database underlying
-	 * AListContentProvider, so it can insert test data into the database. The
-	 * test case class is responsible for instantiating the provider in a test
-	 * context; {@link android.test.ProviderTestCase2} does this during the call
-	 * to setUp()
+	 * A test package can call this to get a handle to the database underlying AListContentProvider, so it can insert test data into the database. The
+	 * test case class is responsible for instantiating the provider in a test context; {@link android.test.ProviderTestCase2} does this during the
+	 * call to setUp()
 	 * 
 	 * @return a handle to the database helper object for the provider's data.
 	 */

@@ -360,8 +360,7 @@ public class ItemsTable {
 	 * @param selected
 	 * @return Returns all selected (or not selected) items in the list.
 	 */
-	public static CursorLoader getAllSelectedItemsInList(Context context, long listID, boolean selected,
-			String sortOrder) {
+	public static CursorLoader getAllSelectedItemsInList(Context context, long listID, boolean selected, String sortOrder) {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			int selectedValue = AListUtilities.boolToInt(selected);
@@ -408,8 +407,7 @@ public class ItemsTable {
 		return cursorLoader;
 	}
 
-	public static CursorLoader getAllSelectedItemsInListWithLocations(Context context, long listID, long storeID,
-			boolean selected) {
+	public static CursorLoader getAllSelectedItemsInListWithLocations(Context context, long listID, long storeID, boolean selected) {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
 			int selectedValue = AListUtilities.boolToInt(selected);
@@ -428,6 +426,69 @@ public class ItemsTable {
 			}
 		}
 		return cursorLoader;
+	}
+
+	public static Cursor getAllSelectedItems(Context context, long listID, boolean selected, String sortOrder) {
+		Cursor cursor = null;
+		if (listID > 1) {
+			int selectedValue = AListUtilities.boolToInt(selected);
+			if (sortOrder == null) {
+				sortOrder = SORT_ORDER_ITEM_NAME;
+			}
+			Uri uri = CONTENT_URI;
+			String[] projection = PROJECTION_ALL;
+			String selection = COL_LIST_ID + " = ? AND " + COL_SELECTED + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(selectedValue) };
+			ContentResolver cr = context.getContentResolver();
+			try {
+				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllSelectedItems. ", e.toString());
+			}
+		}
+		return cursor;
+	}
+
+	public static Cursor getAllSelectedItemsWithGroups(Context context, long listID, boolean selected) {
+		Cursor cursor = null;
+		if (listID > 1) {
+			int selectedValue = AListUtilities.boolToInt(selected);
+			Uri uri = CONTENT_URI_ITEMS_WITH_GROUPS;
+			String[] projection = ItemsTable.PROJECTION_WITH_GROUP_NAME;
+			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
+					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";
+
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(selectedValue) };
+			String sortOrder = GroupsTable.SORT_ORDER_GROUP + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
+			ContentResolver cr = context.getContentResolver();
+			try {
+				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllSelectedItemsWithGroups. ", e.toString());
+			}
+		}
+		return cursor;
+	}
+
+	public static Cursor getAllSelectedItemsWithLocations(Context context, long listID, long storeID, boolean selected) {
+		Cursor cursor = null;
+		if (listID > 1) {
+			int selectedValue = AListUtilities.boolToInt(selected);
+			Uri uri = CONTENT_URI_ITEMS_WITH_LOCATIONS;
+			String[] projection = ItemsTable.PROJECTION_WITH_LOCATION_NAME;
+			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
+					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_STORE_ID + " = ? AND "
+					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(storeID), String.valueOf(selectedValue) };
+			String sortOrder = LocationsTable.SORT_ORDER_LOCATION + ", " + ItemsTable.SORT_ORDER_ITEM_NAME;
+			ContentResolver cr = context.getContentResolver();
+			try {
+				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllSelectedItemsWithLocations. ", e.toString());
+			}
+		}
+		return cursor;
 	}
 
 	/**
@@ -540,26 +601,26 @@ public class ItemsTable {
 	 * @param selected
 	 * @return
 	 */
-	public static Cursor getAllSelectedItemsInGroup(Context context, long groupID, boolean selected, String sortOrder) {
-		Cursor cursor = null;
-		if (groupID > 0) {
-			int selectedValue = AListUtilities.boolToInt(selected);
-			if (sortOrder == null) {
-				sortOrder = SORT_ORDER_ITEM_NAME;
+	/*	public static Cursor getAllSelectedItemsInGroup(Context context, long groupID, boolean selected, String sortOrder) {
+			Cursor cursor = null;
+			if (groupID > 0) {
+				int selectedValue = AListUtilities.boolToInt(selected);
+				if (sortOrder == null) {
+					sortOrder = SORT_ORDER_ITEM_NAME;
+				}
+				Uri uri = CONTENT_URI;
+				String[] projection = PROJECTION_ALL;
+				String selection = COL_GROUP_ID + " = ? AND " + COL_SELECTED + " = ?";
+				String[] selectionArgs = { String.valueOf(groupID), String.valueOf(selectedValue) };
+				ContentResolver cr = context.getContentResolver();
+				try {
+					cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+				} catch (Exception e) {
+					MyLog.e("Exception error in ItemsTable: getAllSelectedItemsInGroup. ", e.toString());
+				}
 			}
-			Uri uri = CONTENT_URI;
-			String[] projection = PROJECTION_ALL;
-			String selection = COL_GROUP_ID + " = ? AND " + COL_SELECTED + " = ?";
-			String[] selectionArgs = { String.valueOf(groupID), String.valueOf(selectedValue) };
-			ContentResolver cr = context.getContentResolver();
-			try {
-				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
-			} catch (Exception e) {
-				MyLog.e("Exception error in ItemsTable: getAllSelectedItemsInGroup. ", e.toString());
-			}
-		}
-		return cursor;
-	}
+			return cursor;
+		}*/
 
 	public static boolean isItemSwitched(Context context, long itemID) {
 		boolean result = false;

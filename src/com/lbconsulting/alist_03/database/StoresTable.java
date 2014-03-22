@@ -264,14 +264,23 @@ public class StoresTable {
 	public static String getStoreDisplayName(Context context, long storeID) {
 		String displayName = "";
 		Cursor cursor = getStore(context, storeID);
+
 		if (cursor != null) {
+			cursor.moveToFirst();
 			StringBuilder sb = new StringBuilder();
 			sb.append(cursor.getString(cursor.getColumnIndexOrThrow(COL_STORE_NAME)));
-			sb.append(", ");
-			sb.append(cursor.getString(cursor.getColumnIndexOrThrow(COL_CITY)));
-			sb.append(", ");
-			sb.append(cursor.getString(cursor.getColumnIndexOrThrow(COL_STATE)));
+			String city = cursor.getString(cursor.getColumnIndexOrThrow(COL_CITY));
+			if (city != null && !city.isEmpty()) {
+				sb.append(", ");
+				sb.append(city);
+			}
+			String state = cursor.getString(cursor.getColumnIndexOrThrow(COL_STATE));
+			if (state != null && !state.isEmpty()) {
+				sb.append(", ");
+				sb.append(state);
+			}
 			cursor.close();
+			displayName = sb.toString();
 		}
 		return displayName;
 	}

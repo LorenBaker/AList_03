@@ -19,38 +19,35 @@ public class ListsTable {
 	// ListsTable data table
 	// Version 1
 	public static final String TABLE_LISTS = "tblLists";
-	public static final String COL_LIST_ID = "_id";// 0
-	public static final String COL_LIST_TITLE = "listTitle";// 1
-	public static final String COL_ACTIVE_STORE_ID = "activeStoreID";// 2
+	public static final String COL_LIST_ID = "_id";
+	public static final String COL_LIST_TITLE = "listTitle";
+	public static final String COL_ACTIVE_STORE_ID = "activeStoreID";
 	// List Settings
-	/*	public static final String COL_SHOW_GROUPS_IN_LISTS_FRAGMENT = "showGroupsInListsFragment";// 3
-		public static final String COL_SHOW_GROUPS_IN_MASTER_LIST_FRAGMENT = "showGroupsInMasterListFragment";// 4
-		public static final String COL_SHOW_STORES = "showStores";// 5
-	*/
-	public static final String COL_DELETE_NOTE_UPON_DESELECTING_ITEM = "deleteNoteUponDeslectingItem";// 6
 
-	public static final String COL_LIST_SORT_ORDER = "listSortOrder";// 7
-	public static final String COL_MASTER_LIST_SORT_ORDER = "masterListSortOrder";// 8
+	public static final String COL_DELETE_NOTE_UPON_DESELECTING_ITEM = "deleteNoteUponDeslectingItem";
 
-	public static final String COL_TITLE_BACKGROUND_COLOR = "titleBackgroundColor";// 9
-	public static final String COL_TITLE_TEXT_COLOR = "titleTextColor";// 10
+	public static final String COL_LIST_SORT_ORDER = "listSortOrder";
+	public static final String COL_MASTER_LIST_SORT_ORDER = "masterListSortOrder";
 
-	public static final String COL_SEPARATOR_BACKGROUND_COLOR = "separatorBackgroundColor";// 11
-	public static final String COL_SEPARATOR_TEXT_COLOR = "separatorTextColor";// 12
+	public static final String COL_TITLE_BACKGROUND_COLOR = "titleBackgroundColor";
+	public static final String COL_TITLE_TEXT_COLOR = "titleTextColor";
 
-	public static final String COL_LIST_BACKGROUND_COLOR = "listBackgroundColor";// 13
-	public static final String COL_ITEM_NORMAL_TEXT_COLOR = "itemNormalTextColor";// 14
-	public static final String COL_ITEM_STRIKEOUT_TEXT_COLOR = "itemStrikeoutTextColor";// 15
+	public static final String COL_SEPARATOR_BACKGROUND_COLOR = "separatorBackgroundColor";
+	public static final String COL_SEPARATOR_TEXT_COLOR = "separatorTextColor";
 
-	public static final String COL_MASTER_LIST_BACKGROUND_COLOR = "masterListBackgroundColor";// 16
-	public static final String COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR = "masterListItemNormalTextColor";// 17
-	public static final String COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR = "masterListItemStrikeoutTextColor";// 18
+	public static final String COL_LIST_BACKGROUND_COLOR = "listBackgroundColor";
+	public static final String COL_ITEM_NORMAL_TEXT_COLOR = "itemNormalTextColor";
+	public static final String COL_ITEM_STRIKEOUT_TEXT_COLOR = "itemStrikeoutTextColor";
 
-	public static final String COL_LISTVIEW_FIRST_VISIBLE_POSITION = "listViewFirstVisiblePosition";// 19
-	public static final String COL_LISTVIEW_TOP = "listViewTop";// 20
+	public static final String COL_MASTER_LIST_BACKGROUND_COLOR = "masterListBackgroundColor";
+	public static final String COL_MASTER_LIST_ITEM_NORMAL_TEXT_COLOR = "masterListItemNormalTextColor";
+	public static final String COL_MASTER_LIST_ITEM_SELECTED_TEXT_COLOR = "masterListItemStrikeoutTextColor";
 
-	public static final String COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION = "masterListViewFirstVisiblePosition";// 21
-	public static final String COL_MASTER_LISTVIEW_TOP = "masterListViewTop";// 22
+	public static final String COL_LISTVIEW_FIRST_VISIBLE_POSITION = "listViewFirstVisiblePosition";
+	public static final String COL_LISTVIEW_TOP = "listViewTop";
+
+	public static final String COL_MASTER_LISTVIEW_FIRST_VISIBLE_POSITION = "masterListViewFirstVisiblePosition";
+	public static final String COL_MASTER_LISTVIEW_TOP = "masterListViewTop";
 
 	public static final String[] PROJECTION_ALL = { COL_LIST_ID, COL_LIST_TITLE, COL_ACTIVE_STORE_ID,
 			COL_DELETE_NOTE_UPON_DESELECTING_ITEM,

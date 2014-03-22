@@ -25,7 +25,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 
 import com.lbconsulting.alist_03.R;
@@ -36,6 +35,7 @@ import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.database.LocationsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
+import com.lbconsulting.alist_03.database.contentprovider.AListContentProvider;
 import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -58,9 +58,6 @@ public class ListsDialogFragment extends DialogFragment {
 	private static LinearLayout llButtons;
 
 	ProgressDialog progressDialog;
-
-	private RadioGroup radioGroup_list_sort_order;
-	private RadioGroup radioGroup_master_list_sort_order;
 
 	private long mActiveListID;
 	private ListSettings listSettings;
@@ -237,110 +234,6 @@ public class ListsDialogFragment extends DialogFragment {
 				}
 			});
 
-			radioGroup_list_sort_order = (RadioGroup) view.findViewById(R.id.radioGroup_list_sort_order);
-			/*			if (radioGroup_list_sort_order != null) {
-							// We're Displaying the List Sort Order dialog
-							mSortOrderResult = listSettings.getListSortOrder();
-							RadioButton rb;
-							switch (mSortOrderResult) {
-							case ListPreferencesFragment.ALPHABETICAL:
-								rb = (RadioButton) view.findViewById(R.id.rbAlphabetical_list);
-								if (rb != null) {
-									rb.setChecked(true);
-								}
-								break;
-
-							case ListPreferencesFragment.MANUAL:
-								rb = (RadioButton) view.findViewById(R.id.rbManual);
-								if (rb != null) {
-									rb.setChecked(true);
-								}
-								break;
-							default:
-								break;
-							}
-
-							radioGroup_list_sort_order.setOnCheckedChangeListener(new OnCheckedChangeListener()
-							{
-								@Override
-								public void onCheckedChanged(RadioGroup group, int checkedId) {
-									switch (checkedId) {
-									case R.id.rbAlphabetical_list:
-										mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
-										break;
-
-									case R.id.rbManual:
-										mSortOrderResult = ListPreferencesFragment.MANUAL;
-										break;
-									default:
-										mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
-										break;
-									}
-								}
-							});
-						}*/
-
-			radioGroup_master_list_sort_order = (RadioGroup) view.findViewById(R.id.radioGroup_master_list_sort_order);
-			/*			if (radioGroup_master_list_sort_order != null) {
-							// We're Displaying the Master List Sort Order dialog
-							mSortOrderResult = listSettings.getMasterListSortOrder();
-							RadioButton rb;
-							switch (mSortOrderResult) {
-							case ListPreferencesFragment.ALPHABETICAL:
-								rb = (RadioButton) view.findViewById(R.id.rbAlphabetical_master_list);
-								if (rb != null) {
-									rb.setChecked(true);
-								}
-								break;
-
-							case ListPreferencesFragment.SELECTED_AT_TOP:
-								rb = (RadioButton) view.findViewById(R.id.rbSelectedItemsAtTop);
-								if (rb != null) {
-									rb.setChecked(true);
-								}
-								break;
-							case ListPreferencesFragment.SELECTED_AT_BOTTOM:
-								rb = (RadioButton) view.findViewById(R.id.rbSelectedItemsAtBottom);
-								if (rb != null) {
-									rb.setChecked(true);
-								}
-								break;
-							case ListPreferencesFragment.LAST_USED:
-								rb = (RadioButton) view.findViewById(R.id.rbLastUsed);
-								if (rb != null) {
-									rb.setChecked(true);
-								}
-								break;
-							default:
-								break;
-							}
-
-							radioGroup_master_list_sort_order.setOnCheckedChangeListener(new OnCheckedChangeListener()
-							{
-								@Override
-								public void onCheckedChanged(RadioGroup group, int checkedId) {
-									switch (checkedId) {
-									case R.id.rbAlphabetical_master_list:
-										mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
-										break;
-
-									case R.id.rbSelectedItemsAtTop:
-										mSortOrderResult = ListPreferencesFragment.SELECTED_AT_TOP;
-										break;
-									case R.id.rbSelectedItemsAtBottom:
-										mSortOrderResult = ListPreferencesFragment.SELECTED_AT_BOTTOM;
-										break;
-									case R.id.rbLastUsed:
-										mSortOrderResult = ListPreferencesFragment.LAST_USED;
-										break;
-									default:
-										mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
-										break;
-									}
-								}
-							});
-						}*/
-
 			txtEditListTitle = (EditText) view.findViewById(R.id.txtEditListTitle);
 			if (txtEditListTitle != null) {
 				switch (mDialogType) {
@@ -415,6 +308,7 @@ public class ListsDialogFragment extends DialogFragment {
 	}
 
 	protected void FillToDoList(long todosListID) {
+		AListContentProvider.SuppressChangeNotification(true);
 
 		ArrayList<Long> todoGroupIDs = new ArrayList<Long>();
 		// create to do groups
@@ -430,6 +324,7 @@ public class ListsDialogFragment extends DialogFragment {
 		}
 
 		mActiveListID = todosListID;
+		AListContentProvider.SuppressChangeNotification(false);
 	}
 
 	private void fillSpinListTemplate() {
@@ -534,6 +429,7 @@ public class ListsDialogFragment extends DialogFragment {
 
 		@Override
 		protected void onPreExecute() {
+			getDialog().setTitle(R.string.dialog_lists_loading_groceries_list_text);
 			ShowLoadingIndicator();
 		}
 
@@ -560,6 +456,8 @@ public class ListsDialogFragment extends DialogFragment {
 	}
 
 	private void FillGroceriesList(long groceriesListID) {
+
+		AListContentProvider.SuppressChangeNotification(true);
 
 		Hashtable<String, Long> groceryGroupsHashTable = new Hashtable<String, Long>();
 
@@ -687,6 +585,8 @@ public class ListsDialogFragment extends DialogFragment {
 			}
 			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
 		}
+
+		AListContentProvider.SuppressChangeNotification(false);
 	}
 
 }

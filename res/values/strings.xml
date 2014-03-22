@@ -92,4 +92,5 @@
     <string name="dialog_lists_to_do_list_text">To Do List</string>
     <string name="dialog_lists_new_list_text">New List</string>
     <string name="delete_note_upon_clearing_item">Delete note upon clearing item</string>
+    <string name="dialog_lists_loading_groceries_list_text">Loading Groceries List</string>
 </resources>
