@@ -3,15 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-
     <include layout="@layout/list_title" />
-
     <Spinner
         android:id="@+id/spinStores"
         android:layout_width="match_parent"
         android:layout_height="48dp" />
-
-    <ListView
+    <com.lbconsulting.alist_03.classes.DynamicListView
         android:id="@+id/itemsListView"
         style="@android:style/TextAppearance.Medium"
         android:layout_width="match_parent"
@@ -19,7 +16,5 @@
         android:layout_margin="2dp"
         android:layout_weight="1"
         android:divider="@null"
-        android:text="@string/tvListTitle_Text" >
-    </ListView>
-
+        android:text="@string/tvListTitle_Text" />
 </LinearLayout>

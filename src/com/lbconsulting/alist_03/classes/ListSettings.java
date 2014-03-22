@@ -254,6 +254,11 @@ public class ListSettings {
 		return mListCursor.getLong(mListCursor.getColumnIndexOrThrow(ListsTable.COL_ACTIVE_STORE_ID));
 	}
 
+	public boolean isManualSort() {
+		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_SORT_ORDER));
+		return value == AListUtilities.LIST_SORT_MANUAL;
+	}
+
 	public boolean getShowGroupsInListsFragment() {
 		int value = mListCursor.getInt(mListCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_SORT_ORDER));
 		return value == AListUtilities.LIST_SORT_BY_GROUP;

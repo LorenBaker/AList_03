@@ -28,10 +28,11 @@ public class ItemsTable {
 	public static final String COL_STRUCK_OUT = "itemStruckOut";
 	public static final String COL_CHECKED = "itemChecked";
 	public static final String COL_MANUAL_SORT_ORDER = "manualSortOrder";
+	public static final String COL_MANUAL_SORT_SWITCH = "manualSortSwitch";
 	public static final String COL_DATE_TIME_LAST_USED = "dateTimeLastUsed";
 
 	public static final String[] PROJECTION_ALL = { COL_ITEM_ID, COL_ITEM_NAME, COL_ITEM_NOTE, COL_LIST_ID,
-			COL_GROUP_ID, COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_DATE_TIME_LAST_USED };
+			COL_GROUP_ID, COL_SELECTED, COL_STRUCK_OUT, COL_CHECKED, COL_MANUAL_SORT_ORDER, COL_MANUAL_SORT_SWITCH, COL_DATE_TIME_LAST_USED };
 
 	public static final String[] PROJECTION_WITH_GROUP_NAME = {
 			TABLE_ITEMS + "." + COL_ITEM_ID,
@@ -43,6 +44,7 @@ public class ItemsTable {
 			TABLE_ITEMS + "." + COL_STRUCK_OUT,
 			TABLE_ITEMS + "." + COL_CHECKED,
 			TABLE_ITEMS + "." + COL_MANUAL_SORT_ORDER,
+			TABLE_ITEMS + "." + COL_MANUAL_SORT_SWITCH,
 			GroupsTable.TABLE_GROUPS + "." + GroupsTable.COL_GROUP_NAME };
 
 	public static final String[] PROJECTION_WITH_LOCATION_NAME = {
@@ -55,6 +57,7 @@ public class ItemsTable {
 			TABLE_ITEMS + "." + COL_STRUCK_OUT,
 			TABLE_ITEMS + "." + COL_CHECKED,
 			TABLE_ITEMS + "." + COL_MANUAL_SORT_ORDER,
+			TABLE_ITEMS + "." + COL_MANUAL_SORT_SWITCH,
 			BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_LOCATION_ID,
 			LocationsTable.TABLE_LOCATIONS + "." + LocationsTable.COL_LOCATION_NAME };
 
@@ -81,7 +84,7 @@ public class ItemsTable {
 	public static final String SORT_ORDER_MANUAL = COL_MANUAL_SORT_ORDER + " ASC";
 
 	public static final String ITEM_MOVE_BROADCAST_KEY = "itemMoved";
-	// public static final String ITEM_CHANGED_BROADCAST_KEY = "itemChanged";
+	public static final String ITEM_CHANGED_BROADCAST_KEY = "itemChanged";
 
 	// TODO: SORT by group name not id!
 	// public static final String SORT_ORDER_BY_GROUP = COL_GROUP_ID + " ASC, "
@@ -95,6 +98,10 @@ public class ItemsTable {
 
 	public static final int CHECKED_TRUE = 1;
 	public static final int CHECKED_FALSE = 0;
+
+	public static final int MANUAL_SORT_SWITCH_INVISIBLE = 0;
+	public static final int MANUAL_SORT_SWITCH_VISIBLE = 1;
+	public static final int MANUAL_SORT_SWITCH_ITEM_SWITCHED = 2;
 
 	// private static final long milliSecondsPerDay = 1000;
 	private static final long milliSecondsPerDay = 1000 * 60 * 60 * 24;
@@ -112,6 +119,7 @@ public class ItemsTable {
 					+ COL_STRUCK_OUT + " integer default 0, "
 					+ COL_CHECKED + " integer default 0, "
 					+ COL_MANUAL_SORT_ORDER + " integer default -1, "
+					+ COL_MANUAL_SORT_SWITCH + " integer default 1, "
 					+ COL_DATE_TIME_LAST_USED + " integer"
 					+ ");";
 
@@ -553,18 +561,60 @@ public class ItemsTable {
 		return cursor;
 	}
 
+	public static boolean isItemSwitched(Context context, long itemID) {
+		boolean result = false;
+		Cursor itemCursor = getItem(context, itemID);
+		if (itemCursor != null) {
+			itemCursor.moveToFirst();
+			int switchValue = itemCursor.getInt(itemCursor.getColumnIndexOrThrow(COL_MANUAL_SORT_SWITCH));
+			if (switchValue > 1) {
+				result = true;
+			}
+			itemCursor.close();
+		}
+		return result;
+	}
+
+	/*	public static boolean isItemVisible(Context context, long itemID) {
+			boolean result = false;
+			Cursor itemCursor = getItem(context, itemID);
+			if (itemCursor != null) {
+				itemCursor.moveToFirst();
+				int switchValue = itemCursor.getInt(itemCursor.getColumnIndexOrThrow(COL_MANUAL_SORT_SWITCH));
+				if (switchValue > 0) {
+					result = true;
+				}
+				itemCursor.close();
+			}
+			return result;
+		}*/
+
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Update Methods
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public static int UpdateItemFieldValues(Context context, long itemID, ContentValues newFieldValues) {
 		int numberOfUpdatedRecords = -1;
-		ContentResolver cr = context.getContentResolver();
-		Uri itemUri = Uri.withAppendedPath(CONTENT_URI, String.valueOf(itemID));
-		String selection = null;
-		String[] selectionArgs = null;
-		numberOfUpdatedRecords = cr.update(itemUri, newFieldValues, selection, selectionArgs);
+		if (itemID > 0) {
+			ContentResolver cr = context.getContentResolver();
+			Uri itemUri = Uri.withAppendedPath(CONTENT_URI, String.valueOf(itemID));
+			String selection = null;
+			String[] selectionArgs = null;
+			numberOfUpdatedRecords = cr.update(itemUri, newFieldValues, selection, selectionArgs);
+		}
 		return numberOfUpdatedRecords;
+	}
+
+	public static void setItemInvisible(Context context, long itemID) {
+		ContentValues newFieldValues = new ContentValues();
+		newFieldValues.put(COL_MANUAL_SORT_SWITCH, MANUAL_SORT_SWITCH_INVISIBLE);
+		UpdateItemFieldValues(context, itemID, newFieldValues);
+	}
+
+	public static void setItemVisible(Context context, long itemID) {
+		ContentValues newFieldValues = new ContentValues();
+		newFieldValues.put(COL_MANUAL_SORT_SWITCH, MANUAL_SORT_SWITCH_VISIBLE);
+		UpdateItemFieldValues(context, itemID, newFieldValues);
 	}
 
 	/*
@@ -932,6 +982,62 @@ public class ItemsTable {
 	 * }
 	 */
 
+	public static void SwapManualSortOrder(Context context, long mobileItemID, long switchItemID, long previousSwitchItemID) {
+		int numberOfUpdatedRecords = -1;
+		if (mobileItemID > 0 && switchItemID > 0) {
+			try {
+				Cursor mobileItemCursor = getItem(context, mobileItemID);
+				Cursor switchItemCursor = getItem(context, switchItemID);
+
+				mobileItemCursor.moveToFirst();
+				switchItemCursor.moveToFirst();
+
+				int mobileItemManualSortOrder = mobileItemCursor.getInt(mobileItemCursor.getColumnIndexOrThrow(COL_MANUAL_SORT_ORDER));
+				int switchItemManualSortOrder = switchItemCursor.getInt(switchItemCursor.getColumnIndexOrThrow(COL_MANUAL_SORT_ORDER));
+
+				// TODO remove strings names
+				String mobileItemName = mobileItemCursor.getString(mobileItemCursor.getColumnIndexOrThrow(COL_ITEM_NAME));
+				String switchItemName = switchItemCursor.getString(switchItemCursor.getColumnIndexOrThrow(COL_ITEM_NAME));
+
+				ContentResolver cr = context.getContentResolver();
+				Uri uri = CONTENT_URI;
+				String where = COL_ITEM_ID + " = ?";
+				String[] whereArgsMobileItemCursor = { String.valueOf(mobileItemID) };
+				ContentValues values = new ContentValues();
+				values.put(COL_MANUAL_SORT_ORDER, switchItemManualSortOrder);
+				numberOfUpdatedRecords = cr.update(uri, values, where, whereArgsMobileItemCursor);
+
+				String[] whereArgsSwitchItemCursor = { String.valueOf(switchItemID) };
+				values = new ContentValues();
+				values.put(COL_MANUAL_SORT_ORDER, mobileItemManualSortOrder);
+				values.put(COL_MANUAL_SORT_SWITCH, MANUAL_SORT_SWITCH_ITEM_SWITCHED);
+				numberOfUpdatedRecords += cr.update(uri, values, where, whereArgsSwitchItemCursor);
+
+				if (numberOfUpdatedRecords != 2) {
+					MyLog.e("ItemsTable", "SwapManualSortOrder: Incorrect number of records updated.");
+				}
+
+				if (previousSwitchItemID > 0) {
+					String[] whereArgsPreviousSwitchedItem = { String.valueOf(previousSwitchItemID) };
+					values = new ContentValues();
+					values.put(COL_MANUAL_SORT_SWITCH, MANUAL_SORT_SWITCH_VISIBLE);
+					numberOfUpdatedRecords += cr.update(uri, values, where, whereArgsPreviousSwitchedItem);
+				}
+
+				mobileItemCursor.close();
+				switchItemCursor.close();
+				MyLog.i("ItemsTable",
+						"SwapManualSortOrder: mobileItem:"
+								+ mobileItemName + "(" + mobileItemManualSortOrder + ")"
+								+ " MANUAL_SORT_ORDER swapped with switchItem:"
+								+ switchItemName + "(" + switchItemManualSortOrder + ")");
+
+			} catch (Exception e) {
+				MyLog.e("Exception error in ItemsTable: CheckItem. ", e.toString());
+			}
+		}
+	}
+
 	public static int MoveItem(Context context, long itemID, long newListID) {
 		int numberOfUpdatedRecords = 0;
 		String existingItemName;
@@ -1126,4 +1232,5 @@ public class ItemsTable {
 		}
 		return numberOfDeletedRecords;
 	}
+
 }

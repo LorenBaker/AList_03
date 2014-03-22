@@ -1,22 +1,24 @@
 package com.lbconsulting.alist_03.fragments;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -25,11 +27,11 @@ import android.widget.TextView;
 import com.lbconsulting.alist_03.R;
 import com.lbconsulting.alist_03.adapters.ItemsCursorAdaptor;
 import com.lbconsulting.alist_03.adapters.StoresSpinnerCursorAdapter;
+import com.lbconsulting.alist_03.classes.DynamicListView;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
-import com.lbconsulting.alist_03.dialogs.EditItemDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -43,7 +45,7 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 	private ListView mItemsListView;
 	private Spinner mStoreSpinner;
 
-	// private BroadcastReceiver mItemChangedReceiver;
+	private BroadcastReceiver mItemChangedReceiver;
 
 	private LoaderManager mLoaderManager = null;
 	// The callbacks through which we will interact with the LoaderManager.
@@ -133,10 +135,11 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 			}
 		}
 
-		mItemsListView = (ListView) view.findViewById(R.id.itemsListView);
+		mItemsListView = (DynamicListView) view.findViewById(R.id.itemsListView);
 		if (mItemsListView != null) {
 			mItemsCursorAdaptor = new ItemsCursorAdaptor(getActivity(), null, 0, mListSettings);
 			mItemsListView.setAdapter(mItemsCursorAdaptor);
+			DynamicListView.setManualSort(mListSettings.isManualSort());
 		}
 		setViewColors();
 
@@ -162,23 +165,34 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 			}
 		});
 
-		mItemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+		// mItemsListView.setOnItemLongClickListener(null);
+		/*
+				mItemsListView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long activeItemID) {
-				FragmentManager fm = getFragmentManager();
-				Fragment prev = fm.findFragmentByTag("dialog_edit_item");
-				if (prev != null) {
-					FragmentTransaction ft = fm.beginTransaction();
-					ft.remove(prev);
-					ft.commit();
-				}
-				EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(mActiveListID, activeItemID);
-				editItemDialog.show(fm, "dialog_edit_item");
+					@Override
+					public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long activeItemID) {
+						// if (!mListSettings.isManualSort()) {
 
-				return true;
-			}
-		});
+										if (mListSettings.isManualSort()) {
+											DynamicListView.ManualSort(position, activeItemID);
+											return true;
+										}
+
+						MyLog.i("ListsFragment", "onItemLongClick");
+						FragmentManager fm = getFragmentManager();
+						Fragment prev = fm.findFragmentByTag("dialog_edit_item");
+						if (prev != null) {
+							FragmentTransaction ft = fm.beginTransaction();
+							ft.remove(prev);
+							ft.commit();
+						}
+						EditItemDialogFragment editItemDialog = EditItemDialogFragment.newInstance(mActiveListID, activeItemID);
+						editItemDialog.show(fm, "dialog_edit_item");
+
+						return true;
+
+					}
+				});*/
 
 		return view;
 	}
@@ -193,15 +207,16 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 	public void onActivityCreated(Bundle savedInstanceState) {
 		MyLog.i("ListsFragment", "onActivityCreated");
 
-		/*		mItemChangedReceiver = new BroadcastReceiver() {
-					@Override
-					public void onReceive(Context context, Intent intent) {
+		mItemChangedReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+			}
 
-					}
-				};*/
+		};
 
-		// String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
-		// LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemChangedReceiver, new IntentFilter(itemChangedReceiverKey));
+		String itemChangedReceiverKey = String.valueOf(mActiveListID) + ItemsTable.ITEM_CHANGED_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemChangedReceiver, new IntentFilter(itemChangedReceiverKey));
 
 		mLoaderManager = getLoaderManager();
 		mLoaderManager.initLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
@@ -273,7 +288,7 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 		// Unregister local broadcast receivers
 		// LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartStoresLoaderReceiver);
 		// LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartItemsLoaderReceiver);
-		// LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemChangedReceiver);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemChangedReceiver);
 
 		super.onDestroy();
 	}
