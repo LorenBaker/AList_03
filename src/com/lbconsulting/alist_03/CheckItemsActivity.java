@@ -342,6 +342,11 @@ public class CheckItemsActivity extends FragmentActivity {
 			AddNewGroup();
 			return true;
 
+		case R.id.action_deleteGroup:
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			DeleteGroup();
+			return true;
+
 		case R.id.action_sortOrder:
 			// ChangeSortOrder();
 			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
@@ -349,6 +354,24 @@ public class CheckItemsActivity extends FragmentActivity {
 
 		default:
 			return super.onMenuItemSelected(featureId, item);
+		}
+	}
+
+	private void DeleteGroup() {
+		FragmentManager fm = this.getSupportFragmentManager();
+		// Remove any currently showing dialog
+		Fragment prev = fm.findFragmentByTag("dialog_group_create_edit");
+		if (prev != null) {
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.remove(prev);
+			ft.commit();
+		}
+
+		SendGroupIDRequest();
+		if (mActiveGroupID > 1) {
+			// can't delete the default group
+			GroupsDialogFragment editListTitleDialog = GroupsDialogFragment.newInstance(mActiveListID, mActiveGroupID, GroupsDialogFragment.DELETE_GROUP);
+			editListTitleDialog.show(fm, "dialog_group_create_edit");
 		}
 	}
 
@@ -585,13 +608,16 @@ public class CheckItemsActivity extends FragmentActivity {
 
 			MenuItem action_editGroupName = menu.findItem(R.id.action_editGroupName);
 			MenuItem action_addNewGroup = menu.findItem(R.id.action_addNewGroup);
+			MenuItem action_deleteGroup = menu.findItem(R.id.action_deleteGroup);
 			if (mListSettings.isGroupAdditonAllowed()) {
 				action_editGroupName.setVisible(!isTAB_MoveORCullItemsSelected);
 				action_addNewGroup.setVisible(!isTAB_MoveORCullItemsSelected);
+				action_deleteGroup.setVisible(!isTAB_MoveORCullItemsSelected);
 			} else {
 				// not allowed to edit groups
 				action_editGroupName.setVisible(false);
 				action_addNewGroup.setVisible(!false);
+				action_deleteGroup.setVisible(!false);
 			}
 
 		}

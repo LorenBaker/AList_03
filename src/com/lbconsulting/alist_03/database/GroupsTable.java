@@ -152,6 +152,21 @@ public class GroupsTable {
 						} catch (Exception e) {
 							MyLog.e("Exception error in CreateNewGroup. ", e.toString());
 						}
+
+						// add the new group to each store in the list with listID
+						Cursor storesCursor = BridgeTable.getStoresInList(context, listID);
+						if (storesCursor != null) {
+							if (storesCursor.getCount() > 0 && newGroupID > 1) {
+								storesCursor.moveToPosition(-1);
+								long storeID = -1;
+								while (storesCursor.moveToNext()) {
+									storeID = storesCursor.getLong(storesCursor.getColumnIndexOrThrow(BridgeTable.COL_STORE_ID));
+									BridgeTable.CreateNewBridgeRow(context, listID, storeID, newGroupID);
+								}
+							}
+							storesCursor.close();
+						}
+
 					} else {
 						MyLog.e("GroupsTable", "Error in CreateNewGroup; groupName is Empty!");
 					}
@@ -386,6 +401,9 @@ public class GroupsTable {
 			String[] selectionArgs = { String.valueOf(groupID) };
 			numberOfDeletedRecords = cr.delete(uri, where, selectionArgs);
 		}
+		// reset the groupID to the default value
+		ItemsTable.ResetGroupID(context, groupID);
+		BridgeTable.ResetGroupID(context, groupID);
 		return numberOfDeletedRecords;
 	}
 

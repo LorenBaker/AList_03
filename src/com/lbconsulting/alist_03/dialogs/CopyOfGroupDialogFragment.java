@@ -27,7 +27,7 @@ import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
-public class GroupDialogFragment extends DialogFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class CopyOfGroupDialogFragment extends DialogFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
 	// private EditItemDialogListener mFinishEditItemDialogCallback;
 
@@ -51,7 +51,7 @@ public class GroupDialogFragment extends DialogFragment implements LoaderManager
 		void onCancelEditItemDialog();
 	}
 
-	public GroupDialogFragment() {
+	public CopyOfGroupDialogFragment() {
 		// Empty constructor required for DialogFragment
 	}
 
@@ -61,8 +61,8 @@ public class GroupDialogFragment extends DialogFragment implements LoaderManager
 	 * @param itemID
 	 * @return EditItemDialogFragment
 	 */
-	public static GroupDialogFragment newInstance(long listID, long itemID) {
-		GroupDialogFragment f = new GroupDialogFragment();
+	public static CopyOfGroupDialogFragment newInstance(long listID, long itemID) {
+		CopyOfGroupDialogFragment f = new CopyOfGroupDialogFragment();
 		// Supply itemID input as an argument.
 		Bundle args = new Bundle();
 		args.putLong("listID", listID);

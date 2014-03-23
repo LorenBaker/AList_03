@@ -171,6 +171,24 @@ public class BridgeTable {
 		return cursor;
 	}
 
+	public static Cursor getStoresInList(Context context, long listID) {
+		Cursor cursor = null;
+		if (listID > 1) {
+			Uri uri = CONTENT_URI;
+			String[] projection = new String[] { "DISTINCT " + COL_STORE_ID };
+			String selection = COL_LIST_ID + " = ?";
+			String selectionArgs[] = { String.valueOf(listID) };
+			String sortOrder = null;
+			ContentResolver cr = context.getContentResolver();
+			try {
+				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error in ItemsTable: getStoresInList. ", e.toString());
+			}
+		}
+		return cursor;
+	}
+
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Update Methods
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,6 +210,36 @@ public class BridgeTable {
 			values.put(COL_LOCATION_ID, locationID);
 			UpdateItemFieldValues(context, bridgeTableRowID, values);
 		}
+	}
+
+	public static int ResetGroupID(Context context, long groupID) {
+		int numberOfUpdatedRecords = -1;
+		if (groupID > 1) {
+			ContentResolver cr = context.getContentResolver();
+			Uri uri = CONTENT_URI;
+			String where = COL_GROUP_ID + " = ?";
+			String[] whereArgs = { String.valueOf(groupID) };
+
+			ContentValues values = new ContentValues();
+			values.put(COL_GROUP_ID, 1); // groupID = 1 is the default groupID
+			numberOfUpdatedRecords = cr.update(uri, values, where, whereArgs);
+		}
+		return numberOfUpdatedRecords;
+	}
+
+	public static int ResetLocationID(Context context, long locationID) {
+		int numberOfUpdatedRecords = -1;
+		if (locationID > 1) {
+			ContentResolver cr = context.getContentResolver();
+			Uri uri = CONTENT_URI;
+			String where = COL_LOCATION_ID + " = ?";
+			String[] whereArgs = { String.valueOf(locationID) };
+
+			ContentValues values = new ContentValues();
+			values.put(COL_LOCATION_ID, 1); // locationID = 1 is the default locationID
+			numberOfUpdatedRecords = cr.update(uri, values, where, whereArgs);
+		}
+		return numberOfUpdatedRecords;
 	}
 
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////

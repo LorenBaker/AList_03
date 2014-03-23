@@ -47,10 +47,14 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 	private ManageLocationsCursorAdaptor mManageLocationsCursorAdaptor;
 	private LocationsSpinnerCursorAdapter mLocationsSpinnerCursorAdapter;
 
-	//private boolean flag_FirstTimeLoadingGroupDataSinceOnResume = false;
+	// private boolean flag_FirstTimeLoadingGroupDataSinceOnResume = false;
 
-	public static final String RESART_GROUPS_LOADER_KEY = "ManageLocationsFragment_RestartGroupsLoaderKey";
-	private BroadcastReceiver mRestartGroupsLoaderReceiver;
+	// public static final String RESART_GROUPS_LOADER_KEY = "ManageLocationsFragment_RestartGroupsLoaderKey";
+	// private BroadcastReceiver mRestartGroupsLoaderReceiver;
+
+	public static final String ACTIVE_LOCATION_ID_BROADCAST_KEY = "activeLocationIdBroadcastKey";
+	public static final String REQUEST_ACTIVE_LOCATION_ID_BROADCAST_KEY = "requestActiveLocationIdBroadcastKey";
+	private BroadcastReceiver mRequestActiveLocationIdBroadcastReceiver;
 
 	private TextView tvStoreName;
 	private Spinner spinLocations;
@@ -65,16 +69,14 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 		if (listID < 2) {
 			MyLog.e("ManageLocationsFragment: newInstance; listID = " + listID, " is less than 2!!!!");
 			return null;
-
-		} else {
-			ManageLocationsFragment f = new ManageLocationsFragment();
-			// Supply listID and newStoreID input as arguments.
-			Bundle args = new Bundle();
-			args.putLong("listID", listID);
-			args.putLong("storeID", newStoreID);
-			f.setArguments(args);
-			return f;
 		}
+		ManageLocationsFragment f = new ManageLocationsFragment();
+		// Supply listID and newStoreID input as arguments.
+		Bundle args = new Bundle();
+		args.putLong("listID", listID);
+		args.putLong("storeID", newStoreID);
+		f.setArguments(args);
+		return f;
 	}
 
 	@Override
@@ -130,7 +132,7 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 				}
 			}
 
-			// populate spinLocations 
+			// populate spinLocations
 			mLocationsSpinnerCursorAdapter = new LocationsSpinnerCursorAdapter(getActivity(), null, 0);
 			spinLocations = (Spinner) view.findViewById(R.id.spinLocations);
 			spinLocations.setAdapter(mLocationsSpinnerCursorAdapter);
@@ -203,20 +205,39 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 		mLoaderManager.initLoader(AListUtilities.GROUPS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
 		mLoaderManager.initLoader(AListUtilities.LOCATIONS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
 
-		mRestartGroupsLoaderReceiver = new BroadcastReceiver() {
+		mRequestActiveLocationIdBroadcastReceiver = new BroadcastReceiver() {
+
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mLoaderManager.restartLoader(AListUtilities.GROUPS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
+				SendActiveLocationID();
 			}
 		};
 
-		// Register local broadcast receivers.
+		String requestActiveLocationIdBroadcastKey = String.valueOf(mActiveListID) + REQUEST_ACTIVE_LOCATION_ID_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRequestActiveLocationIdBroadcastReceiver,
+				new IntentFilter(requestActiveLocationIdBroadcastKey));
 
-		String restartGroupsLoaderKey = String.valueOf(mActiveStoreID) + RESART_GROUPS_LOADER_KEY;
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartGroupsLoaderReceiver,
-				new IntentFilter(restartGroupsLoaderKey));
+		/*		mRestartGroupsLoaderReceiver = new BroadcastReceiver() {
+					@Override
+					public void onReceive(Context context, Intent intent) {
+						mLoaderManager.restartLoader(AListUtilities.GROUPS_LOADER_ID, null, mManageLocationsFragmentCallbacks);
+					}
+				};
+
+				// Register local broadcast receivers.
+
+				String restartGroupsLoaderKey = String.valueOf(mActiveStoreID) + RESART_GROUPS_LOADER_KEY;
+				LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mRestartGroupsLoaderReceiver,
+						new IntentFilter(restartGroupsLoaderKey));*/
 
 		super.onActivityCreated(savedInstanceState);
+	}
+
+	protected void SendActiveLocationID() {
+		String activeLocationIdReceiverKey = String.valueOf(mActiveListID) + ManageLocationsFragment.ACTIVE_LOCATION_ID_BROADCAST_KEY;
+		Intent activeLocationIdReceiverIntent = new Intent(activeLocationIdReceiverKey);
+		activeLocationIdReceiverIntent.putExtra("ActiveLocationID", spinLocations.getSelectedItemId());
+		LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(activeLocationIdReceiverIntent);
 	}
 
 	@Override
@@ -253,7 +274,9 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 	public void onDestroy() {
 		MyLog.i("ManageLocationsFragment", "onDestroy");
 		// Unregister local broadcast receivers
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartGroupsLoaderReceiver);
+
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRequestActiveLocationIdBroadcastReceiver);
+		/*LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mRestartGroupsLoaderReceiver);*/
 		super.onDestroy();
 	}
 
@@ -325,7 +348,7 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 		int id = loader.getId();
 		MyLog.i("ManageLocationsFragment: onLoadFinished; id = " + id,
 				"; listID = " + mActiveListID + " storeID = " + mActiveStoreID);
-		// The asynchronous load is complete and the newCursor is now available for use. 
+		// The asynchronous load is complete and the newCursor is now available for use.
 		// Update the adapter to show the changed data.
 		switch (loader.getId()) {
 

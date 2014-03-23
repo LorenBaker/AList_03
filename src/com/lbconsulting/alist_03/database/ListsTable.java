@@ -663,6 +663,10 @@ public class ListsTable {
 			String[] selectionArgs = { String.valueOf(listID) };
 			numberOfDeletedRecords = cr.delete(uri, where, selectionArgs);
 		}
+		BridgeTable.DeleteAllBridgeRowsInList(context, listID);
+		GroupsTable.DeleteAllGroupsInList(context, listID);
+		ItemsTable.DeleteAllItemsInList(context, listID);
+		StoresTable.DeleteAllStoresInList(context, listID);
 		return numberOfDeletedRecords;
 	}
 

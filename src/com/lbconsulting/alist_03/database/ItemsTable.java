@@ -1231,6 +1231,21 @@ public class ItemsTable {
 		return manualSortOrder;
 	}
 
+	public static int ResetGroupID(Context context, long groupID) {
+		int numberOfUpdatedRecords = -1;
+		if (groupID > 1) {
+			ContentResolver cr = context.getContentResolver();
+			Uri uri = CONTENT_URI;
+			String where = COL_GROUP_ID + " = ?";
+			String[] whereArgs = { String.valueOf(groupID) };
+
+			ContentValues values = new ContentValues();
+			values.put(COL_GROUP_ID, 1); // groupID = 1 is the default groupID
+			numberOfUpdatedRecords = cr.update(uri, values, where, whereArgs);
+		}
+		return numberOfUpdatedRecords;
+	}
+
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Delete Methods
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////

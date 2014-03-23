@@ -84,42 +84,43 @@ public class LocationsTable {
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Create Methods
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public static long CreateNewLocation(Context context, long listID, String locationName) {
+	@SuppressWarnings("resource")
+	public static long CreateNewLocation(Context context, String locationName) {
 		long newlocationID = -1;
-		if (listID > 1) {
-			// verify that the item does not already exist in the table
-			@SuppressWarnings("resource")
-			Cursor cursor = getLocation(context, locationName);
-			if (cursor != null && cursor.getCount() > 0) {
-				// the item exists in the table ... so return its id
-				cursor.moveToFirst();
-				newlocationID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_LOCATION_ID));
-				cursor.close();
-			} else {
-				// Location does not exist in the table ... so add it
-				if (locationName != null) {
-					locationName = locationName.trim();
-					if (!locationName.isEmpty()) {
-						try {
-							ContentResolver cr = context.getContentResolver();
-							Uri uri = CONTENT_URI;
-							ContentValues values = new ContentValues();
-							values.put(COL_LOCATION_NAME, locationName);
-							Uri newListUri = cr.insert(uri, values);
-							if (newListUri != null) {
-								newlocationID = Long.parseLong(newListUri.getLastPathSegment());
-							}
-						} catch (Exception e) {
-							MyLog.e("Exception error in CreateNewLocation. ", e.toString());
+
+		// verify that the location does not already exist in the table
+
+		Cursor cursor = getLocation(context, locationName);
+		if (cursor != null && cursor.getCount() > 0) {
+			// the item exists in the table ... so return its id
+			cursor.moveToFirst();
+			newlocationID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_LOCATION_ID));
+			cursor.close();
+		} else {
+			// Location does not exist in the table ... so add it
+			if (locationName != null) {
+				locationName = locationName.trim();
+				if (!locationName.isEmpty()) {
+					try {
+						ContentResolver cr = context.getContentResolver();
+						Uri uri = CONTENT_URI;
+						ContentValues values = new ContentValues();
+						values.put(COL_LOCATION_NAME, locationName);
+						Uri newListUri = cr.insert(uri, values);
+						if (newListUri != null) {
+							newlocationID = Long.parseLong(newListUri.getLastPathSegment());
 						}
-					} else {
-						MyLog.e("LocationsTable", "Error in CreateNewLocation; locationName is Empty!");
+					} catch (Exception e) {
+						MyLog.e("Exception error in CreateNewLocation. ", e.toString());
 					}
 				} else {
-					MyLog.e("LocationsTable", "Error in CreateNewLocation; locationName is Null!");
+					MyLog.e("LocationsTable", "Error in CreateNewLocation; locationName is Empty!");
 				}
+			} else {
+				MyLog.e("LocationsTable", "Error in CreateNewLocation; locationName is Null!");
 			}
 		}
+
 		return newlocationID;
 	}
 
@@ -223,18 +224,21 @@ public class LocationsTable {
 			String[] selectionArgs = { String.valueOf(locationID) };
 			numberOfDeletedRecords = cr.delete(uri, where, selectionArgs);
 		}
-		return numberOfDeletedRecords;
-	}
-
-	public static int DeleteAllLocation(Context context) {
-		int numberOfDeletedRecords = -1;
-		Uri uri = CONTENT_URI;
-		String where = COL_LOCATION_ID + " > 1";
-		String selectionArgs[] = null;
-		ContentResolver cr = context.getContentResolver();
-		numberOfDeletedRecords = cr.delete(uri, where, selectionArgs);
+		// reset the locationID to the default value
+		BridgeTable.ResetLocationID(context, locationID);
 
 		return numberOfDeletedRecords;
 	}
+
+	/*	public static int DeleteAllLocation(Context context) {
+			int numberOfDeletedRecords = -1;
+			Uri uri = CONTENT_URI;
+			String where = COL_LOCATION_ID + " > 1";
+			String selectionArgs[] = null;
+			ContentResolver cr = context.getContentResolver();
+			numberOfDeletedRecords = cr.delete(uri, where, selectionArgs);
+
+			return numberOfDeletedRecords;
+		}*/
 
 }

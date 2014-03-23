@@ -493,7 +493,7 @@ public class ListsDialogFragment extends DialogFragment {
 		Hashtable<String, Long> locationsHashTable = new Hashtable<String, Long>();
 		String[] storeLocations = this.getResources().getStringArray(R.array.locations);
 		for (int i = 0; i < storeLocations.length; i++) {
-			long locationID = LocationsTable.CreateNewLocation(getActivity(), groceriesListID, storeLocations[i]);
+			long locationID = LocationsTable.CreateNewLocation(getActivity(), storeLocations[i]);
 			locationsHashTable.put(storeLocations[i], locationID);
 		}
 

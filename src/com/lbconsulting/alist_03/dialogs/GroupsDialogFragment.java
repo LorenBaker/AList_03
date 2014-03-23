@@ -22,6 +22,7 @@ public class GroupsDialogFragment extends DialogFragment {
 
 	public static final int EDIT_GROUP_NAME = 30;
 	public static final int NEW_GROUP = 40;
+	public static final int DELETE_GROUP = 50;
 
 	private Button btnApply;
 	private Button btnCancel;
@@ -103,12 +104,17 @@ public class GroupsDialogFragment extends DialogFragment {
 
 		case EDIT_GROUP_NAME:
 			MyLog.i("GroupsDialogFragment", "onCreateView: Edit Group Name");
-			getDialog().setTitle("Edit Group Name");
+			getDialog().setTitle("Edit Group Name?");
 			break;
 
 		case NEW_GROUP:
 			MyLog.i("GroupsDialogFragment", "onCreateView: New Group");
-			getDialog().setTitle("Create New Group");
+			getDialog().setTitle("Create New Group?");
+			break;
+
+		case DELETE_GROUP:
+			MyLog.i("GroupsDialogFragment", "onCreateView: Delete Group");
+			getDialog().setTitle("Delete Group?");
 			break;
 
 		default:
@@ -141,6 +147,10 @@ public class GroupsDialogFragment extends DialogFragment {
 						}
 						break;
 
+					case DELETE_GROUP:
+						GroupsTable.DeleteGroup(getActivity(), mActiveGroupID);
+						break;
+
 					default:
 						break;
 					}
@@ -167,7 +177,13 @@ public class GroupsDialogFragment extends DialogFragment {
 
 				case NEW_GROUP:
 					// We're displaying the New Group dialog
-					txtGroupName.setText("NewGroupName");
+					txtGroupName.setText("New Group");
+					break;
+
+				case DELETE_GROUP:
+					// We're displaying the Delete Group dialog
+					groupName = GroupsTable.getGroupName(getActivity(), mActiveGroupID);
+					txtGroupName.setText(groupName);
 					break;
 
 				default:

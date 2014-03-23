@@ -475,7 +475,7 @@ public class AListContentProvider extends ContentProvider {
 
 		case BRIDGE_MULTI_ROWS:
 			queryBuilder.setTables(BridgeTable.TABLE_BRIDGE);
-			checkBridgeColumnNames(projection);
+			// checkBridgeColumnNames(projection);
 			break;
 
 		case BRIDGE_SINGLE_ROW:

@@ -1,6 +1,9 @@
 package com.lbconsulting.alist_03;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -24,9 +27,10 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 	private long mActiveListID = -1;
 	private long mActiveStoreID = -1;
+	private long mActiveLocationID = -1;
 	private int mActiveStorePosition = 0;
 	private boolean mTwoFragmentLayout;
-	//private StoresPagerAdaptor mStoresPagerAdapter;
+	// private StoresPagerAdaptor mStoresPagerAdapter;
 	private ManageLocationsPagerAdaptor mManageLocationsPagerAdaptor;
 	private ViewPager mPager;
 	private Cursor mAllStoresCursor;
@@ -34,7 +38,9 @@ public class ManageLocationsActivity extends FragmentActivity {
 	private String mActiveListTitle;
 	private int mTitleBackgroundColor;
 	private int mTitleTextColor;
-	private String mRestartGroupsLoaderKey;
+	// private String mRestartGroupsLoaderKey;
+
+	private BroadcastReceiver mActiveLocationIdReceiver;
 
 	/*private BroadcastReceiver mListTitleChanged;
 	public static final String LIST_TITLE_CHANGE_BROADCAST_KEY = "listTitleChanged";*/
@@ -51,7 +57,7 @@ public class ManageLocationsActivity extends FragmentActivity {
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
 
-		mRestartGroupsLoaderKey = String.valueOf(mActiveStoreID) + ManageLocationsFragment.RESART_GROUPS_LOADER_KEY;
+		// mRestartGroupsLoaderKey = String.valueOf(mActiveStoreID) + ManageLocationsFragment.RESART_GROUPS_LOADER_KEY;
 
 		setContentView(R.layout.activity_manage_locations_pager);
 
@@ -70,8 +76,8 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 		// TODO save ActiveStoreID & ActiveStorePostion in the database
 		// for now ... just start at position 0
-		//*mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
-		//mActiveStorePosition = storedStates.getInt("ActiveStorePosition", 0);*/
+		// *mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
+		// mActiveStorePosition = storedStates.getInt("ActiveStorePosition", 0);*/
 		if (mAllStoresCursor != null && mAllStoresCursor.getCount() > 0) {
 			mActiveStorePosition = 0;
 			SetActiveStoreID(mActiveStorePosition);
@@ -93,9 +99,9 @@ public class ManageLocationsActivity extends FragmentActivity {
 			@Override
 			public void onPageSelected(int position) {
 				SetActiveStoreID(position);
-				SendRestartGroupsLoaderBroadCast();
-				MyLog.d("ManageLocations_ACTIVITY", "onPageSelected() - position = " + position + " ; storeID = "
-						+ mActiveStoreID);
+				SetActiveListBroadcastReceivers();
+				// SendRestartGroupsLoaderBroadCast();
+				MyLog.d("ManageLocations_ACTIVITY", "onPageSelected() - position = " + position + " ; storeID = " + mActiveStoreID);
 
 				if (mTwoFragmentLayout) {
 					LoadStoresFragment();
@@ -103,9 +109,29 @@ public class ManageLocationsActivity extends FragmentActivity {
 			}
 		});
 
+		mActiveLocationIdReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				if (intent.hasExtra("ActiveLocationID")) {
+					mActiveLocationID = intent.getLongExtra("ActiveLocationID", -1);
+				}
+			}
+		};
+
+		// Register local broadcast receivers.
+		String activeLocationIdReceiverKey = String.valueOf(mActiveListID) + ManageLocationsFragment.ACTIVE_LOCATION_ID_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mActiveLocationIdReceiver, new IntentFilter(activeLocationIdReceiverKey));
+
 		if (mTwoFragmentLayout) {
 			LoadStoresFragment();
 		}
+	}
+
+	private void SendLocationIDRequest() {
+		String requestActiveLocationIdBroadcastKey = String.valueOf(mActiveListID) + ManageLocationsFragment.REQUEST_ACTIVE_LOCATION_ID_BROADCAST_KEY;
+		Intent requestActiveLocationIdBroadcastIntent = new Intent(requestActiveLocationIdBroadcastKey);
+		LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(requestActiveLocationIdBroadcastIntent);
 	}
 
 	/*	private void SetStoresPagerAdaptor() {
@@ -119,10 +145,10 @@ public class ManageLocationsActivity extends FragmentActivity {
 		mPager.setAdapter(mManageLocationsPagerAdaptor);
 	}
 
-	private void SendRestartGroupsLoaderBroadCast() {
-		Intent restartGroupsLoaderIntent = new Intent(mRestartGroupsLoaderKey);
-		LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(restartGroupsLoaderIntent);
-	}
+	/*	private void SendRestartGroupsLoaderBroadCast() {
+			Intent restartGroupsLoaderIntent = new Intent(mRestartGroupsLoaderKey);
+			LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(restartGroupsLoaderIntent);
+		}*/
 
 	private void LoadStoresFragment() {
 		// TODO code LoadStoresFragment
@@ -140,8 +166,17 @@ public class ManageLocationsActivity extends FragmentActivity {
 			}
 			mActiveStoreID = storeID;
 			mActiveStorePosition = position;
-			mRestartGroupsLoaderKey = String.valueOf(mActiveStoreID) + ManageLocationsFragment.RESART_GROUPS_LOADER_KEY;
+			// mRestartGroupsLoaderKey = String.valueOf(mActiveStoreID) + ManageLocationsFragment.RESART_GROUPS_LOADER_KEY;
 		}
+	}
+
+	private void SetActiveListBroadcastReceivers() {
+		// Unregister old receivers
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mActiveLocationIdReceiver);
+
+		// Register new local broadcast receivers.
+		String activeLocationIdReceiverKey = String.valueOf(mActiveListID) + ManageLocationsFragment.ACTIVE_LOCATION_ID_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mActiveLocationIdReceiver, new IntentFilter(activeLocationIdReceiverKey));
 	}
 
 	@Override
@@ -202,7 +237,22 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 		case R.id.action_clearAllCheckedGroups:
 			GroupsTable.UnCheckAllCheckedGroups(this, mActiveListID);
-			SendRestartGroupsLoaderBroadCast();
+			// SendRestartGroupsLoaderBroadCast();
+			return true;
+
+		case R.id.action_editLocationName:
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			EditLocationName();
+			return true;
+
+		case R.id.action_addNewLocation:
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			AddNewLocation();
+			return true;
+
+		case R.id.action_deleteLocation:
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			DeleteLocation();
 			return true;
 
 		case R.id.action_sortOrder:
@@ -219,6 +269,21 @@ public class ManageLocationsActivity extends FragmentActivity {
 		}
 	}
 
+	private void EditLocationName() {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void AddNewLocation() {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void DeleteLocation() {
+		// TODO Auto-generated method stub
+
+	}
+
 	private void StartStoresActivity() {
 		Intent intent = new Intent(this, StoresActivity.class);
 		intent.putExtra("listTitle", mActiveListTitle);
@@ -229,6 +294,8 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 	@Override
 	protected void onDestroy() {
+		// Unregister since the activity is about to be closed.
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mActiveLocationIdReceiver);
 		MyLog.i("ManageLocations_ACTIVITY", "onDestroy");
 		super.onDestroy();
 	}
