@@ -148,16 +148,16 @@ public class StoresTable {
 	public static long CreateNewStore(Context context, long listID, String storeName) {
 		long newStoreID = -1;
 		if (listID > 1) {
-			// verify that the item does not already exist in the table
+			// verify that the store does not already exist in the table
 			@SuppressWarnings("resource")
 			Cursor cursor = getStore(context, listID, storeName);
 			if (cursor != null && cursor.getCount() > 0) {
-				// the item exists in the table ... so return its id
+				// the store exists in the table ... so return its id
 				cursor.moveToFirst();
 				newStoreID = cursor.getLong(cursor.getColumnIndexOrThrow(COL_STORE_ID));
 				cursor.close();
 			} else {
-				// item does not exist in the table ... so add it
+				// store does not exist in the table ... so add it
 				if (storeName != null) {
 					storeName = storeName.trim();
 					if (!storeName.isEmpty()) {
@@ -169,6 +169,7 @@ public class StoresTable {
 							values.put(COL_STORE_NAME, storeName);
 							Uri newListUri = cr.insert(uri, values);
 							if (newListUri != null) {
+
 								newStoreID = Long.parseLong(newListUri.getLastPathSegment());
 							}
 						} catch (Exception e) {
@@ -285,6 +286,17 @@ public class StoresTable {
 		return displayName;
 	}
 
+	public static String getStoreName(Context context, long storeID) {
+		String storeName = "";
+		Cursor cursor = getStore(context, storeID);
+		if (cursor != null) {
+			cursor.moveToFirst();
+			storeName = cursor.getString(cursor.getColumnIndexOrThrow(COL_STORE_NAME));
+			cursor.close();
+		}
+		return storeName;
+	}
+
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Update Methods
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -396,6 +408,18 @@ public class StoresTable {
 		return result;
 	}
 
+	public static int UpdateStoreTableFieldValues(Context context, long storeID, ContentValues newFieldValues) {
+		int numberOfUpdatedRecords = -1;
+		if (storeID > 1) {
+			ContentResolver cr = context.getContentResolver();
+			Uri defaultUri = Uri.withAppendedPath(CONTENT_URI, String.valueOf(storeID));
+			String selection = null;
+			String[] selectionArgs = null;
+			numberOfUpdatedRecords = cr.update(defaultUri, newFieldValues, selection, selectionArgs);
+		}
+		return numberOfUpdatedRecords;
+	}
+
 	public static int setStoreField(Context context, long storeID, String ColumnName, String storeFieldValue) {
 		int numberOfUpdatedRecords = -1;
 		if (storeID > 1) {
@@ -431,6 +455,7 @@ public class StoresTable {
 			String[] selectionArgs = { String.valueOf(storeID) };
 			numberOfDeletedRecords = cr.delete(uri, where, selectionArgs);
 		}
+		BridgeTable.DeleteAllBridgeRowsWithStore(context, storeID);
 		return numberOfDeletedRecords;
 	}
 
@@ -443,6 +468,8 @@ public class StoresTable {
 			ContentResolver cr = context.getContentResolver();
 			numberOfDeletedRecords = cr.delete(uri, where, selectionArgs);
 		}
+		// Note: Bridge Table rows associated with store
+		// have already been deleted by ListTable.DeleteList
 		return numberOfDeletedRecords;
 	}
 

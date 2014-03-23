@@ -357,6 +357,19 @@ public class CheckItemsActivity extends FragmentActivity {
 		}
 	}
 
+	private void AddNewGroup() {
+		FragmentManager fm = this.getSupportFragmentManager();
+		// Remove any currently showing dialog
+		Fragment prev = fm.findFragmentByTag("dialog_group_create_edit");
+		if (prev != null) {
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.remove(prev);
+			ft.commit();
+		}
+		GroupsDialogFragment addNewGroupDialog = GroupsDialogFragment.newInstance(mActiveListID, mActiveGroupID, GroupsDialogFragment.NEW_GROUP);
+		addNewGroupDialog.show(fm, "dialog_group_create_edit");
+	}
+
 	private void DeleteGroup() {
 		FragmentManager fm = this.getSupportFragmentManager();
 		// Remove any currently showing dialog
@@ -370,8 +383,8 @@ public class CheckItemsActivity extends FragmentActivity {
 		SendGroupIDRequest();
 		if (mActiveGroupID > 1) {
 			// can't delete the default group
-			GroupsDialogFragment editListTitleDialog = GroupsDialogFragment.newInstance(mActiveListID, mActiveGroupID, GroupsDialogFragment.DELETE_GROUP);
-			editListTitleDialog.show(fm, "dialog_group_create_edit");
+			GroupsDialogFragment deleteGroupDialog = GroupsDialogFragment.newInstance(mActiveListID, mActiveGroupID, GroupsDialogFragment.DELETE_GROUP);
+			deleteGroupDialog.show(fm, "dialog_group_create_edit");
 		}
 	}
 
@@ -388,22 +401,9 @@ public class CheckItemsActivity extends FragmentActivity {
 		SendGroupIDRequest();
 		if (mActiveGroupID > 1) {
 			// can't edit the default group
-			GroupsDialogFragment editListTitleDialog = GroupsDialogFragment.newInstance(mActiveListID, mActiveGroupID, GroupsDialogFragment.EDIT_GROUP_NAME);
-			editListTitleDialog.show(fm, "dialog_group_create_edit");
+			GroupsDialogFragment editGroupNameDialog = GroupsDialogFragment.newInstance(mActiveListID, mActiveGroupID, GroupsDialogFragment.EDIT_GROUP_NAME);
+			editGroupNameDialog.show(fm, "dialog_group_create_edit");
 		}
-	}
-
-	private void AddNewGroup() {
-		FragmentManager fm = this.getSupportFragmentManager();
-		// Remove any currently showing dialog
-		Fragment prev = fm.findFragmentByTag("dialog_group_create_edit");
-		if (prev != null) {
-			FragmentTransaction ft = fm.beginTransaction();
-			ft.remove(prev);
-			ft.commit();
-		}
-		GroupsDialogFragment editListTitleDialog = GroupsDialogFragment.newInstance(mActiveListID, mActiveGroupID, GroupsDialogFragment.NEW_GROUP);
-		editListTitleDialog.show(fm, "dialog_group_create_edit");
 	}
 
 	private void SetActiveListID(int position) {

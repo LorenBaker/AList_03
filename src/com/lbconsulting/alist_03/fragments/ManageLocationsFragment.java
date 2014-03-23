@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -136,6 +137,21 @@ public class ManageLocationsFragment extends Fragment implements LoaderManager.L
 			mLocationsSpinnerCursorAdapter = new LocationsSpinnerCursorAdapter(getActivity(), null, 0);
 			spinLocations = (Spinner) view.findViewById(R.id.spinLocations);
 			spinLocations.setAdapter(mLocationsSpinnerCursorAdapter);
+			spinLocations.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+				@Override
+				public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+					SendActiveLocationID();
+				}
+
+				@Override
+				public void onNothingSelected(AdapterView<?> arg0) {
+					String activeLocationIdReceiverKey = String.valueOf(mActiveListID) + ManageLocationsFragment.ACTIVE_LOCATION_ID_BROADCAST_KEY;
+					Intent activeLocationIdReceiverIntent = new Intent(activeLocationIdReceiverKey);
+					activeLocationIdReceiverIntent.putExtra("ActiveLocationID", -1);
+					LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(activeLocationIdReceiverIntent);
+				}
+			});
 
 			// set btnApplyLocation onClickListener
 			btnApplyLocation = (Button) view.findViewById(R.id.btnApplyLocation);

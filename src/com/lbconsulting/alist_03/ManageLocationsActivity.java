@@ -7,7 +7,10 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -20,6 +23,7 @@ import android.widget.Toast;
 import com.lbconsulting.alist_03.adapters.ManageLocationsPagerAdaptor;
 import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
+import com.lbconsulting.alist_03.dialogs.LocationsDialogFragment;
 import com.lbconsulting.alist_03.fragments.ManageLocationsFragment;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
@@ -112,9 +116,9 @@ public class ManageLocationsActivity extends FragmentActivity {
 		mActiveLocationIdReceiver = new BroadcastReceiver() {
 
 			@Override
-			public void onReceive(Context context, Intent intent) {
-				if (intent.hasExtra("ActiveLocationID")) {
-					mActiveLocationID = intent.getLongExtra("ActiveLocationID", -1);
+			public void onReceive(Context context, Intent activeLocatonIntent) {
+				if (activeLocatonIntent.hasExtra("ActiveLocationID")) {
+					mActiveLocationID = activeLocatonIntent.getLongExtra("ActiveLocationID", -1);
 				}
 			}
 		};
@@ -128,11 +132,11 @@ public class ManageLocationsActivity extends FragmentActivity {
 		}
 	}
 
-	private void SendLocationIDRequest() {
-		String requestActiveLocationIdBroadcastKey = String.valueOf(mActiveListID) + ManageLocationsFragment.REQUEST_ACTIVE_LOCATION_ID_BROADCAST_KEY;
-		Intent requestActiveLocationIdBroadcastIntent = new Intent(requestActiveLocationIdBroadcastKey);
-		LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(requestActiveLocationIdBroadcastIntent);
-	}
+	/*	private void SendLocationIDRequest() {
+			String requestActiveLocationIdBroadcastKey = String.valueOf(mActiveListID) + ManageLocationsFragment.REQUEST_ACTIVE_LOCATION_ID_BROADCAST_KEY;
+			Intent requestActiveLocationIdBroadcastIntent = new Intent(requestActiveLocationIdBroadcastKey);
+			LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(requestActiveLocationIdBroadcastIntent);
+		}*/
 
 	/*	private void SetStoresPagerAdaptor() {
 			mAllStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
@@ -269,19 +273,56 @@ public class ManageLocationsActivity extends FragmentActivity {
 		}
 	}
 
-	private void EditLocationName() {
-		// TODO Auto-generated method stub
-
-	}
-
 	private void AddNewLocation() {
-		// TODO Auto-generated method stub
-
+		FragmentManager fm = this.getSupportFragmentManager();
+		// Remove any currently showing dialog
+		Fragment prev = fm.findFragmentByTag("dialog_location_create_edit_delete");
+		if (prev != null) {
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.remove(prev);
+			ft.commit();
+		}
+		LocationsDialogFragment newLocationDialog = LocationsDialogFragment.newInstance(mActiveListID, mActiveLocationID,
+				LocationsDialogFragment.NEW_LOCATION);
+		newLocationDialog.show(fm, "dialog_location_create_edit_delete");
 	}
 
 	private void DeleteLocation() {
-		// TODO Auto-generated method stub
+		FragmentManager fm = this.getSupportFragmentManager();
+		// Remove any currently showing dialog
+		Fragment prev = fm.findFragmentByTag("dialog_location_create_edit_delete");
+		if (prev != null) {
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.remove(prev);
+			ft.commit();
+		}
 
+		// SendLocationIDRequest();
+		if (mActiveLocationID > 1) {
+			// can't delete the default location
+			LocationsDialogFragment deleteLocationDialog = LocationsDialogFragment.newInstance(mActiveListID, mActiveLocationID,
+					LocationsDialogFragment.DELETE_LOCATION);
+			deleteLocationDialog.show(fm, "dialog_location_create_edit_delete");
+		}
+	}
+
+	private void EditLocationName() {
+		FragmentManager fm = this.getSupportFragmentManager();
+		// Remove any currently showing dialog
+		Fragment prev = fm.findFragmentByTag("dialog_location_create_edit_delete");
+		if (prev != null) {
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.remove(prev);
+			ft.commit();
+		}
+
+		// SendLocationIDRequest();
+		if (mActiveLocationID > 1) {
+			// can't edit the default location
+			LocationsDialogFragment editLocationNameDialog = LocationsDialogFragment.newInstance(mActiveListID, mActiveLocationID,
+					LocationsDialogFragment.EDIT_LOCATION_NAME);
+			editLocationNameDialog.show(fm, "dialog_location_create_edit_delete");
+		}
 	}
 
 	private void StartStoresActivity() {
