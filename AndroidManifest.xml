@@ -3,11 +3,10 @@
     package="com.lbconsulting.alist_03"
     android:versionCode="1"
     android:versionName="1.0" >
-
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="19" />
-
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -18,7 +17,6 @@
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -78,12 +76,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.lbconsulting.alist_03.ListsActivity" />
         </activity>
-
         <provider
             android:name="com.lbconsulting.alist_03.database.contentprovider.AListContentProvider"
             android:authorities="com.lbconsulting.alist_03.contentprovider"
             android:exported="false" >
         </provider>
     </application>
-
 </manifest>

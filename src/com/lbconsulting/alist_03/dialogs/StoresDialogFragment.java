@@ -133,25 +133,30 @@ public class StoresDialogFragment extends DialogFragment {
 					switch (mDialogType) {
 
 					case EDIT_STORE_NAME:
-						String newStoreName = txtStoreName.getText().toString();
-						newStoreName = newStoreName.trim();
-						if (!newStoreName.isEmpty()) {
+						String storeNewName = txtStoreName.getText().toString();
+						storeNewName = storeNewName.trim();
+						if (!storeNewName.isEmpty()) {
 							ContentValues newFieldValues = new ContentValues();
-							newFieldValues.put(StoresTable.COL_STORE_NAME, newStoreName);
+							newFieldValues.put(StoresTable.COL_STORE_NAME, storeNewName);
 							StoresTable.UpdateStoreTableFieldValues(getActivity(), mActiveStoreID, newFieldValues);
 						}
 						break;
 
 					case NEW_STORE:
-						newStoreName = txtStoreName.getText().toString();
+						String newStoreName = txtStoreName.getText().toString();
 						newStoreName = newStoreName.trim();
 						if (!newStoreName.isEmpty()) {
-							StoresTable.CreateNewStore(getActivity(), mActiveListID, newStoreName);
+							mActiveStoreID = StoresTable.CreateNewStore(getActivity(), mActiveListID, newStoreName);
+							/*ContentValues newFieldValues = new ContentValues();
+							newFieldValues.put(ListsTable.COL_ACTIVE_STORE_ID, mActiveStoreID);
+							ListsTable.UpdateListsTableFieldValues(getActivity(), mActiveListID, newFieldValues);*/
 						}
 						break;
 
 					case DELETE_STORE:
 						StoresTable.DeleteStore(getActivity(), mActiveStoreID);
+						// TODO figure out what store to go to.
+						mActiveStoreID = -1;
 						break;
 
 					default:
@@ -181,7 +186,7 @@ public class StoresDialogFragment extends DialogFragment {
 
 				case NEW_STORE:
 					// We're displaying the New Store dialog
-					txtStoreName.setText("New Store");
+					txtStoreName.setText("");
 					break;
 
 				case DELETE_STORE:
@@ -206,6 +211,7 @@ public class StoresDialogFragment extends DialogFragment {
 	protected void SendRestartStoresActivityBroadcast() {
 		String restartStoresActivityKey = String.valueOf(mActiveListID) + StoresActivity.RESTART_STORES_ACTIVITY_BROADCAST_KEY;
 		Intent restartStoresActivityIntent = new Intent(restartStoresActivityKey);
+		restartStoresActivityIntent.putExtra("ActiveStoreID", mActiveStoreID);
 		LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(restartStoresActivityIntent);
 	}
 

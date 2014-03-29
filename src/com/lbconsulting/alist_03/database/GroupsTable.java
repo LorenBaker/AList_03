@@ -261,6 +261,35 @@ public class GroupsTable {
 		return cursorLoader;
 	}
 
+	public static Cursor getCursorAllGroupsInListIncludeLocations(Context context, long listID, long storeID) {
+		Cursor cursor = null;
+		if (listID > 1) {
+
+			/*
+			 * SELECT tblGroups._id, tblGroups.groupName,tblBridge.locationID,
+			 * tblLocations.locationName FROM tblGroups JOIN tblBridge ON
+			 * tblGroups._id= tblBridge.groupID JOIN tblLocations ON
+			 * tblLocations._id = tblBridge.locationID WHERE tblGroups.listID =
+			 * 3 AND tblBridge.storeID=2 ORDER BY tblLocations.locationName,
+			 * tblGroups.groupName
+			 */
+
+			Uri uri = CONTENT_URI_GROUPS_WITH_LOCATIONS;
+			String[] projection = PROJECTION_WITH_LOCATION_NAME;
+			String selection = TABLE_GROUPS + "." + COL_LIST_ID + " = ? AND "
+					+ BridgeTable.TABLE_BRIDGE + "." + BridgeTable.COL_STORE_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID), String.valueOf(storeID) };
+			String sortOrder = GroupsTable.SORT_ORDER_GROUP + ", " + LocationsTable.SORT_ORDER_LOCATION;
+			ContentResolver cr = context.getContentResolver();
+			try {
+				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getCursorAllGroupsInListIncludeLocations. ", e.toString());
+			}
+		}
+		return cursor;
+	}
+
 	public static CursorLoader getAllGroupsInList(Context context, long listID, String sortOrder) {
 		CursorLoader cursorLoader = null;
 		if (listID > 1) {
@@ -275,6 +304,24 @@ public class GroupsTable {
 			}
 		}
 		return cursorLoader;
+	}
+
+	public static Cursor getAllGroupIDsInList(Context context, long listID) {
+		Cursor cursor = null;
+		if (listID > 1) {
+			Uri uri = CONTENT_URI;
+			String[] projection = new String[] { COL_GROUP_ID };
+			String selection = COL_LIST_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID) };
+			String sortOrder = null;
+			ContentResolver cr = context.getContentResolver();
+			try {
+				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error in GroupsTable: getAllGroupIDsInList. ", e.toString());
+			}
+		}
+		return cursor;
 	}
 
 	public static Cursor getAllCheckedGroups(Context context, long listID) {

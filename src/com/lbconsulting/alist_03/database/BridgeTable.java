@@ -242,6 +242,13 @@ public class BridgeTable {
 		return numberOfUpdatedRecords;
 	}
 
+	public static void ReviseBridgeRow(Context context, long listID, long storeID, long groupID, long locationID) {
+		long bridgeRowID = getBridgeTableRowID(context, listID, storeID, groupID);
+		ContentValues newFieldValues = new ContentValues();
+		newFieldValues.put(COL_LOCATION_ID, locationID);
+		UpdateItemFieldValues(context, bridgeRowID, newFieldValues);
+	}
+
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Delete Methods
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////

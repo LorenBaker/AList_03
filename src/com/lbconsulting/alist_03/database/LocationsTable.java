@@ -22,6 +22,8 @@ public class LocationsTable {
 	public static final String COL_LOCATION_ID = "_id";
 	public static final String COL_LOCATION_NAME = "locationName";
 
+	public static String DEFAULT_LOCATION = "[No LOCATION]";
+
 	public static final String[] PROJECTION_ALL = { COL_LOCATION_ID, COL_LOCATION_NAME };
 
 	public static final String CONTENT_PATH = TABLE_LOCATIONS;
@@ -40,8 +42,6 @@ public class LocationsTable {
 			+ COL_LOCATION_ID + " integer primary key autoincrement, "
 			+ COL_LOCATION_NAME + " text collate nocase "
 			+ ");";
-
-	private static String DEFAULT_LOCATION = "[No LOCATION]";
 
 	public static void onCreate(SQLiteDatabase database) {
 		database.execSQL(DATATABLE_CREATE);

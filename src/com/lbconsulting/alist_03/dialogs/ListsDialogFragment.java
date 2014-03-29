@@ -258,7 +258,7 @@ public class ListsDialogFragment extends DialogFragment {
 							public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
 								switch (position) {
 								case BLANK_LIST_TEMPLATE:
-									txtEditListTitle.setText(R.string.dialog_lists_new_list_text);
+									txtEditListTitle.setText("");
 									break;
 								case GROCERIES_LIST_TEMPLATE:
 									txtEditListTitle.setText(
@@ -461,7 +461,7 @@ public class ListsDialogFragment extends DialogFragment {
 
 		Hashtable<String, Long> groceryGroupsHashTable = new Hashtable<String, Long>();
 
-		groceryGroupsHashTable.put("[No Group]", (long) 1);
+		groceryGroupsHashTable.put("[No Group]", (long) 1); // enter the default group
 		// create grocery groups
 		String[] groceryGroups = this.getResources().getStringArray(R.array.grocery_groups);
 		for (int i = 0; i < groceryGroups.length; i++) {
@@ -491,6 +491,7 @@ public class ListsDialogFragment extends DialogFragment {
 
 		// create locations
 		Hashtable<String, Long> locationsHashTable = new Hashtable<String, Long>();
+		locationsHashTable.put("[No LOCATION]", (long) 1); // enter the default location
 		String[] storeLocations = this.getResources().getStringArray(R.array.locations);
 		for (int i = 0; i < storeLocations.length; i++) {
 			long locationID = LocationsTable.CreateNewLocation(getActivity(), storeLocations[i]);
@@ -500,90 +501,87 @@ public class ListsDialogFragment extends DialogFragment {
 		// create Bridge table
 		long locationID = -1;
 		long groupID = -1;
-		String[] Albertons = this.getResources().getStringArray(R.array.Albertsons_Eastgate_Locations);
-		long storeID = storesHashTable.get(groceryStores[0]);
-		for (int i = 0; i < Albertons.length; i++) {
-			String groupLocation = Albertons[i];
-			if (groupLocation.equals("[No LOCATION]")) {
-				locationID = 1;
-			} else {
-				locationID = locationsHashTable.get(Albertons[i]);
-			}
-			if (i == 0) {
-				groupID = 1;
-			} else {
-				groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
-			}
 
-			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
-		}
+		/*		String[] Albertons = this.getResources().getStringArray(R.array.Albertsons_Eastgate_Locations);
+				long storeID = storesHashTable.get(groceryStores[0]);
+				for (int i = 0; i < Albertons.length; i++) {
+					String groupLocation = Albertons[i];
+					if (groupLocation.equals("[No LOCATION]")) {
+						locationID = 1;
+					} else {
+						locationID = locationsHashTable.get(Albertons[i]);
+					}
+					if (i == 0) {
+						groupID = 1;
+					} else {
+						groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+					}
 
-		String[] QFC = this.getResources().getStringArray(R.array.QFC_Factoria_Locations);
-		storeID = storesHashTable.get(groceryStores[1]);
-		for (int i = 0; i < QFC.length; i++) {
-			String groupLocation = QFC[i];
-			if (groupLocation.equals("[No LOCATION]")) {
-				locationID = 1;
-			} else {
-				locationID = locationsHashTable.get(QFC[i]);
-			}
-			if (i == 0) {
-				groupID = 1;
-			} else {
-				groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
-			}
-			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
-		}
+					BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
+				}*/
 
-		String[] sw_belfair = this.getResources().getStringArray(R.array.Safeway_Belfair_Locations);
-		storeID = storesHashTable.get(groceryStores[2]);
-		for (int i = 0; i < sw_belfair.length; i++) {
-			String groupLocation = sw_belfair[i];
-			if (groupLocation.equals("[No LOCATION]")) {
-				locationID = 1;
-			} else {
-				locationID = locationsHashTable.get(sw_belfair[i]);
-			}
-			if (i == 0) {
-				groupID = 1;
-			} else {
-				groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
-			}
-			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
-		}
+		/*		String[] QFC = this.getResources().getStringArray(R.array.QFC_Factoria_Locations);
+				storeID = storesHashTable.get(groceryStores[1]);
+				for (int i = 0; i < QFC.length; i++) {
+					String groupLocation = QFC[i];
+					if (groupLocation.equals("[No LOCATION]")) {
+						locationID = 1;
+					} else {
+						locationID = locationsHashTable.get(QFC[i]);
+					}
+					if (i == 0) {
+						groupID = 1;
+					} else {
+						groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+					}
+					BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
+				}*/
 
-		String[] sw_evergreen = this.getResources().getStringArray(R.array.Safeway_Evergreen_Village_Locations);
-		storeID = storesHashTable.get(groceryStores[3]);
-		for (int i = 0; i < sw_evergreen.length; i++) {
-			String groupLocation = sw_evergreen[i];
-			if (groupLocation.equals("[No LOCATION]")) {
-				locationID = 1;
-			} else {
-				locationID = locationsHashTable.get(sw_evergreen[i]);
-			}
-			if (i == 0) {
-				groupID = 1;
-			} else {
-				groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
-			}
-			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
-		}
+		/*		String[] sw_belfair = this.getResources().getStringArray(R.array.Safeway_Belfair_Locations);
+				storeID = storesHashTable.get(groceryStores[2]);
+				for (int i = 0; i < sw_belfair.length; i++) {
+					String groupLocation = sw_belfair[i];
+					if (groupLocation.equals("[No LOCATION]")) {
+						locationID = 1;
+					} else {
+						locationID = locationsHashTable.get(sw_belfair[i]);
+					}
+					if (i == 0) {
+						groupID = 1;
+					} else {
+						groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+					}
+					BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
+				}*/
+
+		/*		String[] sw_evergreen = this.getResources().getStringArray(R.array.Safeway_Evergreen_Village_Locations);
+				storeID = storesHashTable.get(groceryStores[3]);
+				for (int i = 0; i < sw_evergreen.length; i++) {
+					String groupLocation = sw_evergreen[i];
+					if (groupLocation.equals("[No LOCATION]")) {
+						locationID = 1;
+					} else {
+						locationID = locationsHashTable.get(sw_evergreen[i]);
+					}
+					if (i == 0) {
+						groupID = 1;
+					} else {
+						groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
+					}
+					BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
+				}*/
 
 		String[] sw_Issaquah = this.getResources().getStringArray(R.array.Safeway_Issaquah_Locations);
-		storeID = storesHashTable.get(groceryStores[4]);
+		long storeID = storesHashTable.get(groceryStores[0]);
 		for (int i = 0; i < sw_Issaquah.length; i++) {
-			String groupLocation = sw_Issaquah[i];
-			if (groupLocation.equals("[No LOCATION]")) {
-				locationID = 1;
-			} else {
-				locationID = locationsHashTable.get(sw_Issaquah[i]);
+			locationID = locationsHashTable.get(sw_Issaquah[i]);
+			groupID = groceryGroupsHashTable.get(groceryGroups[i]);
+
+			if (locationID == 1) {
+				continue;
 			}
-			if (i == 0) {
-				groupID = 1;
-			} else {
-				groupID = groceryGroupsHashTable.get(groceryGroups[i - 1]);
-			}
-			BridgeTable.CreateNewBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
+
+			BridgeTable.ReviseBridgeRow(getActivity(), groceriesListID, storeID, groupID, locationID);
 		}
 
 		AListContentProvider.SuppressChangeNotification(false);

@@ -1,6 +1,7 @@
 package com.lbconsulting.alist_03;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -20,6 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.StoresPagerAdaptor;
+import com.lbconsulting.alist_03.classes.ListSettings;
+import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.dialogs.StoresDialogFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
@@ -30,6 +33,8 @@ public class StoresActivity extends FragmentActivity {
 	private long mActiveListID = -1;
 	private long mActiveStoreID = -1;
 	private int mActiveStorePosition = 0;
+	private ListSettings mListSettings;
+
 	// private boolean mTwoFragmentLayout;
 	private StoresPagerAdaptor mStoresPagerAdapter;
 	private ViewPager mPager;
@@ -52,26 +57,23 @@ public class StoresActivity extends FragmentActivity {
 		}
 
 		Intent intent = getIntent();
-		String activeListTitle = intent.getStringExtra("listTitle");
-		int titleBackgroundColor = intent.getIntExtra("titleBackgroundColor", 0);
-		int titleTextColor = intent.getIntExtra("titleTextColor", 0);
-
-		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
-		mActiveListID = storedStates.getLong("ActiveListID", -1);
-		mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
-		mActiveStorePosition = storedStates.getInt("ActiveStorePosition", -1);
+		mActiveListID = intent.getLongExtra("ActiveListID", -1);
+		mListSettings = new ListSettings(this, mActiveListID);
+		mActiveStoreID = mListSettings.getActiveStoreID();
+		mAllStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
 
 		TextView tvListTitle = (TextView) findViewById(R.id.tvListTitle);
 		if (tvListTitle != null) {
-			tvListTitle.setText(activeListTitle);
-			tvListTitle.setBackgroundColor(titleBackgroundColor);
-			tvListTitle.setTextColor(titleTextColor);
+			tvListTitle.setText(mListSettings.getListTitle());
+			tvListTitle.setBackgroundColor(mListSettings.getTitleBackgroundColor());
+			tvListTitle.setTextColor(mListSettings.getTitleTextColor());
 		}
 
 		mRestartStoresActivityReceiver = new BroadcastReceiver() {
 			@Override
-			public void onReceive(Context context, Intent intent) {
-				RestartStoresActivity(mActiveStorePosition);
+			public void onReceive(Context context, Intent restartIntent) {
+				mActiveStoreID = restartIntent.getLongExtra("ActiveStoreID", -1);
+				RestartStoresActivity();
 			}
 		};
 
@@ -79,23 +81,7 @@ public class StoresActivity extends FragmentActivity {
 		String restartStoresActivityKey = String.valueOf(mActiveListID) + RESTART_STORES_ACTIVITY_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(this).registerReceiver(mRestartStoresActivityReceiver, new IntentFilter(restartStoresActivityKey));
 
-		/*		View frag_locations_placeholder = this.findViewById(R.id.frag_locations_placeholder);
-				mTwoFragmentLayout = frag_locations_placeholder != null
-						&& frag_locations_placeholder.getVisibility() == View.VISIBLE;*/
-
 		SetStoresPagerAdaptor();
-
-		// TODO save ActoveStoreID & ActiveStorePostion in the database
-		// for now ... just start at position 0
-		// *mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
-		// mActiveStorePosition = storedStates.getInt("ActiveStorePosition", 0);*/
-		if (mAllStoresCursor != null && mAllStoresCursor.getCount() > 0) {
-			mActiveStorePosition = 0;
-			SetActiveStoreID(mActiveStorePosition);
-		} else {
-			// there are no stores to show
-			// TODO launch create new store dialog
-		}
 
 		mPager.setOnPageChangeListener(new OnPageChangeListener() {
 
@@ -110,35 +96,32 @@ public class StoresActivity extends FragmentActivity {
 			@Override
 			public void onPageSelected(int position) {
 				SetActiveStoreID(position);
-				MyLog.d("Stores_ACTIVITY", "onPageSelected() - position = " + position + " ; storeID = "
-						+ mActiveStoreID);
+				MyLog.d("Stores_ACTIVITY", "onPageSelected() - position = " + position + " ; storeID = " + mActiveStoreID);
 
 			}
 		});
 	}
 
 	private void SetStoresPagerAdaptor() {
-		mAllStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
 		mStoresPagerAdapter = new StoresPagerAdaptor(getSupportFragmentManager(), this, mActiveListID);
 		mPager.setAdapter(mStoresPagerAdapter);
 	}
 
-	private void LoadColorsFragment() {
-		// TODO code LoadColorsFragment
-
-	}
-
 	protected void SetActiveStoreID(int position) {
 		if (mAllStoresCursor != null) {
-			long storeID = -1;
 			try {
 				mAllStoresCursor.moveToPosition(position);
-				storeID = mAllStoresCursor.getLong(mAllStoresCursor.getColumnIndexOrThrow(StoresTable.COL_STORE_ID));
+				mActiveStoreID = mAllStoresCursor.getLong(mAllStoresCursor.getColumnIndexOrThrow(StoresTable.COL_STORE_ID));
+				mActiveStorePosition = position;
+
+				// update the lists table with the selected store ID
+				ContentValues newFieldValues = new ContentValues();
+				newFieldValues.put(ListsTable.COL_ACTIVE_STORE_ID, mActiveStoreID);
+				mListSettings.updateListsTableFieldValues(newFieldValues);
+
 			} catch (Exception e) {
 				MyLog.d("Stores_ACTIVITY", "Exception in SetActiveStoreID: " + e);
 			}
-			mActiveStoreID = storeID;
-			mActiveStorePosition = position;
 		}
 	}
 
@@ -159,31 +142,30 @@ public class StoresActivity extends FragmentActivity {
 		MyLog.i("Stores_ACTIVITY", "onResume");
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
-		mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
-		mActiveStorePosition = storedStates.getInt("ActiveStorePosition", -1);
-
+		mListSettings = new ListSettings(this, mActiveListID);
+		mActiveStoreID = mListSettings.getActiveStoreID();
+		mAllStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
 		if (mAllStoresCursor != null && mAllStoresCursor.getCount() > 0) {
-			mActiveStorePosition = 0;
-			SetActiveStoreID(mActiveStorePosition);
+			if (mActiveStoreID > 1) {
+				mActiveStorePosition = AListUtilities.getCursorPositon(mAllStoresCursor, mActiveStoreID);
+			} else {
+				// there are stores in the list, but we don't have an ActiveStoreID
+				// so ... go to the first store
+				mActiveStorePosition = 0;
+				SetActiveStoreID(mActiveStorePosition);
+			}
+			mPager.setCurrentItem(mActiveStorePosition);
 		} else {
-			// there are no stores to show
-			// TODO launch create new store dialog
+			// there are no stores in this list
+			// so... add a new store
+			AddNewStore();
 		}
-
-		/*mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
-		mActiveStorePosition = storedStates.getInt("ActiveStorePosition", 0);
-		mPager.setCurrentItem(mActiveStorePosition);*/
 		super.onResume();
 	}
 
 	@Override
 	protected void onPause() {
 		MyLog.i("Stores_ACTIVITY", "onPause");
-		SharedPreferences preferences = getSharedPreferences("AList", MODE_PRIVATE);
-		SharedPreferences.Editor applicationStates = preferences.edit();
-		applicationStates.putLong("ActiveStoreID", mActiveStoreID);
-		applicationStates.putInt("ActiveStorePosition", mActiveStorePosition);
-		applicationStates.commit();
 		super.onPause();
 	}
 
@@ -237,12 +219,8 @@ public class StoresActivity extends FragmentActivity {
 			ft.remove(prev);
 			ft.commit();
 		}
-
-		if (mActiveStoreID > 1) {
-			// can't edit the default store
-			StoresDialogFragment addNewStoreNameDialog = StoresDialogFragment.newInstance(mActiveListID, mActiveStoreID, StoresDialogFragment.NEW_STORE);
-			addNewStoreNameDialog.show(fm, "dialog_store_create_edit_delete");
-		}
+		StoresDialogFragment addNewStoreNameDialog = StoresDialogFragment.newInstance(mActiveListID, mActiveStoreID, StoresDialogFragment.NEW_STORE);
+		addNewStoreNameDialog.show(fm, "dialog_store_create_edit_delete");
 	}
 
 	private void DeleteStore() {
@@ -279,28 +257,15 @@ public class StoresActivity extends FragmentActivity {
 		}
 	}
 
-	private void RestartStoresActivity(int position) {
-		Cursor allStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
-		if (allStoresCursor != null) {
-			if (allStoresCursor.getCount() >= position + 1) {
-				mActiveStorePosition = position;
-			} else {
-				if (allStoresCursor.getCount() > 0) {
-					mActiveStorePosition = 0;
-				} else {
-					// there are no stores in the StoresTable!
-					mActiveStorePosition = -1;
-					mActiveListID = -1;
-				}
-			}
-			if (mActiveStorePosition > -1) {
-				mActiveListID = AListUtilities.getIdByPosition(allStoresCursor, mActiveStorePosition);
-			}
-			allStoresCursor.close();
-		}
+	private void RestartStoresActivity() {
+		ContentValues newFieldValues = new ContentValues();
+		newFieldValues.put(ListsTable.COL_ACTIVE_STORE_ID, mActiveStoreID);
+		mListSettings.updateListsTableFieldValues(newFieldValues);
+
 		Intent intent = new Intent(this, StoresActivity.class);
 		// prohibit the back button from displaying previous version of this StoresActivity
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		intent.putExtra("ActiveListID", mActiveListID);
 		startActivity(intent);
 	}
 

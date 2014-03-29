@@ -92,7 +92,7 @@ public class ListPreferencesActivity extends FragmentActivity {
 
 	private void ReStartListPreferencesActivity() {
 		mAllListsCursor = ListsTable.getAllLists(this);
-		mActiveListPosition = AListUtilities.getListsCursorPositon(mAllListsCursor, mActiveListID);
+		mActiveListPosition = AListUtilities.getCursorPositon(mAllListsCursor, mActiveListID);
 		Intent intent = new Intent(this, ListPreferencesActivity.class);
 		// prohibit the back button from displaying previous version of this ListPreferencesActivity
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

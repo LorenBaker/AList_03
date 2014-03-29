@@ -15,8 +15,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Spinner;
 
-import com.lbconsulting.alist_03.database.ListsTable;
-
 public class AListUtilities {
 
 	public static final int LISTS_LOADER_ID = 1;
@@ -195,23 +193,22 @@ public class AListUtilities {
 
 	}
 
-	public static int getListsCursorPositon(Cursor listsCursor, long listID) {
-		int listPosition = 0;
-		if (listsCursor != null && listID > 1) {
-			listsCursor.moveToPosition(-1);
+	public static int getCursorPositon(Cursor cursor, long itemID) {
+		int cursorPosition = -1;
+		if (cursor != null && itemID > 1) {
+			cursor.moveToPosition(-1);
 			int position = 0;
 			long id = 0;
-			while (listsCursor.moveToNext()) {
-				id = listsCursor.getLong(listsCursor.getColumnIndexOrThrow(ListsTable.COL_LIST_ID));
-				if (id == listID) {
-					listPosition = position;
+			while (cursor.moveToNext()) {
+				id = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
+				if (id == itemID) {
+					cursorPosition = position;
 					break;
-				} else {
-					position++;
 				}
+				position++;
 			}
 		}
-		return listPosition;
+		return cursorPosition;
 	}
 
 	public static long getIdByPosition(Cursor cursor, int position) {

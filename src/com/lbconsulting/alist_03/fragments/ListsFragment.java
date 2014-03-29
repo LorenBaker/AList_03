@@ -38,6 +38,7 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 public class ListsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
 	private long mActiveListID = -1;
+	private long mActiveStoreID = -1;
 
 	private ListSettings mListSettings;
 
@@ -51,7 +52,9 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 	// The callbacks through which we will interact with the LoaderManager.
 	private LoaderManager.LoaderCallbacks<Cursor> mListsFragmentCallbacks;
 	private ItemsCursorAdaptor mItemsCursorAdaptor;
+
 	private StoresSpinnerCursorAdapter mStoresSpinnerCursorAdapter;
+	public final static String ACTIVE_STORE_ID_BROADCAST_KEY = "ActiveStoreIdBroadcastKey";
 
 	private boolean flag_FirstTimeLoadingItemDataSinceOnResume = false;
 
@@ -100,6 +103,7 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 		MyLog.i("ListsFragment", "onSaveInstanceState");
 		// Store our listID
 		outState.putLong("listID", this.mActiveListID);
+		outState.putLong("storeID", this.mActiveStoreID);
 		super.onSaveInstanceState(outState);
 	}
 
@@ -109,10 +113,12 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 
 		if (savedInstanceState != null && savedInstanceState.containsKey("listID")) {
 			mActiveListID = savedInstanceState.getLong("listID", 0);
+			mActiveStoreID = savedInstanceState.getLong("storeID", -1);
 		} else {
 			Bundle bundle = getArguments();
 			if (bundle != null)
 				mActiveListID = bundle.getLong("listID", 0);
+			mActiveStoreID = bundle.getLong("storeID", -1);
 		}
 
 		View view = inflater.inflate(R.layout.frag_lists, container, false);
@@ -155,10 +161,17 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View v, int position, long storeID) {
+				// show the list showing the selected store
 				mLoaderManager.restartLoader(AListUtilities.ITEMS_LOADER_ID, null, mListsFragmentCallbacks);
+
+				// update the lists table with the selected store ID
 				ContentValues newFieldValues = new ContentValues();
 				newFieldValues.put(ListsTable.COL_ACTIVE_STORE_ID, storeID);
 				mListSettings.updateListsTableFieldValues(newFieldValues);
+
+				// broadcast to the ListsActivity that the selected store has changed
+				mActiveStoreID = storeID;
+				SendActiveStoreIdBroadcastBroadCast();
 			}
 
 			@Override
@@ -197,6 +210,13 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 				});*/
 
 		return view;
+	}
+
+	private void SendActiveStoreIdBroadcastBroadCast() {
+		String activeStoreIdBroadcastKey = String.valueOf(mActiveListID) + ListsFragment.ACTIVE_STORE_ID_BROADCAST_KEY;
+		Intent activeStoreIdBroadcastIntent = new Intent(activeStoreIdBroadcastKey);
+		activeStoreIdBroadcastIntent.putExtra("ActiveStoreID", mActiveStoreID);
+		LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(activeStoreIdBroadcastIntent);
 	}
 
 	private void setViewColors() {
@@ -246,9 +266,15 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 		Bundle bundle = this.getArguments();
 		if (bundle != null) {
 			mActiveListID = bundle.getLong("listID", 0);
+			// mActiveStoreID = bundle.getLong("storeID", -1);
 		}
 
 		mListSettings.RefreshListSettings();
+		if (mListSettings.getShowStores()) {
+			mActiveStoreID = mListSettings.getActiveStoreID();
+			int position = AListUtilities.getIndex(mStoreSpinner, mActiveStoreID);
+			mStoreSpinner.setSelection(position);
+		}
 		setViewColors();
 
 		// Set onResume flags
@@ -399,7 +425,8 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 
 		case AListUtilities.STORES_LOADER_ID:
 			mStoresSpinnerCursorAdapter.swapCursor(newCursor);
-			mStoreSpinner.setSelection(AListUtilities.getIndex(mStoreSpinner, mListSettings.getActiveStoreID()));
+			mActiveStoreID = mListSettings.getActiveStoreID();
+			mStoreSpinner.setSelection(AListUtilities.getIndex(mStoreSpinner, mActiveStoreID));
 			break;
 
 		default:

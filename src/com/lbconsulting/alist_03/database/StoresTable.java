@@ -183,6 +183,21 @@ public class StoresTable {
 					MyLog.e("StoresTable", "Error in CreateNewStore; storeName is Null!");
 				}
 			}
+			// Fill the bridge table with default location
+			if (newStoreID > 0) {
+				Cursor groupsCursor = GroupsTable.getAllGroupIDsInList(context, listID);
+				if (groupsCursor != null) {
+					if (groupsCursor.getCount() > 0) {
+						groupsCursor.moveToPosition(-1);
+						long groupID = -1;
+						while (groupsCursor.moveToNext()) {
+							groupID = groupsCursor.getLong(groupsCursor.getColumnIndexOrThrow(GroupsTable.COL_GROUP_ID));
+							BridgeTable.CreateNewBridgeRow(context, listID, newStoreID, groupID, 1);
+						}
+					}
+					groupsCursor.close();
+				}
+			}
 		}
 		return newStoreID;
 	}
@@ -226,8 +241,7 @@ public class StoresTable {
 		return cursor;
 	}
 
-	public static Cursor getAllStoresInListCursor(Context context, long listID,
-			String sortOrder) {
+	public static Cursor getAllStoresInListCursor(Context context, long listID, String sortOrder) {
 		Cursor cursor = null;
 		if (listID > 1) {
 			Uri uri = CONTENT_URI;
@@ -295,6 +309,16 @@ public class StoresTable {
 			cursor.close();
 		}
 		return storeName;
+	}
+
+	public static int getStoresCountInList(Context context, long listID) {
+		int storeCount = -1;
+		Cursor cursor = getAllStoresInListCursor(context, listID, null);
+		if (cursor != null) {
+			storeCount = cursor.getCount();
+			cursor.close();
+		}
+		return storeCount;
 	}
 
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -472,5 +496,4 @@ public class StoresTable {
 		// have already been deleted by ListTable.DeleteList
 		return numberOfDeletedRecords;
 	}
-
 }

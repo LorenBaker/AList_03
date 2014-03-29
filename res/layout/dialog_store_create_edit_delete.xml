@@ -9,7 +9,7 @@
         android:id="@+id/txtStoreName"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:hint="Location Name"
+        android:hint="Store Name"
         android:inputType="textAutoCorrect|textCapWords" />
     <include layout="@layout/template_apply_cancel" />
 </LinearLayout>

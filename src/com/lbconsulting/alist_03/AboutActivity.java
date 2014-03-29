@@ -1,6 +1,7 @@
 package com.lbconsulting.alist_03;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,9 +26,19 @@ public class AboutActivity extends Activity {
 
 		if (mTwoFragmentLayout) {
 			tvFragmentA.setText("About Fragment");
+			// tvFragmentA.setText(xmlString);
 			tvFragmentB.setVisibility(View.GONE);
 		} else {
+			// tvFragmentA.setText(xmlString);
 			tvFragmentA.setText("About Fragment");
+		}
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == 1222) {
+			MyLog.d("About_ACTIVITY", "requestCode:" + requestCode + " resultCode" + resultCode);
 		}
 	}
 

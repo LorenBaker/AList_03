@@ -24,6 +24,8 @@ import android.view.View;
 import com.lbconsulting.alist_03.adapters.ListsPagerAdapter;
 import com.lbconsulting.alist_03.classes.DynamicListView;
 import com.lbconsulting.alist_03.classes.ListSettings;
+import com.lbconsulting.alist_03.classes.ReadWriteFile;
+import com.lbconsulting.alist_03.classes.StoreDataSubmission;
 import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
@@ -31,6 +33,7 @@ import com.lbconsulting.alist_03.database.LocationsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.dialogs.ListsDialogFragment;
 import com.lbconsulting.alist_03.fragments.ListPreferencesFragment;
+import com.lbconsulting.alist_03.fragments.ListsFragment;
 import com.lbconsulting.alist_03.fragments.MasterListFragment;
 import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
@@ -43,16 +46,19 @@ public class ListsActivity extends FragmentActivity {
 	private MasterListFragment mMasterListFragment;
 	private Boolean mTwoFragmentLayout = false;
 
+	private String FILENAME = "AListStoreSubmission.txt";
+
 	private long NO_ACTIVE_LIST_ID = 0;
 	private long mActiveListID = NO_ACTIVE_LIST_ID;
-	private long mActiveItemID;
 	private int mActiveListPosition = 0;
-	// private long mActiveStoreID = -1;
+	private long mActiveItemID;
+	private long mActiveStoreID = -1;
 
 	private ListSettings mListSettings;
 
 	private Cursor mAllListsCursor;
 	private BroadcastReceiver mListTableChanged;
+	private BroadcastReceiver mActiveStoreIdReceiver;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -83,9 +89,21 @@ public class ListsActivity extends FragmentActivity {
 				ReStartListsActivity();
 			}
 		};
+
+		mActiveStoreIdReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				mActiveStoreID = intent.getLongExtra("ActiveStoreID", -1);
+			}
+		};
+
 		// Register to receive messages.
 		String key = String.valueOf(mActiveListID) + ListPreferencesFragment.LIST_PREFERENCES_CHANGED_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(this).registerReceiver(mListTableChanged, new IntentFilter(key));
+
+		String activeStoreIdReceiverKey = String.valueOf(mActiveListID) + ListsFragment.ACTIVE_STORE_ID_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mActiveStoreIdReceiver, new IntentFilter(activeStoreIdReceiverKey));
 
 		if (mActiveListID < 2) {
 			return;
@@ -149,15 +167,19 @@ public class ListsActivity extends FragmentActivity {
 	private void SetActiveListBroadcastReceivers() {
 		// Unregister old receiver
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mListTableChanged);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mActiveStoreIdReceiver);
 
 		// Register new receiver
 		String key = String.valueOf(mActiveListID) + ListPreferencesFragment.LIST_PREFERENCES_CHANGED_BROADCAST_KEY;
 		LocalBroadcastManager.getInstance(this).registerReceiver(mListTableChanged, new IntentFilter(key));
+
+		String activeStoreIdReceiverKey = String.valueOf(mActiveListID) + ListsFragment.ACTIVE_STORE_ID_BROADCAST_KEY;
+		LocalBroadcastManager.getInstance(this).registerReceiver(mActiveStoreIdReceiver, new IntentFilter(activeStoreIdReceiverKey));
 	}
 
 	private void ReStartListsActivity() {
 		mAllListsCursor = ListsTable.getAllLists(this);
-		mActiveListPosition = AListUtilities.getListsCursorPositon(mAllListsCursor, mActiveListID);
+		mActiveListPosition = AListUtilities.getCursorPositon(mAllListsCursor, mActiveListID);
 		Intent intent = new Intent(this, ListsActivity.class);
 		// prohibit the back button from displaying previous version of this ListPreferencesActivity
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -195,9 +217,7 @@ public class ListsActivity extends FragmentActivity {
 
 	private void StartManageLocationsActivity() {
 		Intent intent = new Intent(this, ManageLocationsActivity.class);
-		intent.putExtra("listTitle", mListSettings.getListTitle());
-		intent.putExtra("titleBackgroundColor", mListSettings.getTitleBackgroundColor());
-		intent.putExtra("titleTextColor", mListSettings.getTitleTextColor());
+		intent.putExtra("ActiveListID", mActiveListID);
 		startActivity(intent);
 	}
 
@@ -303,6 +323,7 @@ public class ListsActivity extends FragmentActivity {
 		}
 		// Unregister since the activity is about to be closed.
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mListTableChanged);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mActiveStoreIdReceiver);
 		super.onDestroy();
 	}
 
@@ -353,6 +374,11 @@ public class ListsActivity extends FragmentActivity {
 			StartManageLocationsActivity();
 			return true;
 
+		case R.id.action_uploadStoreLocations:
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			UploadStoreLocations();
+			return true;
+
 		case R.id.action_Preferences:
 			StartListPreferencesActivity();
 			return true;
@@ -364,6 +390,18 @@ public class ListsActivity extends FragmentActivity {
 		default:
 			return super.onMenuItemSelected(featureId, item);
 		}
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		if (menu != null) {
+			MenuItem action_uploadStoreLocations = menu.findItem(R.id.action_uploadStoreLocations);
+			if (action_uploadStoreLocations != null) {
+				boolean showingStore = mListSettings.getShowStores();
+				action_uploadStoreLocations.setVisible(showingStore);
+			}
+		}
+		return true;
 	}
 
 	private void EmailList() {
@@ -578,6 +616,44 @@ public class ListsActivity extends FragmentActivity {
 		ListsDialogFragment editListTitleDialog = ListsDialogFragment
 				.newInstance(mActiveListID, ListsDialogFragment.EDIT_LIST_TITLE);
 		editListTitleDialog.show(fm, "dialog_lists_table_update");
+	}
+
+	private void UploadStoreLocations() {
+
+		Cursor storeCursor = StoresTable.getStore(this, mActiveStoreID);
+		Cursor groupLocationsCursor = GroupsTable.getCursorAllGroupsInListIncludeLocations(this, mActiveListID, mActiveStoreID);
+		Cursor listCursor = ListsTable.getList(this, mActiveListID);
+
+		StoreDataSubmission storeData = new StoreDataSubmission(this, "Loren", "Baker", listCursor, storeCursor, groupLocationsCursor);
+		String xmlString = storeData.getXml();
+		// write xmlString to file to disk
+		ReadWriteFile.Write(FILENAME, xmlString);
+
+		if (storeCursor != null) {
+			storeCursor.close();
+		}
+
+		if (groupLocationsCursor != null) {
+			groupLocationsCursor.close();
+		}
+
+		if (listCursor != null) {
+			listCursor.close();
+		}
+
+		// read file back from disk
+		String result = ReadWriteFile.Read(FILENAME);
+
+		if (result.length() > 0 && result.equals(xmlString)) {
+			MyLog.d("About_ACTIVITY", "xmlString and result are equal");
+		} else {
+			MyLog.e("About_ACTIVITY", "File lenght is zero OR xmlString and result are NOT equal");
+		}
+
+		ReadWriteFile.sendEmail(this, FILENAME);
+
+		// ReadWriteFile.Delete(FILENAME);
+
 	}
 
 }

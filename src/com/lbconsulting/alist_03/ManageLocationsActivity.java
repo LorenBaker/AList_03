@@ -1,6 +1,7 @@
 package com.lbconsulting.alist_03;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -21,55 +22,48 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.ManageLocationsPagerAdaptor;
+import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.database.GroupsTable;
+import com.lbconsulting.alist_03.database.ListsTable;
 import com.lbconsulting.alist_03.database.StoresTable;
 import com.lbconsulting.alist_03.dialogs.LocationsDialogFragment;
 import com.lbconsulting.alist_03.fragments.ManageLocationsFragment;
+import com.lbconsulting.alist_03.utilities.AListUtilities;
 import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ManageLocationsActivity extends FragmentActivity {
 
 	private long mActiveListID = -1;
-	private long mActiveStoreID = -1;
 	private long mActiveLocationID = -1;
+	private long mActiveStoreID = -1;
 	private int mActiveStorePosition = 0;
+	private ListSettings mListSettings;
+
 	private boolean mTwoFragmentLayout;
-	// private StoresPagerAdaptor mStoresPagerAdapter;
+
 	private ManageLocationsPagerAdaptor mManageLocationsPagerAdaptor;
 	private ViewPager mPager;
 	private Cursor mAllStoresCursor;
 
-	private String mActiveListTitle;
-	private int mTitleBackgroundColor;
-	private int mTitleTextColor;
-	// private String mRestartGroupsLoaderKey;
-
 	private BroadcastReceiver mActiveLocationIdReceiver;
-
-	/*private BroadcastReceiver mListTitleChanged;
-	public static final String LIST_TITLE_CHANGE_BROADCAST_KEY = "listTitleChanged";*/
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		MyLog.i("ManageLocations_ACTIVITY", "onCreate");
 		super.onCreate(savedInstanceState);
 		Intent intent = getIntent();
-		mActiveListTitle = intent.getStringExtra("listTitle");
-		mTitleBackgroundColor = intent.getIntExtra("titleBackgroundColor", 0);
-		mTitleTextColor = intent.getIntExtra("titleTextColor", 0);
-
-		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
-		mActiveListID = storedStates.getLong("ActiveListID", -1);
-
-		// mRestartGroupsLoaderKey = String.valueOf(mActiveStoreID) + ManageLocationsFragment.RESART_GROUPS_LOADER_KEY;
+		mActiveListID = intent.getLongExtra("ActiveListID", -1);
+		mListSettings = new ListSettings(this, mActiveListID);
+		mActiveStoreID = mListSettings.getActiveStoreID();
+		mAllStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
 
 		setContentView(R.layout.activity_manage_locations_pager);
 
 		TextView tvListTitle = (TextView) findViewById(R.id.tvListTitle);
 		if (tvListTitle != null) {
-			tvListTitle.setText(mActiveListTitle);
-			tvListTitle.setBackgroundColor(mTitleBackgroundColor);
-			tvListTitle.setTextColor(mTitleTextColor);
+			tvListTitle.setText(mListSettings.getListTitle());
+			tvListTitle.setBackgroundColor(mListSettings.getTitleBackgroundColor());
+			tvListTitle.setTextColor(mListSettings.getTitleTextColor());
 		}
 
 		View frag_stores_placeholder = this.findViewById(R.id.frag_stores_placeholder);
@@ -77,18 +71,6 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 		mPager = (ViewPager) findViewById(R.id.manageLocationsPager);
 		SetManageLocationsPagerAdaptor();
-
-		// TODO save ActiveStoreID & ActiveStorePostion in the database
-		// for now ... just start at position 0
-		// *mActiveStoreID = storedStates.getLong("ActiveStoreID", -1);
-		// mActiveStorePosition = storedStates.getInt("ActiveStorePosition", 0);*/
-		if (mAllStoresCursor != null && mAllStoresCursor.getCount() > 0) {
-			mActiveStorePosition = 0;
-			SetActiveStoreID(mActiveStorePosition);
-		} else {
-			// there are no stores to show
-			// TODO launch create new store dialog
-		}
 
 		mPager.setOnPageChangeListener(new OnPageChangeListener() {
 
@@ -104,7 +86,6 @@ public class ManageLocationsActivity extends FragmentActivity {
 			public void onPageSelected(int position) {
 				SetActiveStoreID(position);
 				SetActiveListBroadcastReceivers();
-				// SendRestartGroupsLoaderBroadCast();
 				MyLog.d("ManageLocations_ACTIVITY", "onPageSelected() - position = " + position + " ; storeID = " + mActiveStoreID);
 
 				if (mTwoFragmentLayout) {
@@ -132,27 +113,10 @@ public class ManageLocationsActivity extends FragmentActivity {
 		}
 	}
 
-	/*	private void SendLocationIDRequest() {
-			String requestActiveLocationIdBroadcastKey = String.valueOf(mActiveListID) + ManageLocationsFragment.REQUEST_ACTIVE_LOCATION_ID_BROADCAST_KEY;
-			Intent requestActiveLocationIdBroadcastIntent = new Intent(requestActiveLocationIdBroadcastKey);
-			LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(requestActiveLocationIdBroadcastIntent);
-		}*/
-
-	/*	private void SetStoresPagerAdaptor() {
-			mAllStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
-			mStoresPagerAdapter = new StoresPagerAdaptor(getSupportFragmentManager(), this, mActiveListID);
-			mPager.setAdapter(mStoresPagerAdapter);
-		}*/
 	private void SetManageLocationsPagerAdaptor() {
-		mAllStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
 		mManageLocationsPagerAdaptor = new ManageLocationsPagerAdaptor(getSupportFragmentManager(), this, mActiveListID);
 		mPager.setAdapter(mManageLocationsPagerAdaptor);
 	}
-
-	/*	private void SendRestartGroupsLoaderBroadCast() {
-			Intent restartGroupsLoaderIntent = new Intent(mRestartGroupsLoaderKey);
-			LocalBroadcastManager.getInstance(ManageLocationsActivity.this).sendBroadcast(restartGroupsLoaderIntent);
-		}*/
 
 	private void LoadStoresFragment() {
 		// TODO code LoadStoresFragment
@@ -161,16 +125,19 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 	protected void SetActiveStoreID(int position) {
 		if (mAllStoresCursor != null) {
-			long storeID = -1;
 			try {
 				mAllStoresCursor.moveToPosition(position);
-				storeID = mAllStoresCursor.getLong(mAllStoresCursor.getColumnIndexOrThrow(StoresTable.COL_STORE_ID));
+				mActiveStoreID = mAllStoresCursor.getLong(mAllStoresCursor.getColumnIndexOrThrow(StoresTable.COL_STORE_ID));
+				mActiveStorePosition = position;
+
+				// update the lists table with the selected store ID
+				ContentValues newFieldValues = new ContentValues();
+				newFieldValues.put(ListsTable.COL_ACTIVE_STORE_ID, mActiveStoreID);
+				mListSettings.updateListsTableFieldValues(newFieldValues);
+
 			} catch (Exception e) {
 				MyLog.d("ManageLocations_ACTIVITY", "Exception in SetActiveStoreID: " + e);
 			}
-			mActiveStoreID = storeID;
-			mActiveStorePosition = position;
-			// mRestartGroupsLoaderKey = String.valueOf(mActiveStoreID) + ManageLocationsFragment.RESART_GROUPS_LOADER_KEY;
 		}
 	}
 
@@ -200,24 +167,30 @@ public class ManageLocationsActivity extends FragmentActivity {
 		MyLog.i("ManageLocations_ACTIVITY", "onResume");
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
 		mActiveListID = storedStates.getLong("ActiveListID", -1);
+		mListSettings = new ListSettings(this, mActiveListID);
+		mActiveStoreID = mListSettings.getActiveStoreID();
+		mAllStoresCursor = StoresTable.getAllStoresInListCursor(this, mActiveListID, StoresTable.SORT_ORDER_STORE_NAME);
 		if (mAllStoresCursor != null && mAllStoresCursor.getCount() > 0) {
-			mActiveStorePosition = 0;
-			SetActiveStoreID(mActiveStorePosition);
+			if (mActiveStoreID > 1) {
+				mActiveStorePosition = AListUtilities.getCursorPositon(mAllStoresCursor, mActiveStoreID);
+			} else {
+				// there are stores in the list, but we don't have an ActiveStoreID
+				// so ... go to the first store
+				mActiveStorePosition = 0;
+				SetActiveStoreID(mActiveStorePosition);
+			}
+			mPager.setCurrentItem(mActiveStorePosition);
 		} else {
-			// there are no stores to show
-			// TODO launch create new store dialog
+			// there are no stores in this list
+			// so... start the stores activity
+			StartStoresActivity();
 		}
-
 		super.onResume();
 	}
 
 	@Override
 	protected void onPause() {
 		MyLog.i("ManageLocations_ACTIVITY", "onPause");
-		/*		SharedPreferences preferences = getSharedPreferences("AList", MODE_PRIVATE);
-				SharedPreferences.Editor applicationStates = preferences.edit();
-				
-				applicationStates.commit();*/
 		super.onPause();
 	}
 
@@ -241,7 +214,6 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 		case R.id.action_clearAllCheckedGroups:
 			GroupsTable.UnCheckAllCheckedGroups(this, mActiveListID);
-			// SendRestartGroupsLoaderBroadCast();
 			return true;
 
 		case R.id.action_editLocationName:
@@ -297,7 +269,6 @@ public class ManageLocationsActivity extends FragmentActivity {
 			ft.commit();
 		}
 
-		// SendLocationIDRequest();
 		if (mActiveLocationID > 1) {
 			// can't delete the default location
 			LocationsDialogFragment deleteLocationDialog = LocationsDialogFragment.newInstance(mActiveListID, mActiveLocationID,
@@ -316,7 +287,6 @@ public class ManageLocationsActivity extends FragmentActivity {
 			ft.commit();
 		}
 
-		// SendLocationIDRequest();
 		if (mActiveLocationID > 1) {
 			// can't edit the default location
 			LocationsDialogFragment editLocationNameDialog = LocationsDialogFragment.newInstance(mActiveListID, mActiveLocationID,
@@ -327,9 +297,7 @@ public class ManageLocationsActivity extends FragmentActivity {
 
 	private void StartStoresActivity() {
 		Intent intent = new Intent(this, StoresActivity.class);
-		intent.putExtra("listTitle", mActiveListTitle);
-		intent.putExtra("titleBackgroundColor", mTitleBackgroundColor);
-		intent.putExtra("titleTextColor", mTitleTextColor);
+		intent.putExtra("ActiveListID", mActiveListID);
 		startActivity(intent);
 	}
 
