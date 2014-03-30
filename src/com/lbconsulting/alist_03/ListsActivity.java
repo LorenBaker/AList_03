@@ -63,6 +63,7 @@ public class ListsActivity extends FragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		MyLog.i("Lists_ACTIVITY", "onCreate");
 		setContentView(R.layout.activity_lists_pager);
 
 		SharedPreferences storedStates = getSharedPreferences("AList", MODE_PRIVATE);
@@ -106,14 +107,12 @@ public class ListsActivity extends FragmentActivity {
 		LocalBroadcastManager.getInstance(this).registerReceiver(mActiveStoreIdReceiver, new IntentFilter(activeStoreIdReceiverKey));
 
 		if (mActiveListID < 2) {
-			return;
+			CreatNewList();
 		}
 
 		View frag_masterList_placeholder = this.findViewById(R.id.frag_masterList_placeholder);
 		mTwoFragmentLayout = frag_masterList_placeholder != null
 				&& frag_masterList_placeholder.getVisibility() == View.VISIBLE;
-
-		MyLog.i("Lists_ACTIVITY", "onCreate - ViewPager");
 
 		mAllListsCursor = ListsTable.getAllLists(this);
 		mListSettings = new ListSettings(this, mActiveListID);
@@ -588,6 +587,7 @@ public class ListsActivity extends FragmentActivity {
 	}
 
 	private void CreatNewList() {
+		MyLog.i("Lists_ACTIVITY", "CreatNewList");
 		FragmentManager fm = this.getSupportFragmentManager();
 		// Remove any currently showing dialog
 		Fragment prev = fm.findFragmentByTag("dialog_lists_table_update");
@@ -597,8 +597,7 @@ public class ListsActivity extends FragmentActivity {
 			ft.commit();
 		}
 
-		ListsDialogFragment editListTitleDialog = ListsDialogFragment
-				.newInstance(mActiveListID, ListsDialogFragment.NEW_LIST);
+		ListsDialogFragment editListTitleDialog = ListsDialogFragment.newInstance(mActiveListID, ListsDialogFragment.NEW_LIST);
 		editListTitleDialog.show(fm, "dialog_lists_table_update");
 	}
 
@@ -644,16 +643,17 @@ public class ListsActivity extends FragmentActivity {
 		// read file back from disk
 		String result = ReadWriteFile.Read(FILENAME);
 
-		if (result.length() > 0 && result.equals(xmlString)) {
-			MyLog.d("About_ACTIVITY", "xmlString and result are equal");
+		if (result.length() > 0) {
+			if (result.equals(xmlString)) {
+				MyLog.i("Lists_ACTIVITY", "UploadStoreLocations: xmlString and result are equal");
+				ReadWriteFile.sendEmail(this, FILENAME);
+			} else {
+				MyLog.e("Lists_ACTIVITY", "UploadStoreLocations: xmlString and result are NOT equal");
+				ReadWriteFile.sendEmail(this, FILENAME);
+			}
 		} else {
-			MyLog.e("About_ACTIVITY", "File lenght is zero OR xmlString and result are NOT equal");
+			MyLog.e("Lists_ACTIVITY", "UploadStoreLocations:File lenght is ZERO");
 		}
-
-		ReadWriteFile.sendEmail(this, FILENAME);
-
-		// ReadWriteFile.Delete(FILENAME);
-
 	}
 
 }

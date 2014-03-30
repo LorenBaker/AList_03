@@ -60,7 +60,7 @@ public class ListsDialogFragment extends DialogFragment {
 	ProgressDialog progressDialog;
 
 	private long mActiveListID;
-	private ListSettings listSettings;
+	private ListSettings mListSettings;
 	private int mDialogType;
 	private int mSortOrderResult;
 	private String mListTitle;
@@ -74,12 +74,13 @@ public class ListsDialogFragment extends DialogFragment {
 	}
 
 	/**
-	 * Create a new instance of SortOrderDialogFragment
+	 * Create a new instance of ListsDialogFragment
 	 * 
 	 * @param itemID
-	 * @return SortOrderDialogFragment
+	 * @return ListsDialogFragment
 	 */
 	public static ListsDialogFragment newInstance(long listID, int dialogType) {
+		MyLog.i("ListsDialogFragment", "newInstance. listID:" + listID + ". dialogType:" + dialogType);
 		ListsDialogFragment f = new ListsDialogFragment();
 		// Supply itemID input as an argument.
 		Bundle args = new Bundle();
@@ -91,12 +92,13 @@ public class ListsDialogFragment extends DialogFragment {
 
 	@Override
 	public void onAttach(Activity activity) {
-		MyLog.i("SortOrderDialogFragment", "onAttach");
+		MyLog.i("ListsDialogFragment", "onAttach");
 		super.onAttach(activity);
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
+		MyLog.i("ListsDialogFragment", "onSaveInstanceState");
 		// Store our listID
 		outState.putLong("listID", this.mActiveListID);
 		outState.putLong("dialogType", this.mDialogType);
@@ -105,6 +107,7 @@ public class ListsDialogFragment extends DialogFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		MyLog.i("ListsDialogFragment", "onCreateView");
 		if (savedInstanceState != null && savedInstanceState.containsKey("listID")) {
 			mActiveListID = savedInstanceState.getLong("listID", 0);
 			mDialogType = savedInstanceState.getInt("dialogType", 0);
@@ -117,32 +120,32 @@ public class ListsDialogFragment extends DialogFragment {
 		}
 
 		if (mActiveListID > 0) {
-			listSettings = new ListSettings(getActivity(), mActiveListID);
+			mListSettings = new ListSettings(getActivity(), mActiveListID);
 		}
 
 		// inflate view
 		View view = null;
 		switch (mDialogType) {
 		case LIST_SORT_ORDER:
-			MyLog.i("SortOrderDialogFragment", "onCreateView: List Sort Order");
+			MyLog.i("ListsDialogFragment", "onCreateView: List Sort Order");
 			view = inflater.inflate(R.layout.dialog_list_sort_order, container);
 			getDialog().setTitle(R.string.dialog_title_list_sort_order);
 			break;
 
 		case MASTER_LIST_SORT_ORDER:
-			MyLog.i("SortOrderDialogFragment", "onCreateView: Master List Sort Order");
+			MyLog.i("ListsDialogFragment", "onCreateView: Master List Sort Order");
 			view = inflater.inflate(R.layout.dialog_master_list_sort_order, container);
 			getDialog().setTitle(R.string.dialog_title_master_list_sort_order);
 			break;
 
 		case EDIT_LIST_TITLE:
-			MyLog.i("SortOrderDialogFragment", "onCreateView: Edit List Title");
+			MyLog.i("ListsDialogFragment", "onCreateView: Edit List Title");
 			view = inflater.inflate(R.layout.dialog_edit_list_title, container);
 			getDialog().setTitle(R.string.dialog_edit_list_title);
 			break;
 
 		case NEW_LIST:
-			MyLog.i("SortOrderDialogFragment", "onCreateView: New List");
+			MyLog.i("ListsDialogFragment", "onCreateView: New List");
 			view = inflater.inflate(R.layout.dialog_new_list, container);
 			getDialog().setTitle(R.string.dialog_title_create_new_list);
 			break;
@@ -164,7 +167,7 @@ public class ListsDialogFragment extends DialogFragment {
 					switch (mDialogType) {
 					case LIST_SORT_ORDER:
 						newFieldValues.put(ListsTable.COL_LIST_SORT_ORDER, mSortOrderResult);
-						listSettings.updateListsTableFieldValues(newFieldValues);
+						mListSettings.updateListsTableFieldValues(newFieldValues);
 						intent.putExtra("newListSortOrder", mSortOrderResult);
 						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
 						getDialog().dismiss();
@@ -172,7 +175,7 @@ public class ListsDialogFragment extends DialogFragment {
 
 					case MASTER_LIST_SORT_ORDER:
 						newFieldValues.put(ListsTable.COL_MASTER_LIST_SORT_ORDER, mSortOrderResult);
-						listSettings.updateListsTableFieldValues(newFieldValues);
+						mListSettings.updateListsTableFieldValues(newFieldValues);
 						intent.putExtra("newMasterListSortOrder", mSortOrderResult);
 						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
 						getDialog().dismiss();
@@ -182,7 +185,7 @@ public class ListsDialogFragment extends DialogFragment {
 						String newListTitle = txtEditListTitle.getText().toString();
 						newListTitle = newListTitle.trim();
 						newFieldValues.put(ListsTable.COL_LIST_TITLE, newListTitle);
-						listSettings.updateListsTableFieldValues(newFieldValues);
+						mListSettings.updateListsTableFieldValues(newFieldValues);
 						intent.putExtra("editedListTitle", newListTitle);
 						LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
 						getDialog().dismiss();
@@ -239,7 +242,7 @@ public class ListsDialogFragment extends DialogFragment {
 				switch (mDialogType) {
 				case EDIT_LIST_TITLE:
 					// We're displaying the Edit List Title dialog
-					mListTitle = listSettings.getListTitle();
+					mListTitle = mListSettings.getListTitle();
 					txtEditListTitle.setText(mListTitle);
 					break;
 
@@ -325,6 +328,11 @@ public class ListsDialogFragment extends DialogFragment {
 
 		mActiveListID = todosListID;
 		AListContentProvider.SuppressChangeNotification(false);
+
+		/*		ContentValues newFieldValues = new ContentValues();
+				newFieldValues.put(ListsTable.COL_LIST_SORT_ORDER, AListUtilities.LIST_SORT_MANUAL);
+				ListsTable.UpdateListsTableFieldValues(getActivity(), mActiveListID, newFieldValues);*/
+
 	}
 
 	private void fillSpinListTemplate() {
@@ -339,7 +347,7 @@ public class ListsDialogFragment extends DialogFragment {
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		MyLog.i("SortOrderDialogFragment", "onActivityCreated");
+		MyLog.i("ListsDialogFragment", "onActivityCreated");
 		super.onActivityCreated(savedInstanceState);
 
 		Bundle bundle = this.getArguments();
@@ -349,7 +357,7 @@ public class ListsDialogFragment extends DialogFragment {
 	}
 
 	/*	public void onRadioButtonClicked(View view) {
-			MyLog.i("SortOrderDialogFragment", "onRadioButtonClicked; view id = " + view.getId());
+			MyLog.i("ListsDialogFragment", "onRadioButtonClicked; view id = " + view.getId());
 			switch (view.getId()) {
 			case R.id.rbAlphabetical_list:
 				mSortOrderResult = ListPreferencesFragment.ALPHABETICAL;
@@ -379,49 +387,49 @@ public class ListsDialogFragment extends DialogFragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		MyLog.i("SortOrderDialogFragment", "onCreate");
+		MyLog.i("ListsDialogFragment", "onCreate");
 		super.onCreate(savedInstanceState);
 	}
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		MyLog.i("SortOrderDialogFragment", "onCreateDialog");
+		MyLog.i("ListsDialogFragment", "onCreateDialog");
 		return super.onCreateDialog(savedInstanceState);
 	}
 
 	@Override
 	public void onDestroyView() {
-		MyLog.i("SortOrderDialogFragment", "onDestroyView");
+		MyLog.i("ListsDialogFragment", "onDestroyView");
 		super.onDestroyView();
 	}
 
 	@Override
 	public void onDetach() {
-		MyLog.i("SortOrderDialogFragment", "onDetach");
+		MyLog.i("ListsDialogFragment", "onDetach");
 		super.onDetach();
 	}
 
 	@Override
 	public void onDismiss(DialogInterface dialog) {
-		MyLog.i("SortOrderDialogFragment", "onDismiss");
+		MyLog.i("ListsDialogFragment", "onDismiss");
 		super.onDismiss(dialog);
 	}
 
 	@Override
 	public void onStart() {
-		MyLog.i("SortOrderDialogFragment", "onStart");
+		MyLog.i("ListsDialogFragment", "onStart");
 		super.onStart();
 	}
 
 	@Override
 	public void onStop() {
-		MyLog.i("SortOrderDialogFragment", "onStop");
+		MyLog.i("ListsDialogFragment", "onStop");
 		super.onStop();
 	}
 
 	@Override
 	public void onDestroy() {
-		MyLog.i("SortOrderDialogFragment", "onDestroy");
+		MyLog.i("ListsDialogFragment", "onDestroy");
 		super.onDestroy();
 	}
 

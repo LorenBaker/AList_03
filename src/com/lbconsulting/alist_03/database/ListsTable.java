@@ -209,6 +209,8 @@ public class ListsTable {
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public static Cursor getList(Context context, long listID) {
+		Cursor cursor = null;
+
 		Uri uri = Uri.withAppendedPath(CONTENT_URI, String.valueOf(listID));
 		String[] projection = PROJECTION_ALL;
 		String selection = null;
@@ -216,9 +218,11 @@ public class ListsTable {
 		String sortOrder = null;
 
 		ContentResolver cr = context.getContentResolver();
-		Cursor cursor = null;
+
 		try {
-			cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			if (listID > 0) {
+				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			}
 		} catch (Exception e) {
 			MyLog.e("Exception error in ListTitlesTable: getList. ", e.toString());
 		}
@@ -589,30 +593,32 @@ public class ListsTable {
 	}
 
 	public static void setListPreferencesDefaults(Context context, long listID) {
-		ContentResolver cr = context.getContentResolver();
+		if (listID > 0) {
+			ContentResolver cr = context.getContentResolver();
 
-		Cursor defaultCursor = getList(context, 1);
-		if (defaultCursor != null) {
-			defaultCursor.moveToFirst();
-			ContentValues newListValues = new ContentValues();
+			Cursor defaultCursor = getList(context, 1);
+			if (defaultCursor != null) {
+				defaultCursor.moveToFirst();
+				ContentValues newListValues = new ContentValues();
 
-			newListValues.put(COL_DELETE_NOTE_UPON_DESELECTING_ITEM,
-					defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(COL_DELETE_NOTE_UPON_DESELECTING_ITEM)));
+				newListValues.put(COL_DELETE_NOTE_UPON_DESELECTING_ITEM,
+						defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(COL_DELETE_NOTE_UPON_DESELECTING_ITEM)));
 
-			newListValues.put(COL_LIST_SORT_ORDER,
-					defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(COL_LIST_SORT_ORDER)));
+				newListValues.put(COL_LIST_SORT_ORDER,
+						defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(COL_LIST_SORT_ORDER)));
 
-			newListValues.put(COL_MASTER_LIST_SORT_ORDER,
-					defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(COL_MASTER_LIST_SORT_ORDER)));
+				newListValues.put(COL_MASTER_LIST_SORT_ORDER,
+						defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(COL_MASTER_LIST_SORT_ORDER)));
 
-			Uri defaultUri = Uri.withAppendedPath(CONTENT_URI, String.valueOf(listID));
-			String selection = null;
-			String[] selectionArgs = null;
-			int numberOfUpdatedRecords = cr.update(defaultUri, newListValues, selection, selectionArgs);
-			if (numberOfUpdatedRecords != 1) {
-				MyLog.e("ListTitlesTable: setListPreferencesDefaults", "The number of records does not equal 1!");
+				Uri defaultUri = Uri.withAppendedPath(CONTENT_URI, String.valueOf(listID));
+				String selection = null;
+				String[] selectionArgs = null;
+				int numberOfUpdatedRecords = cr.update(defaultUri, newListValues, selection, selectionArgs);
+				if (numberOfUpdatedRecords != 1) {
+					MyLog.e("ListTitlesTable: setListPreferencesDefaults", "The number of records does not equal 1!");
+				}
+				defaultCursor.close();
 			}
-			defaultCursor.close();
 		}
 	}
 

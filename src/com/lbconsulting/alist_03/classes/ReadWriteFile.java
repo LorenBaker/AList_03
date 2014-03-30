@@ -1,6 +1,7 @@
 package com.lbconsulting.alist_03.classes;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -15,9 +16,9 @@ import com.lbconsulting.alist_03.utilities.MyLog;
 
 public class ReadWriteFile {
 
-	public ReadWriteFile() {
+	/*	public ReadWriteFile() {
 
-	}
+		}*/
 
 	public static boolean Write(String filename, String data) {
 		boolean writeResult = false;
@@ -26,10 +27,10 @@ public class ReadWriteFile {
 		if (isExternalStorageWritable()) {
 			try {
 				MyLog.d("ReadWriteFile", "Writing file:" + file.toString());
-				FileWriter fileWriter = new FileWriter(file);
-				fileWriter.write(data);
-				fileWriter.flush();
-				fileWriter.close();
+				BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+				bw.write(data);
+				bw.flush();
+				bw.close();
 				writeResult = true;
 
 			} catch (IOException e) {
@@ -52,12 +53,11 @@ public class ReadWriteFile {
 					String line;
 
 					while ((line = br.readLine()) != null) {
-						text.append(line).append(System.getProperty("line.separator"));
+						// text.append(line).append(System.getProperty("line.separator"));
+						text.append(line).append("\r\n");
+
 					}
 					result = text.toString();
-					if (result.endsWith(System.getProperty("line.separator"))) {
-						result = result.substring(0, result.length() - 1);
-					}
 					br.close();
 
 				} catch (IOException e) {
@@ -87,12 +87,26 @@ public class ReadWriteFile {
 	}
 
 	private static File getFile(String filename) {
-		/*File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), filename);*/
-		File file = new File(Environment.getExternalStorageDirectory(), filename);
-		// dirs = Context.getExternalFilesDirs(filename);
-		// file.mkdirs();
-		boolean isDirectory = file.isDirectory();
-		boolean isFile = file.isFile();
+		String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/alist/";
+		File file = new File(directory);
+		file.mkdirs();
+
+		/*		boolean madeDirectory = file.mkdirs();*/
+		/*		if (madeDirectory) {
+					MyLog.i("ReadWriteFile", "Created directory:" + file.toString());
+				} else if (file.isDirectory()) {
+					MyLog.i("ReadWriteFile", "Directory exists:" + file.toString());
+				} else {
+					MyLog.i("ReadWriteFile", "Only God knows what was made:" + file.toString());
+				}*/
+
+		file = new File(directory, filename);
+		/*		boolean isFile = file.isFile();
+				if (isFile) {
+					MyLog.i("ReadWriteFile", "isFile:" + file.toString());
+				} else {
+					MyLog.i("ReadWriteFile", "IS NOT a File:" + file.toString());
+				}*/
 		return file;
 	}
 
@@ -116,8 +130,6 @@ public class ReadWriteFile {
 	}
 
 	public static void sendEmail(Context context, String filename) {
-
-		// File file = new File(Environment.getExternalStorageState()+"/folderName/" + fileName+ ".xml");
 		File file = getFile(filename);
 		long fileLength = file.length();
 
@@ -131,7 +143,6 @@ public class ReadWriteFile {
 		emailIntent.putExtra(Intent.EXTRA_STREAM, path);
 		MyLog.d("ReadWriteFile", "file:" + filename + " being emailed. Lenght:" + fileLength);
 		context.startActivity(Intent.createChooser(emailIntent, "Send your email using:"));
-		// startActivityForResult(Intent.createChooser(emailIntent, "Send mail..."), 1222);
 	}
 
 }
