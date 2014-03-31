@@ -1,5 +1,15 @@
 package com.lbconsulting.alist_03;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import org.xmlpull.v1.XmlPullParserException;
+
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -25,7 +35,11 @@ import com.lbconsulting.alist_03.adapters.ListsPagerAdapter;
 import com.lbconsulting.alist_03.classes.DynamicListView;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.classes.ReadWriteFile;
+import com.lbconsulting.alist_03.classes.StoreDataParser;
 import com.lbconsulting.alist_03.classes.StoreDataSubmission;
+import com.lbconsulting.alist_03.classes.StoreGoupLocations;
+import com.lbconsulting.alist_03.classes.StoreGoupLocations.GroupLocation;
+import com.lbconsulting.alist_03.database.BridgeTable;
 import com.lbconsulting.alist_03.database.GroupsTable;
 import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
@@ -378,6 +392,11 @@ public class ListsActivity extends FragmentActivity {
 			UploadStoreLocations();
 			return true;
 
+		case R.id.action_refreshStoreLocations:
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			RefreshStoreLocations();
+			return true;
+
 		case R.id.action_Preferences:
 			StartListPreferencesActivity();
 			return true;
@@ -394,10 +413,10 @@ public class ListsActivity extends FragmentActivity {
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		if (menu != null) {
-			MenuItem action_uploadStoreLocations = menu.findItem(R.id.action_uploadStoreLocations);
-			if (action_uploadStoreLocations != null) {
-				boolean showingStore = mListSettings.getShowStores();
-				action_uploadStoreLocations.setVisible(showingStore);
+			boolean showingStore = mListSettings.getShowStores();
+			MenuItem action_cloudServices = menu.findItem(R.id.action_cloudServices);
+			if (action_cloudServices != null) {
+				action_cloudServices.setVisible(showingStore);
 			}
 		}
 		return true;
@@ -653,6 +672,62 @@ public class ListsActivity extends FragmentActivity {
 			}
 		} else {
 			MyLog.e("Lists_ACTIVITY", "UploadStoreLocations:File lenght is ZERO");
+		}
+	}
+
+	private void RefreshStoreLocations() {
+		StoreGoupLocations groupLocations = null;
+		File file = ReadWriteFile.getFile(FILENAME);
+		if (ReadWriteFile.isExternalStorageReadable()) {
+
+			InputStream in = null;
+			try {
+				in = new BufferedInputStream(new FileInputStream(file));
+				groupLocations = StoreDataParser.parse(in);
+				if (groupLocations != null) {
+					UpdateStoreGroupLocations(groupLocations);
+				}
+
+			} catch (XmlPullParserException e) {
+				MyLog.e("Lists_ACTIVITY", "XmlPullParserException in UpdateStoreLocations.");
+				e.printStackTrace();
+
+			} catch (FileNotFoundException e) {
+				MyLog.e("Lists_ACTIVITY", "FileNotFoundException in UpdateStoreLocations.");
+				e.printStackTrace();
+
+			} catch (IOException e) {
+				MyLog.e("Lists_ACTIVITY", "IOException in UpdateStoreLocations.");
+				e.printStackTrace();
+
+			} finally { // Will execute despite any exception
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						MyLog.e("Lists_ACTIVITY", "IOException in finally-UpdateStoreLocations.");
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+
+	private void UpdateStoreGroupLocations(StoreGoupLocations storeGroupLocations) {
+		long listID = storeGroupLocations.getLocalListID();
+		long storeID = storeGroupLocations.getLocalStoreID();
+		ArrayList<GroupLocation> groupLocations = storeGroupLocations.getGroupLocations();
+		for (GroupLocation groupLocation : groupLocations) {
+			long groupID = GroupsTable.CreateNewGroup(this, listID, groupLocation.getGroupName());
+			long loctionID = LocationsTable.CreateNewLocation(this, groupLocation.getStoreLocation());
+			if (listID > 1 && storeID > 1 && groupID > 1 && loctionID > 1) {
+				long bridgeRowID = BridgeTable.CreateNewBridgeRow(this, listID, storeID, groupID, loctionID);
+				if (bridgeRowID < 1) {
+					MyLog.e("Lists_ACTIVITY", "ERROR:UpdateStoreGroupLocations. Failed to create new, or update existing, Bridge row!");
+				}
+			} else {
+				MyLog.e("Lists_ACTIVITY", "ERROR:UpdateStoreGroupLocations. Invlaid row. One of the row parameters is less than 1!");
+			}
 		}
 	}
 

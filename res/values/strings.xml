@@ -95,4 +95,6 @@
     <string name="delete_note_upon_clearing_item">Delete note upon clearing item</string>
     <string name="dialog_lists_loading_groceries_list_text">Loading Groceries List</string>
     <string name="action_uploadStoreLocations_text">Upload Store Locations</string>
+    <string name="action_refreshStoreLocations_text">Refresh Store Locations</string>
+    <string name="action_cloudServices_text">Cloud Services</string>
 </resources>

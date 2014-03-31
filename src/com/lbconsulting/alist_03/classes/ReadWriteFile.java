@@ -86,7 +86,7 @@ public class ReadWriteFile {
 		return result;
 	}
 
-	private static File getFile(String filename) {
+	public static File getFile(String filename) {
 		String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/alist/";
 		File file = new File(directory);
 		file.mkdirs();

@@ -82,21 +82,16 @@ public class BridgeTable {
 	 * @return Returns the new item's ID.
 	 */
 	public static long CreateNewBridgeRow(Context context, long listID, long storeID, long groupID, long locationID) {
-		long newBridgeRowID = -1;
-		ContentResolver cr = context.getContentResolver();
-		Uri uri = CONTENT_URI;
-		ContentValues values = new ContentValues();
-		values.put(COL_LIST_ID, listID);
-		values.put(COL_STORE_ID, storeID);
-		values.put(COL_GROUP_ID, groupID);
-		values.put(COL_LOCATION_ID, locationID);
-		try {
-			Uri newBridgeRowUri = cr.insert(uri, values);
-			if (newBridgeRowUri != null) {
-				newBridgeRowID = Long.parseLong(newBridgeRowUri.getLastPathSegment());
-			}
-		} catch (Exception e) {
-			MyLog.e("Exception error in CreateNewBridgeRow. ", e.toString());
+
+		// get the BridgeRowID ...
+		// If the Bridge row already exists, returns that existing Bridge row ID
+		// If the Bridge row does not exist, it creates a new Bridge row and returns its ID
+		long newBridgeRowID = getBridgeTableRowID(context, listID, storeID, groupID);
+		if (newBridgeRowID > 0) {
+			// update the new row with its locationID
+			ContentValues newFieldValues = new ContentValues();
+			newFieldValues.put(COL_LOCATION_ID, locationID);
+			UpdateItemFieldValues(context, newBridgeRowID, newFieldValues);
 		}
 		return newBridgeRowID;
 	}

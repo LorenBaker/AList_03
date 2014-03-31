@@ -56,8 +56,8 @@ public class StoreDataSubmission {
 	public final static String TAG_PHONE_NUMBER = "PhoneNumber";
 	public final static String TAG_STATE = "State";
 	public final static String TAG_STORE_DESCRIPTION = "StoreDescription";
-	public final static String TAG_STORE_ID = "StoreID";
-	public final static String TAG_STORE_ID_SUBMISSION = "StoreSubmission";
+	public final static String TAG_STORE = "Store";
+	public final static String TAG_STORE_SUBMISSION = "StoreSubmission";
 	public final static String TAG_STORE_LOCATION = "StoreLocation";
 	public final static String TAG_STORE_NAME = "StoreName";
 	public final static String TAG_STREET1 = "Street1";
@@ -68,25 +68,18 @@ public class StoreDataSubmission {
 	public final static String TAG_ZIP = "Zip";
 
 	public String getXml() {
-		/*		AListXmlSerializer serializer = Xml.newSerializer();
-				StringWriter writer = new StringWriter();*/
-
 		AListXmlSerializer serializer = new AListXmlSerializer();
 
 		try {
-			// serializer.setOutput(writer);
-
-			// serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
-
 			serializer.startDocument("UTF-8", true);
-			serializer.startTag(TAG_STORE_ID_SUBMISSION);
+			serializer.startTag(TAG_STORE_SUBMISSION);
 
 			serializeSubmissionDate(serializer);
 			serializeAuthorInformatoin(serializer);
 			serializeStoreDescription(serializer);
 			serializeGroupLocations(serializer);
 
-			serializer.endTag(TAG_STORE_ID_SUBMISSION);
+			serializer.endTag(TAG_STORE_SUBMISSION);
 			serializer.endDocument();
 
 			return serializer.getXml();
@@ -98,11 +91,6 @@ public class StoreDataSubmission {
 
 	// SUBMISSION DATE
 	private void serializeSubmissionDate(AListXmlSerializer serializer) {
-		// Store date and time as an INTEGER as Unix Time, the number of milli seconds since 1970-01-01 00:00:00 UTC.
-		/*		serializer.startTag(TAG_SUBMISSION_DATE);
-				serializer.text(String.valueOf(Calendar.getInstance().getTimeInMillis()));
-				serializer.endTag(TAG_SUBMISSION_DATE);*/
-
 		serializer.text(TAG_SUBMISSION_DATE, String.valueOf(Calendar.getInstance().getTimeInMillis()));
 	}
 
@@ -123,9 +111,6 @@ public class StoreDataSubmission {
 	private void serializeAuthorFirstName(AListXmlSerializer serializer) {
 		boolean haveAuthorFirstNameValue = hasValueToSerialize(mAuthorFirstName);
 		if (haveAuthorFirstNameValue) {
-			/*			serializer.startTag(TAG_FIRST_NAME);
-						serializer.text(mAuthorFirstName);
-						serializer.endTag(TAG_FIRST_NAME);*/
 			serializer.text(TAG_FIRST_NAME, mAuthorFirstName);
 		}
 	}
@@ -134,10 +119,6 @@ public class StoreDataSubmission {
 
 		boolean haveAuthorLastNameValue = hasValueToSerialize(mAuthorLastName);
 		if (haveAuthorLastNameValue) {
-			/*			serializer.startTag(TAG_LAST_NAME);
-						serializer.text(mAuthorLastName);
-						serializer.endTag(TAG_LAST_NAME);*/
-
 			serializer.text(TAG_LAST_NAME, mAuthorLastName);
 		}
 	}
@@ -146,10 +127,6 @@ public class StoreDataSubmission {
 		String manufacturer = Build.MANUFACTURER;
 		boolean haveManufacturerValue = hasValueToSerialize(manufacturer);
 		if (haveManufacturerValue) {
-			/*			serializer.startTag(TAG_DEVICE_MANUFACTURER);
-						serializer.text(manufacturer);
-						serializer.endTag(TAG_DEVICE_MANUFACTURER);*/
-
 			serializer.text(TAG_DEVICE_MANUFACTURER, manufacturer);
 		}
 	}
@@ -158,20 +135,12 @@ public class StoreDataSubmission {
 		String model = Build.MODEL;
 		boolean haveModelValue = hasValueToSerialize(model);
 		if (haveModelValue) {
-			/*			serializer.startTag(TAG_DEVICE_MODEL);
-						serializer.text(model);
-						serializer.endTag(TAG_DEVICE_MODEL);*/
-
 			serializer.text(TAG_DEVICE_MODEL, model);
 		}
 	}
 
 	private void serializeDeviceApiVersion(AListXmlSerializer serializer) {
 		int currentApiVersion = android.os.Build.VERSION.SDK_INT;
-		/*		serializer.startTag(TAG_DEVICE_API_VERSION);
-				serializer.text(String.valueOf(currentApiVersion));
-				serializer.endTag(TAG_DEVICE_API_VERSION);*/
-
 		serializer.text(TAG_DEVICE_API_VERSION, String.valueOf(currentApiVersion));
 	}
 
@@ -179,10 +148,6 @@ public class StoreDataSubmission {
 		String deviceId = Secure.getString(mContext.getContentResolver(), Secure.ANDROID_ID);
 		boolean haveDeviceIdValue = hasValueToSerialize(deviceId);
 		if (haveDeviceIdValue) {
-			/*			serializer.startTag(TAG_DEVICE_ID);
-						serializer.text(deviceId);
-						serializer.endTag(TAG_DEVICE_ID);*/
-
 			serializer.text(TAG_DEVICE_ID, deviceId);
 		}
 	}
@@ -209,24 +174,13 @@ public class StoreDataSubmission {
 			long localDeviceStoreID = mStore.getLong(mStore.getColumnIndexOrThrow(StoresTable.COL_STORE_ID));
 			String uniqueID = "!!! StoreUniqueID !!!";
 
-			serializer.startTag(TAG_STORE_ID);
+			serializer.startTag(TAG_STORE);
 
-			/*			serializer.startTag(TAG_UNIQUE_ID);
-						serializer.text(uniqueID);
-						serializer.endTag(TAG_UNIQUE_ID);*/
 			serializer.text(TAG_UNIQUE_ID, uniqueID);
-
-			/*			serializer.startTag(TAG_STORE_NAME);
-						serializer.text(storeName);
-						serializer.endTag(TAG_STORE_NAME);*/
 			serializer.text(TAG_STORE_NAME, storeName);
-
-			/*			serializer.startTag(TAG_LOCAL_DEVICE_STORE_ID);
-						serializer.text(String.valueOf(localDeviceStoreID));
-						serializer.endTag(TAG_LOCAL_DEVICE_STORE_ID);*/
 			serializer.text(TAG_LOCAL_DEVICE_STORE_ID, String.valueOf(localDeviceStoreID));
 
-			serializer.endTag(TAG_STORE_ID);
+			serializer.endTag(TAG_STORE);
 		}
 	}
 
@@ -240,19 +194,8 @@ public class StoreDataSubmission {
 
 			serializer.startTag(TAG_LIST_DETAILS);
 
-			/*			serializer.startTag(TAG_UNIQUE_ID);
-						serializer.text(uniqueID);
-						serializer.endTag(TAG_UNIQUE_ID);*/
 			serializer.text(TAG_UNIQUE_ID, uniqueID);
-
-			/*			serializer.startTag(TAG_LIST_TITLE);
-						serializer.text(listTitle);
-						serializer.endTag(TAG_LIST_TITLE);*/
 			serializer.text(TAG_LIST_TITLE, listTitle);
-
-			/*			serializer.startTag(TAG_LOCAL_DEVICE_LIST_ID);
-						serializer.text(String.valueOf(localDeviceListID));
-						serializer.endTag(TAG_LOCAL_DEVICE_LIST_ID);*/
 			serializer.text(TAG_LOCAL_DEVICE_LIST_ID, String.valueOf(localDeviceListID));
 
 			serializer.endTag(TAG_LIST_DETAILS);
@@ -281,33 +224,18 @@ public class StoreDataSubmission {
 				serializer.startTag(TAG_ADDRESS);
 
 				if (haveStreet1Value) {
-					/*					serializer.startTag(TAG_STREET1);
-										serializer.text(street1);
-										serializer.endTag(TAG_STREET1);*/
 					serializer.text(TAG_STREET1, street1);
 				}
 				if (haveStreet2Value) {
-					/*					serializer.startTag(TAG_STREET2);
-										serializer.text(street2);
-										serializer.endTag(TAG_STREET2);*/
 					serializer.text(TAG_STREET2, street2);
 				}
 				if (haveCityValue) {
-					/*					serializer.startTag(TAG_CITY);
-										serializer.text(city);
-										serializer.endTag(TAG_CITY);*/
 					serializer.text(TAG_CITY, city);
 				}
 				if (haveStateValue) {
-					/*					serializer.startTag(TAG_STATE);
-										serializer.text(state);
-										serializer.endTag(TAG_STATE);*/
 					serializer.text(TAG_STATE, state);
 				}
 				if (haveZipValue) {
-					/*					serializer.startTag(TAG_ZIP);
-										serializer.text(zip);
-										serializer.endTag(TAG_ZIP);*/
 					serializer.text(TAG_ZIP, zip);
 				}
 
@@ -332,16 +260,10 @@ public class StoreDataSubmission {
 				serializer.startTag(TAG_GPS_COORDINATES);
 
 				if (haveGPSLatitudeValue) {
-					/*					serializer.startTag(TAG_LATITUDE);
-										serializer.text(gpsLatitude);
-										serializer.endTag(TAG_LATITUDE);*/
 					serializer.text(TAG_LATITUDE, gpsLatitude);
 
 				}
 				if (haveGPSLongitudeValue) {
-					/*					serializer.startTag(TAG_LONGITUDE);
-										serializer.text(gpsLongitude);
-										serializer.endTag(TAG_LONGITUDE);*/
 					serializer.text(TAG_LONGITUDE, gpsLongitude);
 				}
 
@@ -358,9 +280,6 @@ public class StoreDataSubmission {
 			boolean haveWebSiteURLValue = hasValueToSerialize(webSiteURL);
 
 			if (haveWebSiteURLValue) {
-				/*				serializer.startTag(TAG_WEBSITE_URL);
-								serializer.text(webSiteURL);
-								serializer.endTag(TAG_WEBSITE_URL);*/
 				serializer.text(TAG_WEBSITE_URL, webSiteURL);
 			}
 		}
@@ -374,9 +293,6 @@ public class StoreDataSubmission {
 			boolean havePhoneNumberValue = hasValueToSerialize(phoneNumber);
 
 			if (havePhoneNumberValue) {
-				/*				serializer.startTag(TAG_PHONE_NUMBER);
-								serializer.text(phoneNumber);
-								serializer.endTag(TAG_PHONE_NUMBER);*/
 				serializer.text(TAG_PHONE_NUMBER, phoneNumber);
 			}
 		}
@@ -402,15 +318,7 @@ public class StoreDataSubmission {
 				if (haveGroupNameValue && haveStoreLocationValue) {
 					if (!storeLocation.equals(LocationsTable.DEFAULT_LOCATION)) {
 						serializer.startTag(TAG_GROUP_LOCATION);
-
-						/*						serializer.startTag(TAG_GROUP_NAME);
-												serializer.text(groupName);
-												serializer.endTag(TAG_GROUP_NAME);*/
 						serializer.text(TAG_GROUP_NAME, groupName);
-
-						/*						serializer.startTag(TAG_STORE_LOCATION);
-												serializer.text(storeLocation);
-												serializer.endTag(TAG_STORE_LOCATION);*/
 						serializer.text(TAG_STORE_LOCATION, storeLocation);
 
 						serializer.endTag(TAG_GROUP_LOCATION);
