@@ -47,6 +47,11 @@ public class ItemsTable {
 			TABLE_ITEMS + "." + COL_MANUAL_SORT_SWITCH,
 			GroupsTable.TABLE_GROUPS + "." + GroupsTable.COL_GROUP_NAME };
 
+	public static final String[] PROJECTION_WITH_ITEM_NAME_AND_GROUP_NAME = {
+			TABLE_ITEMS + "." + COL_ITEM_ID,
+			TABLE_ITEMS + "." + COL_ITEM_NAME,
+			GroupsTable.TABLE_GROUPS + "." + GroupsTable.COL_GROUP_NAME };
+
 	public static final String[] PROJECTION_WITH_LOCATION_NAME = {
 			TABLE_ITEMS + "." + COL_ITEM_ID,
 			TABLE_ITEMS + "." + COL_ITEM_NAME,
@@ -452,9 +457,10 @@ public class ItemsTable {
 	public static Cursor getAllSelectedItemsWithGroups(Context context, long listID, boolean selected) {
 		Cursor cursor = null;
 		if (listID > 1) {
-			int selectedValue = AListUtilities.boolToInt(selected);
+
 			Uri uri = CONTENT_URI_ITEMS_WITH_GROUPS;
 			String[] projection = ItemsTable.PROJECTION_WITH_GROUP_NAME;
+			int selectedValue = AListUtilities.boolToInt(selected);
 			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ? AND "
 					+ TABLE_ITEMS + "." + COL_SELECTED + " = ?";
 
@@ -520,6 +526,24 @@ public class ItemsTable {
 				cursor = cr.query(uri, projection, selection, selectionArgs, SORT_ORDER_ITEM_NAME);
 			} catch (Exception e) {
 				MyLog.e("Exception error  in ItemsTable: getItems. ", e.toString());
+			}
+		}
+		return cursor;
+	}
+
+	public static Cursor getAllItemsWithGroups(Context context, long listID) {
+		Cursor cursor = null;
+		if (listID > 1) {
+			Uri uri = CONTENT_URI_ITEMS_WITH_GROUPS;
+			String[] projection = ItemsTable.PROJECTION_WITH_ITEM_NAME_AND_GROUP_NAME;
+			String selection = TABLE_ITEMS + "." + COL_LIST_ID + " = ?";
+			String selectionArgs[] = new String[] { String.valueOf(listID) };
+			String sortOrder = ItemsTable.SORT_ORDER_ITEM_NAME + ", " + GroupsTable.SORT_ORDER_GROUP;
+			ContentResolver cr = context.getContentResolver();
+			try {
+				cursor = cr.query(uri, projection, selection, selectionArgs, sortOrder);
+			} catch (Exception e) {
+				MyLog.e("Exception error  in ItemsTable: getAllItemsWithGroups. ", e.toString());
 			}
 		}
 		return cursor;

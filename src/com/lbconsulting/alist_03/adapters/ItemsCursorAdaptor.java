@@ -105,6 +105,14 @@ public class ItemsCursorAdaptor extends CursorAdapter implements DynamicListView
 			if (isVisible(cursor)) {
 				view.setVisibility(View.VISIBLE);
 
+				/*				View parent = (View) view.getParent();
+								if (parent != null) {
+									// if (parent.getFirstVisiblePosition() == cursor.getPosition()) {
+									String text = cursor.getString(cursor.getColumnIndexOrThrow(LocationsTable.COL_LOCATION_NAME));
+									text = text + " ";
+									// }
+								}*/
+
 				TextView tvListItemSeparator = (TextView) view.findViewById(R.id.tvListItemSeparator);
 				if (tvListItemSeparator != null) {
 					// if (isVisible(cursor)) {

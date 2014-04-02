@@ -97,4 +97,6 @@
     <string name="action_uploadStoreLocations_text">Upload Store Locations</string>
     <string name="action_refreshStoreLocations_text">Refresh Store Locations</string>
     <string name="action_cloudServices_text">Cloud Services</string>
+    <string name="action_uploadListItems_text">Upload List Items</string>
+    <string name="action_refreshListItems_text">Refresh List Items</string>
 </resources>

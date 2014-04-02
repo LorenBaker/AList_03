@@ -30,9 +30,11 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.lbconsulting.alist_03.adapters.ListsPagerAdapter;
 import com.lbconsulting.alist_03.classes.DynamicListView;
+import com.lbconsulting.alist_03.classes.ItemsSubmission;
 import com.lbconsulting.alist_03.classes.ListSettings;
 import com.lbconsulting.alist_03.classes.ReadWriteFile;
 import com.lbconsulting.alist_03.classes.StoreDataParser;
@@ -397,6 +399,16 @@ public class ListsActivity extends FragmentActivity {
 			RefreshStoreLocations();
 			return true;
 
+		case R.id.action_uploadListItems:
+			// Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			UploadListItems();
+			return true;
+
+		case R.id.action_refreshListItems:
+			Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();
+			// RefreshListItems();
+			return true;
+
 		case R.id.action_Preferences:
 			StartListPreferencesActivity();
 			return true;
@@ -710,6 +722,39 @@ public class ListsActivity extends FragmentActivity {
 					}
 				}
 			}
+		}
+	}
+
+	private void UploadListItems() {
+		Cursor listItems = ItemsTable.getAllItemsWithGroups(this, mActiveListID);
+		Cursor listCursor = ListsTable.getList(this, mActiveListID);
+
+		ItemsSubmission itemData = new ItemsSubmission(this, "Loren", "Baker", listCursor, listItems);
+		String xmlString = itemData.getXml();
+		// write xmlString to file to disk
+		ReadWriteFile.Write(FILENAME, xmlString);
+
+		if (listItems != null) {
+			listItems.close();
+		}
+
+		if (listCursor != null) {
+			listCursor.close();
+		}
+
+		// read file back from disk
+		String result = ReadWriteFile.Read(FILENAME);
+
+		if (result.length() > 0) {
+			if (result.equals(xmlString)) {
+				MyLog.i("Lists_ACTIVITY", "UploadStoreLocations: xmlString and result are equal");
+				ReadWriteFile.sendEmail(this, FILENAME);
+			} else {
+				MyLog.e("Lists_ACTIVITY", "UploadStoreLocations: xmlString and result are NOT equal");
+				ReadWriteFile.sendEmail(this, FILENAME);
+			}
+		} else {
+			MyLog.e("Lists_ACTIVITY", "UploadStoreLocations:File lenght is ZERO");
 		}
 	}
 

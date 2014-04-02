@@ -25,6 +25,8 @@ public class GroupsTable {
 	// Version 4 changes
 	public static final String COL_CHECKED = "groupChecked";
 
+	public static String DEFAULT_GROUP_VALUE = "[No Group]";
+
 	public static final String[] PROJECTION_ALL = { COL_GROUP_ID, COL_GROUP_NAME, COL_LIST_ID, COL_CHECKED };
 	// SELECT tblGroups._id, tblGroups.groupName, tblGroups.groupChecked
 	// ,tblBridge.locationID, tblLocations.locationName
@@ -61,8 +63,6 @@ public class GroupsTable {
 			+ COL_CHECKED + " integer default 0 "
 			+ ");";
 
-	private static String defalutGroupValue = "[No Group]";
-
 	public static void onCreate(SQLiteDatabase database) {
 		database.execSQL(DATATABLE_CREATE);
 		MyLog.i("GroupsTable", "onCreate: " + TABLE_GROUPS + " created.");
@@ -75,7 +75,7 @@ public class GroupsTable {
 				+ COL_LIST_ID + ") VALUES ";
 
 		// Default Group
-		sqlStatements.add(insertProjection + "(NULL, '" + defalutGroupValue + "', 1)");
+		sqlStatements.add(insertProjection + "(NULL, '" + DEFAULT_GROUP_VALUE + "', 1)");
 
 		// Groups for Groceries List (2)
 		/*

@@ -146,6 +146,35 @@ public class ListsFragment extends Fragment implements LoaderManager.LoaderCallb
 			mItemsCursorAdaptor = new ItemsCursorAdaptor(getActivity(), null, 0, mListSettings);
 			mItemsListView.setAdapter(mItemsCursorAdaptor);
 		}
+		/*		mItemsListView.setOnScrollListener(new OnScrollListener() {
+
+					@Override
+					public void onScrollStateChanged(AbsListView view, int scrollState) {
+						// TODO Auto-generated method stub
+						int firstVisiblePosition = view.getFirstVisiblePosition();
+						// LinearLayout llListItemsRow = (LinearLayout) mItemsListView.getChildAt(firstVisiblePosition);
+						View listItemsRow = mItemsListView.getChildAt(firstVisiblePosition);
+						if (listItemsRow != null) {
+							TextView tvListItemSeparator = (TextView) listItemsRow.findViewById(R.id.tvListItemSeparator);
+							if (tvListItemSeparator != null) {
+								boolean seperatorIsVisible = tvListItemSeparator.getVisibility() == View.VISIBLE;
+								if (seperatorIsVisible) {
+									String visibleSeperatorText = tvListItemSeparator.getText().toString();
+								} else {
+									String notVisibleSeperatorText = tvListItemSeparator.getText().toString();
+								}
+							}
+						}
+
+					}
+
+					@Override
+					public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+						// TODO Auto-generated method stub
+
+					}
+				});*/
+
 		setViewColors();
 
 		mListsFragmentCallbacks = this;
