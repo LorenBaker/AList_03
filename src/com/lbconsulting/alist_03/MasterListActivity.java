@@ -154,29 +154,30 @@ public class MasterListActivity extends FragmentActivity implements LoaderManage
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		switch (item.getItemId()) {
 
-		case R.id.action_clearAllSelectedItems:
-			ItemsTable.DeselectAllItemsInList(this, mActiveListID, mListSettings.getDeleteNoteUponDeselectingItem());
-			return true;
+			case R.id.action_clearAllSelectedItems:
+				ItemsTable
+						.DeselectAllItemsInList(this, mActiveListID, mListSettings.getDeleteNoteUponDeselectingItem());
+				return true;
 
-		case R.id.action_deleteAllItems:
-			DeleteAllItems();
-			return true;
+			case R.id.action_deleteAllItems:
+				DeleteAllItems();
+				return true;
 
-		case R.id.action_manageItems:
-			StartCheckItemsActivity();
-			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
-			return true;
+			case R.id.action_manageItems:
+				StartCheckItemsActivity();
+				/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
+				return true;
 
-		case R.id.action_Preferences:
-			StartListPreferencesActivity();
-			return true;
+			case R.id.action_Preferences:
+				StartListPreferencesActivity();
+				return true;
 
-		case R.id.action_about:
-			StartAboutActivity();
-			/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
-			return true;
-		default:
-			return super.onMenuItemSelected(featureId, item);
+			case R.id.action_about:
+				StartAboutActivity();
+				/*Toast.makeText(this, "\"" + item.getTitle() + "\"" + " is under construction.", Toast.LENGTH_SHORT).show();*/
+				return true;
+			default:
+				return super.onMenuItemSelected(featureId, item);
 		}
 
 	}
@@ -208,11 +209,13 @@ public class MasterListActivity extends FragmentActivity implements LoaderManage
 				.setMessage(msg)
 				.setCancelable(false)
 				.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
 					public void onClick(DialogInterface dialog, int id) {
 						ItemsTable.DeleteAllItemsInList(MasterListActivity.this, mActiveListID);
 					}
 				})
 				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+
 					public void onClick(DialogInterface dialog, int id) {
 						// if this button is clicked, just close
 						// the dialog box and do nothing

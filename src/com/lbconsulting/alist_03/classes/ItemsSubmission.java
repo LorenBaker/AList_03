@@ -12,6 +12,7 @@ import com.lbconsulting.alist_03.database.ItemsTable;
 import com.lbconsulting.alist_03.database.ListsTable;
 
 public class ItemsSubmission {
+
 	private String mAuthorFirstName;
 	private String mAuthorLastName;
 	private Cursor mList;
@@ -194,7 +195,7 @@ public class ItemsSubmission {
 					serializer.startTag(TAG_ITEM);
 
 					serializer.text(TAG_ITEM_NAME, itemName);
-					serializer.text(TAG_ITEM_LOCAL_ID, itemLocalID);
+					serializer.text(TAG_LOCAL_DEVICE_ITEM_ID, itemLocalID);
 					serializer.text(TAG_ITEM_UNIQUE_ID, itemUniqueID);
 
 					haveGroupNameValue = hasValueToSerialize(groupName);
